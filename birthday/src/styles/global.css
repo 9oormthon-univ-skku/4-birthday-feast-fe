@@ -1,0 +1,20 @@
+/* src/styles/global.css */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 폰트 등록 */
+@font-face {
+  font-family: 'Pretendard';
+  src: url('../assets/fonts/PretendardVariable.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+/* 전체 적용 */
+body {
+  font-family: 'Pretendard', sans-serif;
+  background-color: #FF8B8B;
+  color: #FFEDC8;
+}
