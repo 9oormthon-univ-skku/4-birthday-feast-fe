@@ -5,7 +5,7 @@ const Loading = () => {
     <div className="w-screen h-screen bg-[#FF8B8B] relative overflow-hidden">
       <h1
         className="absolute left-1/2 -translate-x-1/2 
-          text-[128px] text-[#FFEDC8] text-center font-normal"
+          text-[128px] text-[#FFEDC8] text-center"
         style={{
           top: '28.71%',
           fontFamily: 'KoreanSWGIG1, Pretendard, sans-serif',

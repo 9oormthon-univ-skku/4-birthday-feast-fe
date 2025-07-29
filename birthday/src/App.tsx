@@ -12,12 +12,12 @@ function App() {
     <Router>
       {/* <Header /> */}
       <Routes>
-        <Route path="/" element={<Loading />} />
-        {/* <Route path="/" element={<LogIn />} />
-        <Route path="/home" element={<MainHome />} />
-        <Route path="/birthday" element={<BirthdayPage />} />
-        <Route path="/create" element={<CreatePage />} /> */}
-        <Route path="/loading" element={<Loading />} />
+        {/* <Route path="/" element={<Loading />} /> */}
+        <Route path="/" element={<LogIn />} />
+        {/* <Route path="/home" element={<MainHome />} /> */}
+        {/* <Route path="/birthday" element={<BirthdayPage />} /> */}
+        {/* <Route path="/create" element={<CreatePage />} /> */}
+        {/* <Route path="/loading" element={<Loading />} /> */}
       </Routes>
     </Router>
   );
