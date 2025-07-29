@@ -1,0 +1,133 @@
+@startuml
+
+' 다이어그램 디자인 설정
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+left to right direction
+
+' ========== 패키지 정의 ==========
+
+package "pages" {
+  ' 더 적절한 클래스명 고민...
+  class BirthdayPage 
+  class CreatePage
+  class LoadingPage
+  class LoginPage
+  class MainHome
+}
+
+' features. 는 추후 다시 수정 예정 
+package "features.birthday" {
+  class CreateBirthdayForm
+  ' class BirthdayThemePicker
+  class QuizEditor
+  ' class GiftLinkInput
+  ' class LinkGenerator
+}
+
+package "features.message" {
+  class MessageInput
+  class MessageList
+}
+
+package "features.brand" {
+  class BrandGiftCard
+  class BrandModal
+  ' class BrandEmailVerification
+}
+
+package "features.quiz" {
+  class QuizPage
+  class QuizResultPage
+}
+
+package "features.home" {
+  class HomeHeader
+  class HomeIntro
+}
+
+package "components.ui" {
+  class Button
+  class Input
+  class Modal
+  class Toast
+  class Header
+  class NavigationBar
+  class Loading
+}
+
+package "stores" {
+  class birthdayStore
+  class messageStore
+  class quizStore
+}
+
+package "api" {
+  class api
+}
+
+package "utils" {
+  class uuidUtil
+}
+
+package "layouts" {
+  class HostLayout
+  class QuestLayout
+}
+
+package "types" {
+  class auth
+  class birthday
+  class message
+  class quiz
+}
+
+' ========== 의존 관계 ==========
+' 기본 ui 구현 완료 후 한 번 더 수정 예정
+
+LoginPage --> KakaoLoginButton
+LoginPage --> authStore
+LoginPage --> kakaoAuthAPI
+LoginPage --> "components"
+LoginPage --> "stores"
+
+CreatePage --> "features.birthday"
+CreatePage --> "components"
+CreatePage --> "stores"
+
+BirthdayPage --> "features.message"
+BirthdayPage --> "components"
+
+MainHome --> "features.home"
+MainHome --> "components"
+
+
+
+KakaoAuthHandlerPage --> kakaoAuthAPI
+KakaoAuthHandlerPage --> authStore
+KakaoAuthHandlerPage --> kakaoUtil
+KakaoAuthHandlerPage --> types.auth
+
+"features.birthday" --> stores
+"features.birthday" --> api
+"features.birthday" --> components.ui
+
+"features.message" --> stores
+"features.message" --> components.ui
+
+"features.quiz" --> api
+"features.quiz" --> stores
+"features.quiz" --> components.ui
+
+"features.brand" --> api
+"features.brand" --> components.ui
+
+"features.home" --> components.ui
+
+"components.ui" --> "layouts"
+"components.ui" --> utils
+
+
+@enduml

@@ -1,0 +1,106 @@
+@startuml
+
+' 다이어그램 디자인 
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+' === 패키지 선언 === 
+package "pages" {
+  class Loading
+  class LogIn
+  class MainHome
+  ' class ViewPage
+  ' class InvitePage
+}
+
+package "features.birthday" {
+  class CreateBirthdayForm
+  class BirthdayThemePicker
+  class QuizEditor
+  class GiftLinkInput
+  class LinkGenerator
+}
+
+package "features.guest" {
+  class NicknameInput
+  class QuizResponse
+  class MessageInput
+  class FoodSelect
+  class GuestViewUpdate
+}
+
+package "features.brand" {
+  class BrandGiftCard
+  class BrandModal
+  class BrandEmailVerification
+}
+
+package "features.user" {
+  class BirthdayLoginForm
+  class BirthdayLinkFetcher
+}
+
+package "components.ui" {
+  class Button
+  class Input
+  class Modal
+  class Toast
+  class Header
+  class Footer
+}
+
+package "stores" {
+  class birthdayStore
+  class messageStore
+  class quizStore
+}
+
+package "api" {
+  class birthdayAPI
+  class quizAPI
+  class messageAPI
+  class brandAPI
+}
+
+package "utils" {
+  ' class dateFormatter
+  ' class validator
+  ' class clipboardUtil
+}
+
+package "layouts" {
+  class BasicLayout
+  class InviteLayout
+}
+
+' 의존 관계
+HomePage --> "features.birthday"
+HomePage --> "features.brand"
+HomePage --> "features.user"
+HomePage --> "components.ui"
+HomePage --> "layouts"
+
+CreatePage --> "features.birthday"
+ViewPage --> "features.user"
+InvitePage --> "features.guest"
+
+"features.birthday" --> stores
+"features.birthday" --> api
+"features.birthday" --> utils
+"features.birthday" --> "components.ui"
+
+"features.guest" --> stores
+"features.guest" --> api
+"features.guest" --> utils
+"features.guest" --> "components.ui"
+
+"features.brand" --> api
+"features.brand" --> utils
+"features.brand" --> "components.ui"
+
+"features.user" --> stores
+"features.user" --> api
+"features.user" --> "components.ui"
+
+@enduml
