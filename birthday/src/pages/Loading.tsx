@@ -2,15 +2,14 @@ import React from 'react';
 
 const Loading = () => {
   return (
-    <div className="w-screen h-screen relative overflow-hidden">
-
-      {/* 중앙 텍스트 */}
+    <div className="w-screen h-screen bg-[#FF8B8B] relative overflow-hidden">
       <h1
         className="absolute left-1/2 -translate-x-1/2 
-                  text-[128px] leading-none text-center font-normal text-[#FFEDC8]"
+          text-[128px] text-[#FFEDC8] text-center font-normal"
         style={{
-          top: '28.7%',
-          fontFamily: 'KoreanSWGIG3R, Pretendard, sans-serif',
+          top: '28.71%',
+          fontFamily: 'KoreanSWGIG1, Pretendard, sans-serif',
+          lineHeight: '148px', // Figma 상 전체 텍스트 높이
         }}
       >
         생일<br />한상
