@@ -1,19 +1,42 @@
 import React from 'react';
+import menuIcon from '../../assets/images/menu.svg';
+import brushIcon from '../../assets/images/brush.svg';
 
-// Header 더미 코드 
 const Header = () => {
   return (
-    <header className="w-full px-4 py-3 flex justify-between items-center bg-[#FFF6EC]">
-      <h1 className="text-[#FF8B8B] text-lg font-bold">
-        사용자님의 <span className="text-gray-800">생일한상</span>
-      </h1>
-      <button>
-        <img
-          src="/icons/hamburger.svg"
-          alt="메뉴"
-          className="w-6 h-6"
-        />
-      </button>
+    <header className="sticky top-0 z-50 w-full bg-[#FFF6EC]/90 border-b border-[#EFD9C6] backdrop-blur"
+    style={{
+          fontFamily: 'KoreanSWGIG1, Pretendard, sans-serif',
+          lineHeight: '148px', // Figma 상 전체 텍스트 높이
+        }}>
+      <div className="mx-auto max-w-md px-4 py-3 flex items-center justify-between">
+        {/* Title */}
+        <h1 className="text-[48px] leading-none font-bold tracking-tight">
+          <span className="text-[#FF8B8B]">사용자</span>
+          <span className="text-[#A0A0A0]">님의 생일한상</span>
+        </h1>
+
+        {/* Right icon group */}
+        <div className="flex items-center gap-2">
+          {/* brush */}
+          <button
+            type="button"
+            aria-label="테마 변경"
+            className="w-8 h-8 rounded-full bg-white/90 border border-[#F0D9C8] shadow-sm flex items-center justify-center hover:shadow-md active:scale-95 transition"
+          >
+            <img src={brushIcon} alt="" className="w-4 h-4" />
+          </button>
+
+          {/* menu (hamburger) */}
+          <button
+            type="button"
+            aria-label="메뉴 열기"
+            className="w-8 h-8 rounded-full bg-white/90 border border-[#F0D9C8] shadow-sm flex items-center justify-center hover:shadow-md active:scale-95 transition"
+          >
+            <img src={menuIcon} alt="" className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
     </header>
   );
 };
