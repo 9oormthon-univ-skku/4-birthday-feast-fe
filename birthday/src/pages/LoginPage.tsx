@@ -1,7 +1,7 @@
 // src/pages/LogIn.tsx
 import React from 'react';
 
-const LogIn = () => {
+const Login = () => {
   return (
     <div className="relative w-screen h-screen bg-[#FFFFFF] overflow-hidden">
       <h1
@@ -43,4 +43,4 @@ const LogIn = () => {
   );
 };
 
-export default LogIn;
+export default Login;
