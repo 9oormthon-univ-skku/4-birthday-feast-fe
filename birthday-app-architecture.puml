@@ -10,12 +10,25 @@ left to right direction
 ' ========== 패키지 정의 ==========
 
 package "pages" {
-  ' 더 적절한 클래스명 고민...
-  class BirthdayPage 
-  class CreatePage
+  ' //완료//
   class LoadingPage
   class LoginPage
   class MainHome
+  class QuizPage 
+}
+
+package "components.ui" {
+  class Button
+  class CircleButton 
+  class Toggle
+  class Banner
+  
+  class ButtomSheet
+  class DrawerMenu
+
+  class NotiPopup
+  class ConfirmPopup
+  class InputPopup
 }
 
 ' features. 는 추후 다시 수정 예정 
@@ -48,15 +61,6 @@ package "features.home" {
   class HomeIntro
 }
 
-package "components.ui" {
-  class Button
-  class Input
-  class Modal
-  class Toast
-  class Header
-  class NavigationBar
-  class Loading
-}
 
 package "stores" {
   class birthdayStore
@@ -88,10 +92,10 @@ package "types" {
 ' 기본 ui 구현 완료 후 한 번 더 수정 예정
 
 LoginPage --> KakaoLoginButton
-LoginPage --> authStore
-LoginPage --> kakaoAuthAPI
-LoginPage --> "components"
-LoginPage --> "stores"
+'LoginPage --> authStore
+'LoginPage --> kakaoAuthAPI
+'LoginPage --> "components"
+'LoginPage --> "stores"
 
 CreatePage --> "features.birthday"
 CreatePage --> "components"
@@ -105,10 +109,10 @@ MainHome --> "components"
 
 
 
-KakaoAuthHandlerPage --> kakaoAuthAPI
-KakaoAuthHandlerPage --> authStore
-KakaoAuthHandlerPage --> kakaoUtil
-KakaoAuthHandlerPage --> types.auth
+'KakaoAuthHandlerPage --> kakaoAuthAPI
+'KakaoAuthHandlerPage --> authStore
+'KakaoAuthHandlerPage --> kakaoUtil
+'KakaoAuthHandlerPage --> types.auth
 
 "features.birthday" --> stores
 "features.birthday" --> api
