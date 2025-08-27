@@ -29,15 +29,19 @@ const SLOTS: Slot[] = [
 
 export default function TableCakes({
   items,
-  uniformWidth,     // 모든 슬롯 동일 크기로 강제하고 싶다면 e.g. '22%' 또는 '160px'
-  zIndex = 20,      // 레이어링 제어 (table<cakes<balloons<host 등)
+  uniformWidth,     // e.g. '22%' | '160px'
+  zIndex = 20,
+  onSelect,         // 버튼 클릭 핸들러(선택사항)
+  buttonClassName,  // 버튼 추가 클래스(선택사항)
 }: {
   items: CakeItem[];
   uniformWidth?: string;
   zIndex?: number;
+  onSelect?: (item: CakeItem, index: number, e: React.MouseEvent<HTMLButtonElement>) => void;
+  buttonClassName?: string;
 }) {
   // 최근 5개만, 최근이 첫 슬롯(center)에 오도록
-  const latestFive = items.slice(-5).reverse(); // [recent, ..., older]
+  const latestFive = items.slice(-5).reverse();
 
   return (
     <>
@@ -55,13 +59,29 @@ export default function TableCakes({
         };
 
         return (
-          <img
+          <button
             key={cake.id}
-            src={cake.src}
-            alt={cake.alt ?? `cake-${cake.id}`}
+            type="button"
+            aria-label={cake.alt ?? `cake-${cake.id}`}
+            title={cake.alt ?? `cake-${cake.id}`}
+            onClick={(e) => onSelect?.(cake, i, e)}
             style={style}
-            className="object-contain w-auto h-auto max-w-full max-h-full select-none pointer-events-none drop-shadow-[0_5px_5px_rgba(0,0,0,0.15)]"
-          />
+            className={[
+              // 기본 버튼 리셋 & 클릭/포커스 시각화
+              'absolute block bg-transparent p-0 m-0 border-0 outline-none',
+              'cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2',
+              'rounded-xl', // 링 모서리 둥글게
+              buttonClassName ?? '',
+            ].join(' ')}
+          >
+            <img
+              src={cake.src}
+              alt=""            // 접근성: 버튼의 aria-label이 이름을 제공하므로 중복 피하려고 비움
+              role="presentation"
+              className="block w-full h-auto object-contain select-none pointer-events-none drop-shadow-[0_5px_5px_rgba(0,0,0,0.15)]"
+              draggable={false}
+            />
+          </button>
         );
       })}
     </>
