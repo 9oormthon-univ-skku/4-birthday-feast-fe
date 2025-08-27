@@ -8,6 +8,7 @@ import cake from '../assets/images/cake.svg';
 
 import birthdayImg from '../assets/images/mainDummy.png';
 import DrawerMenu from '../components/DrawerMenu';
+import BottomSheet from '../components/BottomSheet';
 
 const MainHome = () => {
   const [open, setOpen] = useState(false);
@@ -50,7 +51,11 @@ const MainHome = () => {
         />
       </div>
 
-      {/* <BottomSheet/> */}
+      {/* ✅ 화면 하단에 바텀시트 헤드가 노출 */}
+      <BottomSheet title="방문자 퀴즈 랭킹" peekHeight={53} height="80vh">
+        {/* 여기에 시트 본문 컨텐츠 */}
+        {/* <YourContent /> */}
+      </BottomSheet>
 
     </div>
   );
