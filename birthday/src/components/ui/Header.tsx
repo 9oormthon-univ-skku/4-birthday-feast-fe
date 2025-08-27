@@ -1,61 +1,146 @@
+// src/components/ui/Header.tsx
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import menuIcon from '../../assets/images/menu.svg';
 import brushIcon from '../../assets/images/brush.svg';
+import backArrow from '../../assets/images/nav-arrow-left.svg';
 import DrawerMenu from '../DrawerMenu';
 
-const Header = () => {
+export type HeaderProps = {
+  /** 문자열뿐 아니라 JSX도 허용 (색상 하이라이트 등) */
+  title?: React.ReactNode;
+  showBack?: boolean;
+  onBack?: () => void;
+  showMenu?: boolean;
+  showBrush?: boolean;
+  /** 홈 스타일(대형) vs 컴팩트 */
+  compact?: boolean;
+  /** 브러시 클릭 핸들러(선택) */
+  onBrushClick?: () => void;
+  /** 기본 테마 페이지 경로 */
+  themePath?: string;
+  /** 우측에 추가 버튼/아이콘 넣고 싶을 때(선택) */
+  rightExtra?: React.ReactNode;
+};
+
+export default function Header({
+  title,
+  showBack = false,
+  onBack,
+  showMenu = true,
+  showBrush = true,
+  compact = false,
+  onBrushClick,
+  themePath = '/theme',
+  rightExtra,
+}: HeaderProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleBack = () => (onBack ? onBack() : navigate(-1));
+  const handleBrush = () => (onBrushClick ? onBrushClick() : navigate(themePath));
+
+  const wrapPad = compact ? 'px-4 py-2' : 'px-4 py-3';
+  const titleCls =
+    compact
+      ? 'text-[20px] leading-[24px] font-bold tracking-tight'
+      : 'text-[48px] my-[36px] leading-none font-bold tracking-tight';
 
   return (
     <header
-      className="sticky top-0 z-50 w-full bg-[#FFFFFF] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] backdrop-blur"
+      className="sticky top-0 z-50 w-full bg-[#FFFFFF] shadow-[0px_8px_8px_0px_rgba(0,0,0,0.07)] backdrop-blur"
       style={{ fontFamily: 'KoreanSWGIG1, Pretendard, sans-serif' }}
     >
-      <div className="mx-[60px] max-w-md px-4 py-3 flex items-center justify-between">
-        {/* Title */}
-        <h1 className="text-[48px] my-[36px] leading-none font-bold tracking-tight">
-          <span className="text-[#FF8B8B]">사용자</span>
-          <span className="text-[#A0A0A0]">님의 생일한상</span>
-        </h1>
+      <div className={`mx-[60px] max-w-md flex items-center justify-between ${wrapPad}`}>
+        {/* Left: Back + Title */}
+        <div className="flex items-center gap-3">
+          {showBack && (
+            <button
+              type="button"
+              aria-label="뒤로가기"
+              onClick={handleBack}
+              className="p-2 rounded-full bg-transparent border border-transparent flex items-center justify-center hover:shadow-md active:scale-95 transition"
+            >
+              <img
+                src={backArrow}
+                alt="뒤로가기"
+                className={compact ? 'w-6 h-6' : 'w-[48px] h-[48px]'}
+              />
+            </button>
+          )}
 
-        {/* Right icon group */}
-        <div className="flex items-center gap-[28px]">
-          {/* brush */}
-          <button
-            type="button"
-            aria-label="테마 변경"
-            className="p-2 rounded-full bg-transparent border border-transparent flex items-center justify-center hover:shadow-md active:scale-95 transition"
-          >
-            <img src={brushIcon} alt="" className="w-[34px] h-[52px]" />
-          </button>
+          {title ? (
+            <h1 className={titleCls}>{title}</h1>
+          ) : (
+            <h1 className={titleCls}>
+              <span className="text-[#FF8B8B]">사용자</span>
+              <span className="text-[#A0A0A0]">님의 생일한상</span>
+            </h1>
+          )}
+        </div>
 
-          {/* menu (hamburger) → Drawer 트리거 */}
-          <button
-            type="button"
-            aria-label="메뉴 열기"
-            onClick={() => setDrawerOpen(true)}
-            className="p-2 rounded-full bg-transparent border border-transparent flex items-center justify-center hover:shadow-md active:scale-95 transition"
-          >
-            <img src={menuIcon} alt="" className="w-[34px] h-[23px]" />
-          </button>
+        {/* Right */}
+        <div className="flex items-center gap-[20px]">
+          {showBrush && (
+            <button
+              type="button"
+              aria-label="테마 변경"
+              onClick={handleBrush}
+              className="p-2 rounded-full bg-transparent border border-transparent flex items-center justify-center hover:shadow-md active:scale-95 transition"
+            >
+              <img src={brushIcon} alt="테마 변경" className={compact ? 'w-[22px] h-[32px]' : 'w-[34px] h-[52px]'} />
+            </button>
+          )}
 
-          {/* Drawer: 원래 메뉴 + (옵션) 커스텀 섹션 */}
-          <DrawerMenu
-            open={drawerOpen}
-            onOpen={() => setDrawerOpen(true)}
-            onClose={() => setDrawerOpen(false)}
-          >
-            {/* 옵션: 여기에 추가 섹션을 넣으면 원래 메뉴 아래에 붙음 */}
-            {/* <ul className="space-y-3">
-              <li>홈</li>
-              <li>내 정보</li>
-              <li>설정</li>
-            </ul> */}
-          </DrawerMenu>
+          {showMenu && (
+            <>
+              <button
+                type="button"
+                aria-label="메뉴 열기"
+                onClick={() => setDrawerOpen(true)}
+                className="p-2 rounded-full bg-transparent border border-transparent flex items-center justify-center hover:shadow-md active:scale-95 transition"
+              >
+                <img src={menuIcon} alt="메뉴" className={compact ? 'w-[20px] h-[14px]' : 'w-[34px] h-[23px]'} />
+              </button>
+
+              <DrawerMenu
+                open={drawerOpen}
+                onOpen={() => setDrawerOpen(true)}
+                onClose={() => setDrawerOpen(false)}
+                onSelect={(key) => {
+                  switch (key) {
+                    case 'about':
+                      navigate('/about-team');
+                      break;
+                    case 'contact':
+                      navigate('/contact');
+                      break;
+                    case 'quiz':
+                      navigate('/quiz');
+                      break;
+                    case 'qrcode':
+                      navigate('/my-feast-qr');
+                      break;
+                    case 'history':
+                      navigate('/history');
+                      break;
+                    case 'visibility':
+                      navigate('/visibility');
+                      break;
+                    case 'account':
+                      navigate('/account');
+                      break;
+                    // 필요 시 다른 항목 라우팅 추가
+                  }
+                }}
+              />
+            </>
+          )}
+
+          {/* 우측 커스텀 슬롯 (예: 편집 아이콘 등) */}
+          {rightExtra}
         </div>
       </div>
     </header>
   );
-};
-
-export default Header;
+}
