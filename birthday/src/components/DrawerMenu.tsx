@@ -61,7 +61,7 @@ export default function DrawerMenu({
       // ✅ Drawer 패널 자체 폭을 75%로
       PaperProps={{
         sx: {
-          width: '75vw',
+          width: '75vw', 
           maxWidth: '100vw',     // 안전장치
         },
       }}

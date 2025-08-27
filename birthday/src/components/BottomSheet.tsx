@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Global } from '@emotion/react';
 import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -26,25 +25,11 @@ export default function BottomSheet({
   const open = controlledOpen ?? uncontrolled;
   const setOpen = (v: boolean) => (onOpenChange ? onOpenChange(v) : setUncontrolled(v));
 
-  // ✅ 스와이프 감지: 드래그 중에 외부 헤더 숨김
   const [isSwiping, setIsSwiping] = React.useState(false);
 
   return (
     <>
-      <Global
-        styles={{
-          '.MuiDrawer-root > .MuiPaper-root': {
-            height: `calc(${height} - ${peekHeight}px)`,
-            overflow: 'visible',
-            borderTopLeftRadius: 12,
-            borderTopRightRadius: 12,
-            backgroundColor: '#fff',
-            zIndex: 1400,
-          },
-        }}
-      />
-
-      {/* 🔻 닫혀 있고, 스와이프 중이 아닐 때만 외부 헤더(전폭 바) 노출 */}
+      {/* 닫혀 있고 스와이프 중이 아닐 때만 미리보기 헤드 노출 */}
       {!open && (
         <Box
           sx={{
@@ -53,8 +38,8 @@ export default function BottomSheet({
             right: 0,
             bottom: 0,
             zIndex: 1300,
-            pointerEvents: 'none',              // 제스처는 SwipeArea가 받음
-            opacity: isSwiping ? 0 : 1,         // 스와이프 시작하면 숨김
+            pointerEvents: 'none',
+            opacity: isSwiping ? 0 : 1,
             transition: 'opacity .15s ease',
           }}
         >
@@ -96,18 +81,28 @@ export default function BottomSheet({
         anchor="bottom"
         open={open}
         onOpen={() => {
-          setIsSwiping(false); // 제스처 끝
+          setIsSwiping(false);
           setOpen(true);
         }}
         onClose={() => {
-          setIsSwiping(false); // 제스처 끝
+          setIsSwiping(false);
           setOpen(false);
         }}
         disableSwipeToOpen={false}
         swipeAreaWidth={peekHeight + 12}
         ModalProps={{ keepMounted: true }}
-        PaperProps={{ sx: { paddingBottom: 'env(safe-area-inset-bottom)' } }}
-        // ✅ 스와이프 영역 이벤트로 드래그 시작/종료 감지
+        // ✅ 이 바텀시트 Drawer "만" 스타일 적용
+        PaperProps={{
+          sx: {
+            height: `calc(${height} - ${peekHeight}px)`,
+            overflow: 'visible',
+            borderTopLeftRadius: 12,
+            borderTopRightRadius: 12,
+            backgroundColor: '#fff',
+            zIndex: 1400,
+            pb: 'env(safe-area-inset-bottom)',
+          },
+        }}
         SwipeAreaProps={{
           onTouchStart: () => setIsSwiping(true),
           onMouseDown: () => setIsSwiping(true),
@@ -116,7 +111,7 @@ export default function BottomSheet({
           onTouchCancel: () => setIsSwiping(false),
         }}
       >
-        {/* (옵션) 내부 헤더 */}
+        {/* 내부 헤드 */}
         <Box
           sx={{
             position: 'absolute',
