@@ -56,12 +56,12 @@ const MainHome = () => {
         <img
           src={lBalloon}
           alt="lb"
-          className="absolute transform -translate-y-3/4 left-[0px]  w-[clamp(160px,30vw,324px)] z-20" // absolute와 위치 조정
+          className="absolute transform -translate-y-3/4 left-[0px]  w-[clamp(160px,30vw,324px)] z-30" 
         />
         <img
           src={rBalloon}
           alt="rb"
-          className="absolute transform -translate-y-3/4  right-[0px] w-[clamp(180px,34vw,360px)] z-20" // absolute와 위치 조정
+          className="absolute transform -translate-y-3/4  right-[0px] w-[clamp(180px,34vw,360px)] z-30" 
         />
         <img
           src={host}
@@ -71,7 +71,7 @@ const MainHome = () => {
         <img
           src={ mainCake}
           alt=""
-          className="absolute transform -translate-y-3/5 left-1/2 -translate-x-1/2 w-[clamp(220px,46vw,450px)] z-11"
+          className="absolute transform -translate-y-3/5 left-1/2 -translate-x-1/2 w-[clamp(220px,46vw,450px)] z-11 drop-shadow-[0_8px_8px_rgba(0,0,0,0.15)]"
         />
 
         <div className="relative w-full h-full">

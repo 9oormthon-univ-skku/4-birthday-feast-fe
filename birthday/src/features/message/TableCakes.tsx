@@ -18,19 +18,19 @@ type Slot = {
 /** 테이블 위 5개 고정 슬롯 (좌표는 필요에 맞게 조정 가능) */
 const SLOTS: Slot[] = [
   // 가장 최근: 중앙
-  { key: 'center',     left: '48%', bottom: '38%', width: '30%', anchorCenter: true },
+  { key: 'center',     left: '51%', bottom: '38%', width: '32%', anchorCenter: true },
   // 상단(뒤쪽) 좌/우
-  { key: 'topLeft',    left: '8%', bottom: '60%', width: '30%' },
-  { key: 'topRight',   left: '70%', bottom: '60%', width: '28%' },
+  { key: 'topLeft',    left: '8%', bottom: '55%', width: '34%' },
+  { key: 'topRight',   left: '65%', bottom: '59%', width: '29%' },
   // 하단(앞쪽) 좌/우
-  { key: 'bottomLeft', left: '6%', bottom: '18%', width: '34%' },
-  { key: 'bottomRight',left: '66%', bottom: '18%', width: '30%' },
+  { key: 'bottomLeft', left: '5%', bottom: '15%', width: '35%' },
+  { key: 'bottomRight',left: '62%', bottom: '20%', width: '32%' },
 ];
 
 export default function TableCakes({
   items,
   uniformWidth,     // 모든 슬롯 동일 크기로 강제하고 싶다면 e.g. '22%' 또는 '160px'
-  zIndex = 10,      // 레이어링 제어 (table<cakes<balloons<host 등)
+  zIndex = 20,      // 레이어링 제어 (table<cakes<balloons<host 등)
 }: {
   items: CakeItem[];
   uniformWidth?: string;
@@ -60,7 +60,7 @@ export default function TableCakes({
             src={cake.src}
             alt={cake.alt ?? `cake-${cake.id}`}
             style={style}
-            className="object-contain select-none pointer-events-none drop-shadow-[0_2px_2px_rgba(0,0,0,0.15)]"
+            className="object-contain w-auto h-auto max-w-full max-h-full select-none pointer-events-none drop-shadow-[0_5px_5px_rgba(0,0,0,0.15)]"
           />
         );
       })}
