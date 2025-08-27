@@ -6,12 +6,10 @@ import rBalloon from '../assets/images/right-balloon.svg';
 import host from '../assets/images/host.svg';
 import cake from '../assets/images/cake.svg';
 
-import birthdayImg from '../assets/images/mainDummy.png';
-import DrawerMenu from '../components/DrawerMenu';
 import BottomSheet from '../components/BottomSheet';
 
 const MainHome = () => {
-  const [open, setOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // 데모용 랭킹 데이터
   const mock = Array.from({ length: 20 }).map((_, i) => ({
@@ -22,7 +20,7 @@ const MainHome = () => {
 
   return (
     <div className="w-screen h-screen bg-[#FFF4DF] flex flex-col relative">
-      <Header />
+      <Header onDrawerOpenChange={setDrawerOpen} />
 
       {/* 메인 이미지 영역 */}
       {/* 이 div를 relative로 만들고, balloon을 absolute로 배치합니다 */}
@@ -52,7 +50,7 @@ const MainHome = () => {
       </div>
 
       {/* ✅ 화면 하단에 바텀시트 헤드가 노출 */}
-      <BottomSheet title="방문자 퀴즈 랭킹" peekHeight={53} height="80vh">
+      <BottomSheet title="방문자 퀴즈 랭킹" suspended={drawerOpen} peekHeight={53} height="80vh">
         {/* 여기에 시트 본문 컨텐츠 */}
         {/* <YourContent /> */}
       </BottomSheet>

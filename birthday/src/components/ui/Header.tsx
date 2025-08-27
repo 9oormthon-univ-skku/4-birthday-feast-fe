@@ -21,6 +21,7 @@ export type HeaderProps = {
   themePath?: string;
   /** 우측에 추가 버튼/아이콘 넣고 싶을 때(선택) */
   rightExtra?: React.ReactNode;
+  onDrawerOpenChange?: (open: boolean) => void; 
 };
 
 export default function Header({
@@ -33,9 +34,15 @@ export default function Header({
   onBrushClick,
   themePath = '/theme',
   rightExtra,
+  onDrawerOpenChange,
 }: HeaderProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
+
+  const setDrawer = (open: boolean) => {
+    setDrawerOpen(open);
+    onDrawerOpenChange?.(open);
+  };
 
   const handleBack = () => (onBack ? onBack() : navigate(-1));
   const handleBrush = () => (onBrushClick ? onBrushClick() : navigate(themePath));
@@ -97,7 +104,7 @@ export default function Header({
               <button
                 type="button"
                 aria-label="메뉴 열기"
-                onClick={() => setDrawerOpen(true)}
+                onClick={() => setDrawer(true)} 
                 className="p-2 rounded-full bg-transparent border border-transparent flex items-center justify-center hover:shadow-md active:scale-95 transition"
               >
                 <img src={menuIcon} alt="메뉴" className={compact ? 'w-[20px] h-[14px]' : 'w-[34px] h-[23px]'} />
@@ -105,8 +112,8 @@ export default function Header({
 
               <DrawerMenu
                 open={drawerOpen}
-                onOpen={() => setDrawerOpen(true)}
-                onClose={() => setDrawerOpen(false)}
+               onOpen={() => setDrawer(true)}           
+                onClose={() => setDrawer(false)}
                 onSelect={(key) => {
                   switch (key) {
                     case 'about':

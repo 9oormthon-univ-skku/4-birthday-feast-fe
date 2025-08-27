@@ -11,6 +11,7 @@ type BottomSheetProps = {
   height?: string;
   title?: string;
   children?: React.ReactNode;
+  suspended?: boolean; 
 };
 
 export default function BottomSheet({
@@ -20,12 +21,15 @@ export default function BottomSheet({
   height = '64vh',
   title = '오늘의 추천',
   children,
+  suspended = false,      
 }: BottomSheetProps) {
   const [uncontrolled, setUncontrolled] = React.useState(false);
   const open = controlledOpen ?? uncontrolled;
   const setOpen = (v: boolean) => (onOpenChange ? onOpenChange(v) : setUncontrolled(v));
 
   const [isSwiping, setIsSwiping] = React.useState(false);
+
+  if (suspended) return null;
 
   return (
     <>
