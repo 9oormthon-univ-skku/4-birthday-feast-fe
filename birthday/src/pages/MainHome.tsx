@@ -8,8 +8,6 @@ import cake from '../assets/images/cake.svg';
 
 import birthdayImg from '../assets/images/mainDummy.png';
 import DrawerMenu from '../components/DrawerMenu';
-import Button from '../components/ui/Button';
-import BottomSheet from '@/components/BottomSheet';
 
 const MainHome = () => {
   const [open, setOpen] = useState(false);
