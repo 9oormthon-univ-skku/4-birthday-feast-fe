@@ -30,6 +30,10 @@ package "components.ui" {
   class ConfirmPopup
   class InputPopup
 }
+package "components" {
+  class BottomSheet
+  class DrawerMenu
+}
 
 ' features. 는 추후 다시 수정 예정 
 package "features.birthday" {

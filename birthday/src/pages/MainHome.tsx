@@ -14,14 +14,7 @@ import food6 from '../assets/images/food-6.svg';
 
 import BottomSheet from '../components/BottomSheet';
 import TableCakes from '../features/message/TableCakes';
-// const foods = [
-//   { id: 1, src: food },
-//   { id: 2, src: '../assets/images/food-1.svg' },
-//   { id: 3, src: '../assets/images/food-1.svg' },
-//   { id: 4, src: '../assets/images/food-1.svg' },
-//   { id: 5, src: '../assets/images/food-1.svg' },
-//   { id: 6, src: '../assets/images/food-1.svg' }, // 최근 것들이 뒤에 온다고 가정
-// ];
+
 type CakeItem = { id: number; src: string; alt?: string };
 
 const cakes: CakeItem[] = [
@@ -33,6 +26,7 @@ const cakes: CakeItem[] = [
   { id: 6, src: food6, alt: '디저트6' },
 ];
 
+const PAGE_SIZE = 6; 
 
 const MainHome = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -82,7 +76,7 @@ const MainHome = () => {
       </div>
 
       {/* ✅ 화면 하단에 바텀시트 헤드가 노출 */}
-      <BottomSheet title="방문자 퀴즈 랭킹" suspended={drawerOpen} peekHeight={53} height="80vh">
+      <BottomSheet title="" suspended={drawerOpen} peekHeight={90} height="80vh">
         {/* 여기에 시트 본문 컨텐츠 */}
         {/* <YourContent /> */}
       </BottomSheet>

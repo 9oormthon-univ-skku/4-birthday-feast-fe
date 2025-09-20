@@ -1,5 +1,5 @@
 // src/features/TableCakes.tsx
-import React from 'react';
+import React, { MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export type CakeItem = {
@@ -29,23 +29,20 @@ export default function TableCakes({
   items,
   uniformWidth,
   zIndex = 20,
-  onSelect,        // 있으면 먼저 호출하고, 이후 /birthday로 네비게이트
+  onSelect,
   buttonClassName,
 }: {
   items: CakeItem[];
   uniformWidth?: string;
   zIndex?: number;
-  onSelect?: (item: CakeItem, index: number, e: React.MouseEvent<HTMLButtonElement>) => void;
+  onSelect?: (item: CakeItem, index: number, e: MouseEvent<HTMLButtonElement>) => void;
   buttonClassName?: string;
 }) {
   const navigate = useNavigate();
 
-  // 최근 6개만, 최근이 첫 슬롯(center)에 오도록
-  const latestSix = items.slice(-6).reverse();
-
   return (
     <>
-      {latestSix.map((cake, i) => {
+      {items.map((cake, i) => {
         const slot = SLOTS[i];
         if (!slot) return null;
 
@@ -59,7 +56,7 @@ export default function TableCakes({
         };
 
         const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-          onSelect?.(cake, i, e); // 선택적 후킹
+          onSelect?.(cake, i, e);
           navigate(`/message?i=${i}`, { state: { cakeId: cake.id } });
         };
 
@@ -67,10 +64,10 @@ export default function TableCakes({
           <button
             key={cake.id}
             type="button"
-            aria-label={cake.alt ?? `cake-${cake.id}`}
-            title={cake.alt ?? `cake-${cake.id}`}
             onClick={handleClick}
             style={style}
+            aria-label={cake.alt ?? `cake-${cake.id}`}
+            title={cake.alt ?? `cake-${cake.id}`}
             className={[
               'absolute block bg-transparent p-0 m-0 border-0 outline-none',
               'cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2',
