@@ -26,7 +26,7 @@ const cakes: CakeItem[] = [
   { id: 6, src: food6, alt: '디저트6' },
 ];
 
-const PAGE_SIZE = 6; 
+const PAGE_SIZE = 6;
 
 const MainHome = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -48,24 +48,20 @@ const MainHome = () => {
         {/* <img src={table} alt="table" className="w-[100vw] object-cover relative z-10" /> */}
 
         <img
-          src={lBalloon}
-          alt="lb"
-          className="absolute transform -translate-y-3/4 left-[0px]  w-[clamp(160px,30vw,324px)] z-30" 
+          src={lBalloon} alt=""
+          className="absolute transform -translate-y-[75%] left-[0px]  w-[clamp(160px,30vw,324px)] z-30"
         />
         <img
-          src={rBalloon}
-          alt="rb"
-          className="absolute transform -translate-y-3/4  right-[0px] w-[clamp(180px,34vw,360px)] z-30" 
+          src={rBalloon} alt=""
+          className="absolute transform -translate-y-[75%] right-[0px] w-[clamp(180px,34vw,360px)] z-30"
         />
         <img
-          src={host}
-          alt=""
-          className="absolute transform -translate-y-5/6 left-1/2 -translate-x-1/2 w-[clamp(220px,46vw,450px)] z-0"
+          src={host} alt=""
+          className="absolute transform -translate-y-[83%] left-[50%] -translate-x-[50%] w-[clamp(220px,46vw,450px)] z-0"
         />
         <img
-          src={ mainCake}
-          alt=""
-          className="absolute transform -translate-y-3/5 left-1/2 -translate-x-1/2 w-[clamp(220px,46vw,450px)] z-11 drop-shadow-[0_8px_8px_rgba(0,0,0,0.15)]"
+          src={mainCake} alt=""
+          className="absolute transform -translate-y-[60%] left-[50%] -translate-x-[50%] w-[clamp(220px,46vw,450px)] z-20 drop-shadow-[0_8px_8px_rgba(0,0,0,0.15)]"
         />
 
         <div className="relative w-full h-full">
