@@ -11,7 +11,7 @@ export type Message = {
   imgAlt?: string;
 };
 
-export default function BirthdayMessagePage({
+export default function MessagePage({
   messages,
   initialIndex = 0,
   onBack,
@@ -57,65 +57,66 @@ export default function BirthdayMessagePage({
         title={<span className="text-[#FF8B8B]">생일 메세지</span>}
       />
 
-      <main className="w-full mx-[60px] max-w-md px-4 pt-2 pb-10">
+      <main className="w-full flex justify-center p-4">
         {!hasItems ? (
           <div className="text-center text-[#9CA3AF] py-16">표시할 메세지가 없어요.</div>
         ) : (
-          <section className="relative">
-            {/* 카드: 이미지가 흐름 안에서 자리 차지 */}
-            <div className="relative rounded-2xl border border-[#EFD9C6] bg-white shadow-[0_4px_10px_rgba(0,0,0,0.06)] px-5 py-6">
-              {/* 제목 */}
-              <h2 className="text-center text-[#FF8B8B] text-[40px] font-extrabold font-['Pretendard'] mb-3">
-                {msg?.title ?? ''}
-              </h2>
-
-              {/* 이미지 + 좌우 네비 (카드 내부 중앙) */}
-              <div
-                className="
-    relative mx-auto mb-4
-    w-[clamp(140px,80%,240px)]  /* ✅ 반응형 너비 */
-    aspect-[4/3]               /* ✅ 높이 자동(4:3 비율) */
-    flex items-center justify-center
-  "
-              >
-                {/* <button
+          <section className="relative w-screen">
+            {/* 카드 */}
+            <div className="
+              relative mx-auto mt-[200px]
+              rounded-[5px] bg-white 
+              shadow-[0px_0px_4px_0px_rgba(0,0,0,0.25)] 
+              w-[80%] aspect-[329/406] 
+              p-10">
+              {/* 이미지 + 버튼 + 제목/본문 (카드 위쪽에 살짝 겹치도록) */}
+              <div className="absolute top-[-1.5rem] left-0 w-full flex flex-col items-center">
+                {/* ⬅️ 버튼 · 이미지 · 버튼 : 가로 정렬 + 여백 */}
+                <div className="w-[70%] flex items-center justify-between gap-6">
+                  {/* 이전 버튼 */}
+                  <button
                     type="button"
                     aria-label="이전 메세지"
                     onClick={goPrev}
                     disabled={!canPrev}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-black/5 disabled:opacity-30 disabled:hover:bg-transparent transition"
+                    className="grid place-items-center w-8 h-8 rounded-full border border-[#E5E7EB] bg-white
+                  hover:bg-black/5 disabled:opacity-30 disabled:hover:bg-white transition"
                   >
-                    <ChevronLeft />
+                    <ChevronLeft className="text-[#777]" />
                   </button>
+
+                  {/* 이미지: 크기 고정된 원형 컨테이너 */}
+                  <div className="rounded-full bg-[#FFEDEB] grid place-items-center shadow-[0_2px_4px_rgba(0,0,0,0.08)]">
+                    <img
+                      src={msg?.imgSrc || food6}
+                      alt={msg?.imgAlt ?? msg?.title ?? '기본 디저트'}
+                      className="w-[120%] h-[120%] object-contain select-none pointer-events-none"
+                      draggable={false}
+                    />
+                  </div>
+
+                  {/* 다음 버튼 */}
                   <button
                     type="button"
                     aria-label="다음 메세지"
                     onClick={goNext}
                     disabled={!canNext}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-black/5 disabled:opacity-30 disabled:hover:bg-transparent transition"
+                    className="grid place-items-center w-8 h-8 rounded-full border border-[#E5E7EB] bg-white
+                 hover:bg-black/5 disabled:opacity-30 disabled:hover:bg-white transition"
                   >
-                    <ChevronRight />
-                  </button> */}
+                    <ChevronRight className="text-[#777]" />
+                  </button>
+                </div>
 
-                {/* 이미지 (없으면 기본 이미지) */}
-                {msg?.imgSrc ? (
-                  <img
-                    src={msg.imgSrc}
-                    alt={msg.imgAlt ?? msg.title}
-                    className="block w-full h-full object-contain select-none pointer-events-none"
-                    draggable={false}
-                  />
-                ) : (
-                  <DefaultDessertIcon />
-                )}
-
-
+                {/* 닉네임/본문: 이미지 아래로 정렬 */}
+                <h2 className="mt-2 text-center text-[40px] font-extrabold text-[#FF8B8B]">
+                  {msg?.title ?? ''}
+                </h2>
+                <p className="mt-1 text-[#60343F] text-[30px] font-medium leading-normal text-center">
+                  {msg?.body ?? ''}
+                </p>
               </div>
 
-              {/* 본문 */}
-              <p className="text-[28px] leading-6 text-[#555] whitespace-pre-line">
-                {msg?.body ?? ''}
-              </p>
             </div>
 
             {/* 인디케이터 */}
@@ -136,8 +137,9 @@ export default function BirthdayMessagePage({
         )}
       </main>
 
+      {/* 하단 버튼 고정 */}
       <footer className="fixed bottom-0 left-0 right-0 flex justify-center pb-[env(safe-area-inset-bottom)]">
-        <div className="w-full max-w-md px-4 py-4 bg-gradient-to-t from-white to-white/70 backdrop-blur">
+        <div className="w-full max-w-[420px] px-4 py-4 bg-gradient-to-t from-white to-white/70 backdrop-blur">
           <button
             type="button"
             onClick={onHome}
@@ -151,7 +153,7 @@ export default function BirthdayMessagePage({
   );
 }
 
-/* ----------------- Icons & Fallback ----------------- */
+/* ----------------- Icons ----------------- */
 function ChevronLeft(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" {...props}>
@@ -164,15 +166,5 @@ function ChevronRight(props: React.SVGProps<SVGSVGElement>) {
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" {...props}>
       <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
-  );
-}
-function DefaultDessertIcon() {
-  return (
-    <img
-      src={food6}
-      alt="기본 디저트"
-      className="block w-full h-full object-contain select-none pointer-events-none"
-      draggable={false}
-    />
   );
 }

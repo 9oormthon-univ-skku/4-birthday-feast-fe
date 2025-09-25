@@ -10,7 +10,7 @@ import MyFeastQRPage from './pages/subpages/MyFeastQRPage';
 import HistoryPage from './pages/subpages/HistoryPage';
 import VisibilityPage from './pages/subpages/VisibilityPage';
 import AccountSettingsPage from './pages/subpages/AccountSettingsPage';
-import BirthdayMessagePage from './pages/subpages/BirthdayMessagePage';
+import MessagePage from './pages/subpages/MessagePage';
 import Loading from './pages/LoadingPage';
 import Login from './pages/LoginPage';
 
@@ -56,7 +56,7 @@ function BirthdayMessageRoute() {
   }
 
   return (
-    <BirthdayMessagePage
+    <MessagePage
       messages={messages}
       initialIndex={safeInitialIndex}
       onBack={() => navigate(-1)}
