@@ -65,7 +65,7 @@ export default function BirthdayMessagePage({
             {/* 카드: 이미지가 흐름 안에서 자리 차지 */}
             <div className="relative rounded-2xl border border-[#EFD9C6] bg-white shadow-[0_4px_10px_rgba(0,0,0,0.06)] px-5 py-6">
               {/* 제목 */}
-              <h2 className="text-center text-[#FF8B8B] font-semibold text-[50px] mb-3">
+              <h2 className="text-center text-[#FF8B8B] text-[40px] font-extrabold font-['Pretendard'] mb-3">
                 {msg?.title ?? ''}
               </h2>
 

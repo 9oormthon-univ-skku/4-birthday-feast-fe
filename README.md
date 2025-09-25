@@ -1,1 +1,1 @@
-# birthday-FE
+# 생일한상 FE
