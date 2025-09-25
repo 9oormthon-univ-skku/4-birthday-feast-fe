@@ -1,13 +1,34 @@
 // src/features/message/useBirthdayCards.ts
 import { useEffect, useMemo, useState } from "react";
-import mock from "./messageCakes";
-import type { BirthdayCard, BirthdayUser } from "../../types/birthday";
+import raw from "./messageCakes.json"; // ← JSON 직접 임포트
+import type { BirthdayCard, BirthdayUser } from "@/types/birthday";
 
-// 나중에 실제 API로 바꿀 때 여기만 교체하면 됨.
-async function getCardsMock(): Promise<BirthdayCard[]> {
-  const users = mock as BirthdayUser[]; // .d.ts 로 타입 보강
-  const user = users[0];
-  return user?.birthdayCards ?? [];
+// 1) assets 폴더의 food-* 이미지 전부 수집 (정적 URL 문자열로 로드)
+const assetModules = import.meta.glob("../../assets/images/food-*.{svg,png,jpg,jpeg}", {
+  eager: true,
+});
+
+// 2) 파일명 목록 → ["food-1", "food-2", ...]
+const FOOD_KEYS = Object.keys(assetModules)
+  .map((p) => p.split("/").pop()!)                // "food-1.svg"
+  .map((f) => f.replace(/\.(svg|png|jpe?g)$/, "")); // "food-1"
+
+// 3) "food-1" 같은 키를 실제 URL로 변환
+function resolveAssetUrl(key: string): string | undefined {
+  const candidates = [
+    `../../assets/images/${key}.svg`,
+    `../../assets/images/${key}.png`,
+    `../../assets/images/${key}.jpg`,
+    `../../assets/images/${key}.jpeg`,
+  ];
+  for (const p of candidates) {
+    const mod: any = (assetModules as any)[p];
+    if (mod) {
+      // Vite에서 에셋 임포트의 default가 URL 문자열
+      return mod.default ?? mod;
+    }
+  }
+  return undefined;
 }
 
 export function useBirthdayCards() {
@@ -15,38 +36,37 @@ export function useBirthdayCards() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // 현재는 동기 import지만, 훅 인터페이스는 비동기처럼 유지
   useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        setIsLoading(true);
-        const cards = await getCardsMock();
-        if (mounted) setData(cards);
-      } catch (e) {
-        if (mounted) setError(e as Error);
-      } finally {
-        if (mounted) setIsLoading(false);
-      }
-    })();
-    return () => { mounted = false; };
-  }, []);
-
-  // 필요 시 파생 데이터 예: 총 개수
-  const count = useMemo(() => data.length, [data]);
-
-  // 나중에 API 전환 시에도 유지 가능하도록 refetch 제공
-  const refetch = async () => {
-    setIsLoading(true);
     try {
-      const cards = await getCardsMock();
+      setIsLoading(true);
+
+      const users = raw as BirthdayUser[];
+      const user = users[0];
+
+      const cards = user.birthdayCards.map((c, idx) => {
+        // (선택) JSON에 imageKey가 있다면 우선 사용, 없으면 인덱스로 순환 매핑
+        // 예: { ..., "imageKey": "food-3" }
+        const explicitKey = (c as any).imageKey as string | undefined;
+        const fallbackKey = FOOD_KEYS[idx % Math.max(FOOD_KEYS.length, 1)] || "food-1";
+        const keyToUse = explicitKey ?? fallbackKey;
+
+        // 로컬 에셋 URL(없으면 기존 imageUrl 유지)
+        const localUrl = resolveAssetUrl(keyToUse) ?? c.imageUrl;
+
+        return { ...c, imageUrl: localUrl };
+      });
+
       setData(cards);
+      setError(null);
     } catch (e) {
       setError(e as Error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  const count = useMemo(() => data.length, [data]);
+  const refetch = () => {}; // 정적 JSON이라 noop
 
   return { data, isLoading, error, count, refetch };
 }

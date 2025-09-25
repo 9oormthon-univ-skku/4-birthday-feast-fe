@@ -1,4 +1,5 @@
 // App.tsx
+import { useMemo } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import MainHome from './pages/MainHome';
 import ThemePage from './pages/subpages/ThemePage';
@@ -13,35 +14,51 @@ import BirthdayMessagePage from './pages/subpages/BirthdayMessagePage';
 import Loading from './pages/LoadingPage';
 import Login from './pages/LoginPage';
 
-// 라우트용 래퍼: 쿼리 파싱 + 데모 데이터 주입
+// 더미데이터 훅(React Query 미사용 버전)
+import { useBirthdayCards } from '@/features/message/useBirthdayCards';
+
+// 라우트용 래퍼: 쿼리 파싱 + 더미 데이터 매핑
 function BirthdayMessageRoute() {
   const navigate = useNavigate();
   const location = useLocation();
   const qs = new URLSearchParams(location.search);
-  const initialIndex = Math.max(0, Number(qs.get('i') ?? 0));
 
-  // TODO: 실제 데이터로 교체하세요
-  const messages = [
-    {
-      id: 1,
-      title: '거북목님',
-      body:
-        '대통령이 궐위된 때 또는 대통령 당선자가 사망하거나 판결 기타의 사유로 그 자격을 상실할 때에는 60일 이내에 후임자를 선거한다...',
-      // imgSrc: '/assets/dessert-1.png',
-    },
-    {
-      id: 2,
-      title: '행복한 하루',
-      body:
-        '제1항의 해임건의는 국회의원 3분의 1 이상의 발의에 의하여 국회의원 과반수의 찬성이 있어야 한다...',
-      // imgSrc: '/assets/dessert-2.png',
-    },
-  ];
+  const indexFromQuery = Number(qs.get('i') ?? 0);
+  const initialIndexRaw = Number.isFinite(indexFromQuery) ? indexFromQuery : 0;
+
+  // 1) 더미 데이터 로딩
+  const { data: cards = [], isLoading, error } = useBirthdayCards();
+
+  // 2) BirthdayMessagePage가 기대하는 형태로 매핑
+  //    id: 카드ID, title: nickname, body: message, imgSrc: imageUrl
+  const messages = useMemo(
+    () =>
+      cards.map((c) => ({
+        id: c.birthdayCardId,
+        title: c.nickname,
+        body: c.message,
+        imgSrc: c.imageUrl,
+      })),
+    [cards]
+  );
+
+  // 데이터 길이에 맞춰 안전하게 보정
+  const safeInitialIndex = Math.max(0, Math.min(initialIndexRaw, Math.max(messages.length - 1, 0)));
+
+  if (isLoading) return <Loading />;
+  if (error) {
+    return (
+      <div className="p-6 text-red-600">
+        메시지를 불러오지 못했어요.
+        <button className="ml-3 underline" onClick={() => navigate(-1)}>뒤로</button>
+      </div>
+    );
+  }
 
   return (
     <BirthdayMessagePage
       messages={messages}
-      initialIndex={initialIndex}
+      initialIndex={safeInitialIndex}
       onBack={() => navigate(-1)}
       onHome={() => navigate('/')}
     />
