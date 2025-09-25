@@ -2,11 +2,7 @@
 import React, { MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export type CakeItem = {
-  id: string | number;
-  src: string;
-  alt?: string;
-};
+import type { CakeItem } from "@/types/birthday";
 
 type Slot = {
   key: 'center' | 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'middleLeft';
@@ -18,10 +14,10 @@ type Slot = {
 
 const SLOTS: Slot[] = [
   { key: 'center', left: '54%', bottom: '44%', width: '33%', anchorCenter: true },
-  { key: 'topLeft', left: '8%', bottom: '60%', width: '30%' },
+  { key: 'topLeft', left: '8%', bottom: '58%', width: '30%' },
   { key: 'topRight', left: '69%', bottom: '59%', width: '30%' },
   { key: 'middleLeft', left: '5%', bottom: '37%', width: '32%' },
-  { key: 'bottomLeft', left: '19%', bottom: '16%', width: '32%' },
+  { key: 'bottomLeft', left: '22%', bottom: '16%', width: '32%' },
   { key: 'bottomRight', left: '62%', bottom: '20%', width: '33%' },
 ];
 
