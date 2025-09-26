@@ -5,7 +5,7 @@ import MainHome from './pages/MainHome';
 import ThemePage from './pages/subpages/ThemePage';
 import TeamAboutPage from './pages/subpages/TeamAboutPage';
 import ContactPage from './pages/subpages/ContactPage';
-import QuizPage from './pages/subpages/QuizPage';
+import QuizPage from './pages/QuizPage';
 import MyFeastQRPage from './pages/subpages/MyFeastQRPage';
 import HistoryPage from './pages/subpages/HistoryPage';
 import VisibilityPage from './pages/subpages/VisibilityPage';

@@ -1,6 +1,6 @@
 // src/layouts/AppLayout.tsx
 import React from 'react';
-import Header, { HeaderProps } from '../components/Header';
+import Header, { HeaderProps } from '../ui/Header';
 
 type AppLayoutProps = HeaderProps & {
   children: React.ReactNode;

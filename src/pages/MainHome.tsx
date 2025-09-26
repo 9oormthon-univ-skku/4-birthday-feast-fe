@@ -1,6 +1,6 @@
 // src/pages/MainHome.tsx
 import React, { useMemo, useState } from 'react';
-import Header from '../components/Header'; // 프로젝트 경로에 맞게 유지하세요
+import Header from '../ui/Header'; // 프로젝트 경로에 맞게 유지하세요
 import table from '../assets/images/table.svg';
 import lBalloon from '../assets/images/left-balloon.svg';
 import rBalloon from '../assets/images/right-balloon.svg';
@@ -21,7 +21,7 @@ import food6 from '../assets/images/food-6.svg';
 import TableCakes from '../features/message/TableCakes';
 // 더미 메시지에서 카드 목록을 가져오는 훅(React Query 미사용 버전)
 import { useBirthdayCards } from '@/features/message/useBirthdayCards';
-import BottomSheet from '@/components/BottomSheet';
+import BottomSheet from '@/ui/BottomSheet';
 
 type CakeItem = { id: number | string; src: string; alt?: string };
 
