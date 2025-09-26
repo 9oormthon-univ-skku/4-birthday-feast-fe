@@ -55,7 +55,6 @@ export default function MessagePage({
       showMenu={false}
       showBrush={false}
       compact={false}
-      maxWidthClass="max-w-md"
       footerButtonLabel="처음으로"
       onFooterButtonClick={onHome}
     >

@@ -47,18 +47,14 @@ export default function Header({
   const handleBack = () => (onBack ? onBack() : navigate(-1));
   const handleBrush = () => (onBrushClick ? onBrushClick() : navigate(themePath));
 
-  const wrapPad = compact ? 'px-4 py-2' : 'px-4 py-3';
-  const titleCls =
-    compact
-      ? 'text-[20px] leading-[24px] font-bold tracking-tight'
-      : 'text-[48px] my-[36px] leading-none font-bold tracking-tight';
+  const titleCls = 'text-[48px] leading-none font-bold tracking-tight';
 
   return (
     <header
       className="sticky top-0 z-50 w-full bg-[#FFFFFF] shadow-[0px_8px_8px_0px_rgba(0,0,0,0.07)] backdrop-blur"
       style={{ fontFamily: 'KoreanSWGIG1, Pretendard, sans-serif' }}
     >
-      <div className={`mx-[60px] max-w-md flex items-center justify-between ${wrapPad}`}>
+      <div className={`flex items-center justify-between p-4`}>
         {/* Left: Back + Title */}
         <div className="flex items-center gap-3">
           {showBack && (
@@ -95,7 +91,7 @@ export default function Header({
               onClick={handleBrush}
               className="p-2 rounded-full bg-transparent border border-transparent flex items-center justify-center hover:shadow-md active:scale-95 transition"
             >
-              <img src={brushIcon} alt="테마 변경" className={compact ? 'w-[22px] h-[32px]' : 'w-[34px] h-[52px]'} />
+              <img src={brushIcon} alt="테마 변경" className={'w-[34px] h-[52px]'} />
             </button>
           )}
 
@@ -107,7 +103,7 @@ export default function Header({
                 onClick={() => setDrawer(true)} 
                 className="p-2 rounded-full bg-transparent border border-transparent flex items-center justify-center hover:shadow-md active:scale-95 transition"
               >
-                <img src={menuIcon} alt="메뉴" className={compact ? 'w-[20px] h-[14px]' : 'w-[34px] h-[23px]'} />
+                <img src={menuIcon} alt="메뉴" className={'w-[34px] h-[23px]'} />
               </button>
 
               <DrawerMenu
