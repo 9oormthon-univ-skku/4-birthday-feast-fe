@@ -1,13 +1,13 @@
 // src/pages/MainHome.tsx
 import React, { useEffect, useMemo, useState } from 'react';
-import Header from '../ui/Header'; // 프로젝트 경로에 맞게 유지하세요
+import Header from '../ui/Header';
 import table from '../assets/images/table.svg';
 import lBalloon from '../assets/images/left-balloon.svg';
 import rBalloon from '../assets/images/right-balloon.svg';
 import host from '../assets/images/host.svg';
 import mainCake from '../assets/images/main-cake.svg';
 
-// 폴백 이미지 (데이터 로딩 전/부족 시 사용)
+// 폴백 이미지
 import food1 from '../assets/images/food-1.svg';
 import food2 from '../assets/images/food-2.svg';
 import food3 from '../assets/images/food-3.svg';
@@ -36,19 +36,30 @@ const MainHome: React.FC = () => {
   // 1) 더미 메시지(= messageCakes.js)에서 카드 데이터 가져오기
   const { data: cards = [] } = useBirthdayCards();
 
-  // 2) 카드 → CakeItem으로 매핑 (앞에서 6개만 사용)
-  //    데이터 없거나 6개 미만이면 food1~6으로 폴백 채움
+  // (변경된 부분만) src/pages/MainHome.tsx
+  // 2) 카드 → CakeItem으로 매핑
+  //    데이터가 6개 미만이면 폴백으로 6개 채우고,
+  //    6개 이상이면 전부 전달해 캐러셀이 동작하도록 함
   const cakes: CakeItem[] = useMemo(() => {
     const fallback = [food1, food2, food3, food4, food5, food6];
-    const picked = cards.slice(0, 6);
+    const mapped = cards.map((c: any, idx: number) => ({
+      id: c.birthdayCardId ?? `card-${idx}`,
+      src: c.imageUrl,
+      alt: c.nickname,
+    }));
 
-    return Array.from({ length: 6 }).map((_, i) => {
-      const c = picked[i];
-      return c
-        ? { id: c.birthdayCardId, src: c.imageUrl, alt: c.nickname }
-        : { id: `fallback-${i + 1}`, src: fallback[i], alt: `디저트${i + 1}` };
-    });
+    if (mapped.length >= 6) return mapped;
+
+    // 6개 미만이면 폴백으로 채움
+    const need = Math.max(0, 6 - mapped.length);
+    const fills = Array.from({ length: need }).map((_, i) => ({
+      id: `fallback-${i + 1}`,
+      src: fallback[i],
+      alt: `디저트${i + 1}`,
+    }));
+    return [...mapped, ...fills];
   }, [cards]);
+
 
   return (
     <div className="relative flex h-screen w-screen max-w-[520px] flex-col bg-[#FFF4DF]">

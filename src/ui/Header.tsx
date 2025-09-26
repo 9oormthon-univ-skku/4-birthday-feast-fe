@@ -5,8 +5,6 @@ import menuIcon from '@/assets/images/menu.svg';
 import brushIcon from '@/assets/images/brush.svg';
 import backArrow from '@/assets/images/nav-arrow-left.svg';
 import DrawerMenu from './DrawerMenu';
-// Tailwind + Drawer 버전으로 교체
-// import DrawerMenu from '@/components/DrawerMenu.tailwind';
 
 export type HeaderProps = {
   /** 문자열뿐 아니라 JSX도 허용 (색상 하이라이트 등) */
