@@ -35,44 +35,44 @@ export default function AccountSettingsPage() {
     >
 
       {/* 프로필 섹션 */}
-      <section className="pb-4 border-b border-[#EFD9C6]">
+      <section className="pt-9 pb-5 px-1 border-b border-[#D9D9D9]">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-[16px] font-bold text-[#FF8B8B]">사용자님</div>
-            <div className="text-[12px] text-[#8A8A8A] mt-0.5">카카오로 로그인 중</div>
+            <div className="text-xl font-extrabold text-[#FF8B8B]">사용자님</div>
+            <div className="text-base text-[#A0A0A0] mt-0.5 font-medium">카카오로 로그인 중</div>
           </div>
-          <div className="w-[48px] h-[48px] rounded-full bg-[#EAEAEA]" />
+          <div className="w-16 h-16 rounded-full bg-[#D9D9D9]" />
         </div>
       </section>
 
       {/* 공개 설정 + 기타 항목 */}
-      <section className="pt-4 space-y-4">
+      <section className="pt-9 px-3 space-y-6">
         {/* 공개 스위치 */}
         <div className="flex items-center justify-between">
-          <span className="text-[14px] text-[#555]">내게 온 메시지 모두에게 공개</span>
+          <span className="text-base text-[#A0A0A0] font-semibold">내게 온 메시지 모두에게 공개</span>
 
-          {/* iOS 느낌 토글 */}
+          {/* 토글 */}
           <button
             type="button"
             aria-pressed={publicAll}
             onClick={() => setPublicAll((v) => !v)}
             className={[
-              'relative inline-flex items-center h-7 w-[52px] rounded-full transition-colors',
+              'relative inline-flex items-center h-6 w-12 rounded-full transition-colors',
               publicAll ? 'bg-[#FF8B8B]' : 'bg-[#E5E5E5]',
             ].join(' ')}
           >
             <span
               className={[
                 'absolute text-[10px] font-bold text-white',
-                publicAll ? 'left-2' : 'left-[26px]',
+                publicAll ? 'left-2' : 'left-6',
               ].join(' ')}
             >
               {publicAll ? 'ON' : 'OFF'}
             </span>
             <span
               className={[
-                'inline-block h-6 w-6 rounded-full bg-white shadow transform transition',
-                publicAll ? 'translate-x-[26px]' : 'translate-x-[2px]',
+                'inline-block h-4 w-4 rounded-full bg-white shadow transform transition',
+                publicAll ? 'translate-x-[28px]' : 'translate-x-[4px]',
               ].join(' ')}
             />
           </button>
@@ -82,7 +82,7 @@ export default function AccountSettingsPage() {
         <button
           type="button"
           onClick={handleLogout}
-          className="w-full text-left py-2 text-[14px] text-[#555] hover:text-[#FF8B8B] transition"
+          className="w-full text-left text-base text-[#A0A0A0] font-semibold hover:text-[#FF8B8B] transition"
         >
           로그아웃
         </button>
@@ -91,7 +91,7 @@ export default function AccountSettingsPage() {
         <button
           type="button"
           onClick={handleWithdraw}
-          className="w-full text-left py-2 text-[14px] text-[#555] hover:text-[#FF8B8B] transition"
+          className="w-full text-left text-base text-[#A0A0A0] font-semibold hover:text-[#FF8B8B] transition"
         >
           회원탈퇴
         </button>

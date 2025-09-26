@@ -50,17 +50,16 @@ export default function AppLayout({
 
       {/* 본문 */}
       <main className="flex-1 w-full flex justify-center overflow-x-hidden">
-        <div className={`w-full max-w-[520px] px-4 py-4`}>
+        <div className="w-full max-w-[520px] px-8 py-4">
           {children}
           {/* 고정 푸터가 있을 때만, 겹침 방지 여백 확보 */}
           {hasFooter && <div className="h-24" aria-hidden />}
         </div>
       </main>
-
       {/* 고정 푸터 */}
       {hasFooter && (
-        <footer className="fixed bottom-0 left-0 right-0 flex justify-center">
-          <div className={`w-full px-4 py-4 bg-gradient-to-t from-white to-white/70 backdrop-blur pb-[env(safe-area-inset-bottom)]`}>
+        <footer className="z-10 fixed bottom-0 left-0 right-0 flex justify-center bg-gradient-to-t from-white via-white/90 to-transparent back-drop-blur-[2px]">
+          <div className={`w-full max-w-[520px] px-8 py-4 pt-15 pb-[env(safe-area-inset-bottom)]`}>
             {footer ? (
               footer
             ) : (
@@ -68,7 +67,7 @@ export default function AppLayout({
                 type="button"
                 disabled={footerButtonDisabled}
                 onClick={onFooterButtonClick}
-                className="w-full h-12 rounded-xl bg-[#FF8B8B] hover:bg-[#ff9c9c] active:bg-[#ff7a7a] disabled:opacity-50 text-white font-semibold transition shadow-sm"
+                className="w-full h-12 mb-6 rounded-[5px] bg-[#FF8B8B] disabled:opacity-50 text-white font-semibold transition shadow-sm"
               >
                 {footerButtonLabel}
               </button>
