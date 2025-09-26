@@ -40,7 +40,7 @@ export default function BottomSheet({
 
   return (
     <>
-      닫혀 있고 + 애니메이션 중 아님 → 외부 헤드 표시
+      {/* 닫혀 있고 + 애니메이션 중 아님 → 외부 헤드 표시 */}
       {!open && !isAnimating && (
         <div
           className="fixed inset-x-0 bottom-0 z-[1300] pointer-events-none"
