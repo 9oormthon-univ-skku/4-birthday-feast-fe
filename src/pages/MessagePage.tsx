@@ -66,79 +66,42 @@ export default function MessagePage({
               relative mx-auto mt-20
               rounded-[5px] bg-white
               shadow-[0px_0px_4px_0px_rgba(0,0,0,0.25)]
-              w-full aspect-[329/406]
-              p-10"
+              w-full aspect-[329/406]"
           >
-            <div className="rounded-full bg-[#FFF4DF] grid place-items-center shadow-[0_2px_4px_rgba(0,0,0,0.08)]">
+            {/* 이미지: 카드 상단 중앙 고정 */}
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-[96px] h-[96px] rounded-[90%] bg-[#FFF4DF] grid place-items-center shadow-[0_2px_4px_rgba(0,0,0,0.08)]">
               <img
                 src={msg?.imgSrc || food6}
                 alt={msg?.imgAlt ?? msg?.title ?? '기본 디저트'}
-                className="w-[120%] h-[120%] object-contain select-none pointer-events-none"
+                className=" -mt-2 object-contain select-none pointer-events-none"
                 draggable={false}
               />
             </div>
-            <div className="absolute top-7 left-0 w-full flex flex-col items-center">
+
+            <div className="absolute left-0 bottom-6 top-7 w-full flex flex-col items-center">
               <div className="w-[80%] flex items-center justify-between gap-6">
-                <button
-                  type="button"
-                  aria-label="이전 메세지"
-                  onClick={goPrev}
-                  disabled={!canPrev}
-                >
+                <button type="button" aria-label="이전 메세지" onClick={goPrev} disabled={!canPrev}>
                   {goPrevIcon}
                 </button>
-
-                <button
-                  type="button"
-                  aria-label="다음 메세지"
-                  onClick={goNext}
-                  disabled={!canNext}
-                >
+                <button type="button" aria-label="다음 메세지" onClick={goNext} disabled={!canNext}>
                   {goNextIcon}
                 </button>
               </div>
 
-              <h2 className="mt-2 text-center text-xl font-extrabold text-[#FF8B8B]">
+              <h2 className="mt-4 text-center text-xl font-extrabold text-[#FF8B8B]">
                 {msg?.title ?? ''}
               </h2>
-              <p className="mt-1 mx-7 text-[#60343F] text-base font-medium leading-normal text-left break-keep ">
-                {msg?.body ?? ''}
-              </p>
+              <div className="mt-3 w-[80%] overflow-y-auto overscroll-contain">
+                <p className="text-[#60343F] text-base font-medium leading-normal text-left break-keep">
+                  {msg?.body ?? ''}
+                </p>
+              </div>
             </div>
           </div>
-
-          {messages.length > 1 && (
-            <div className="mt-3 flex justify-center gap-1.5">
-              {messages.map((m, i) => (
-                <span
-                  key={m.id}
-                  className={
-                    'inline-block h-1.5 rounded-full transition-all ' +
-                    (i === index ? 'w-5 bg-[#FF8B8B]' : 'w-2.5 bg-[#F3C8C8]')
-                  }
-                />
-              ))}
-            </div>
-          )}
         </section>
+
       )}
     </AppLayout>
-  );
-}
-
-/* ----------------- Icons ----------------- */
-function ChevronLeft(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" {...props}>
-      <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-function ChevronRight(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" {...props}>
-      <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
   );
 }
 
