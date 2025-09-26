@@ -1,6 +1,6 @@
 // src/pages/MainHome.tsx
 import React, { useMemo, useState } from 'react';
-import Header from '../components/ui/Header';
+import Header from '../layouts/Header';
 import table from '../assets/images/table.svg';
 import lBalloon from '../assets/images/left-balloon.svg';
 import rBalloon from '../assets/images/right-balloon.svg';
@@ -17,7 +17,7 @@ import food6 from '../assets/images/food-6.svg';
 import BottomSheet from '../components/BottomSheet';
 import TableCakes from '../features/message/TableCakes';
 
-// ✅ 더미 메시지에서 카드 목록을 가져오는 훅(React Query 미사용 버전)
+// 더미 메시지에서 카드 목록을 가져오는 훅(React Query 미사용 버전)
 import { useBirthdayCards } from '@/features/message/useBirthdayCards';
 
 type CakeItem = { id: number | string; src: string; alt?: string };
@@ -43,31 +43,31 @@ const MainHome = () => {
   }, [cards]);
 
   return (
-    <div className="w-screen h-screen bg-[#FFF4DF] flex flex-col relative">
+    <div className="w-screen h-screen max-w-[520px] bg-[#FFF4DF] flex flex-col relative">
       <Header onDrawerOpenChange={setDrawerOpen} />
 
       {/* 메인 이미지 영역 */}
       <div className="w-full mt-auto relative">
         <img
           src={lBalloon} alt=""
-          className="absolute transform -translate-y-[75%] left-[0px]  w-[clamp(160px,30vw,324px)] z-30"
+          className="absolute transform -translate-y-[75%] left-[0px]  z-30"
         />
         <img
           src={rBalloon} alt=""
-          className="absolute transform -translate-y-[75%] right-[0px] w-[clamp(180px,34vw,360px)] z-30"
+          className="absolute transform -translate-y-[75%] right-[0px] z-30"
         />
         <img
           src={host} alt=""
-          className="absolute transform -translate-y-[83%] left-[50%] -translate-x-[50%] w-[clamp(220px,46vw,450px)] z-0"
+          className="absolute transform -translate-y-[83%] left-[50%] -translate-x-[50%] z-0"
         />
         <img
           src={mainCake} alt=""
-          className="absolute transform -translate-y-[60%] left-[50%] -translate-x-[50%] w-[clamp(220px,46vw,450px)] z-20 drop-shadow-[0_8px_8px_rgba(0,0,0,0.15)]"
+          className="absolute transform -translate-y-[60%] left-[50%] -translate-x-[50%] z-20 drop-shadow-[0_8px_8px_rgba(0,0,0,0.15)]"
         />
 
         <div className="relative w-full h-full">
           <img src={table} alt="table" className="w-full h-auto z-10" />
-          {/* ✅ 케이크들: 더미 메시지의 이미지로 표시(부족분은 폴백) */}
+          {/* 케이크들: 더미 메시지의 이미지로 표시(부족분은 폴백) */}
           <TableCakes items={cakes} />
         </div>
       </div>

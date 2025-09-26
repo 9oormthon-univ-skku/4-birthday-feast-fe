@@ -1,6 +1,6 @@
 // src/layouts/AppLayout.tsx
 import React from 'react';
-import Header, { HeaderProps } from '../components/ui/Header';
+import Header, { HeaderProps } from './Header';
 
 type AppLayoutProps = HeaderProps & {
   children: React.ReactNode;
@@ -52,7 +52,7 @@ export default function AppLayout({
 
       {/* 본문 */}
       <main className="flex-1 w-full flex justify-center overflow-x-hidden">
-        <div className={`w-full px-4 py-4`}>
+        <div className={`w-full max-w-[520px] px-4 py-4`}>
           {children}
           {/* 고정 푸터가 있을 때만, 겹침 방지 여백 확보 */}
           {hasFooter && <div className="h-24" aria-hidden />}

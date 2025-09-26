@@ -1,10 +1,10 @@
 // src/components/ui/Header.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import menuIcon from '../../assets/images/menu.svg';
-import brushIcon from '../../assets/images/brush.svg';
-import backArrow from '../../assets/images/nav-arrow-left.svg';
-import DrawerMenu from '../DrawerMenu';
+import menuIcon from '@/assets/images/menu.svg';
+import brushIcon from '@/assets/images/brush.svg';
+import backArrow from '@/assets/images/nav-arrow-left.svg';
+import DrawerMenu from '@/components/DrawerMenu';
 
 export type HeaderProps = {
   /** 문자열뿐 아니라 JSX도 허용 (색상 하이라이트 등) */
@@ -21,7 +21,7 @@ export type HeaderProps = {
   themePath?: string;
   /** 우측에 추가 버튼/아이콘 넣고 싶을 때(선택) */
   rightExtra?: React.ReactNode;
-  onDrawerOpenChange?: (open: boolean) => void; 
+  onDrawerOpenChange?: (open: boolean) => void;
 };
 
 export default function Header({
@@ -47,7 +47,7 @@ export default function Header({
   const handleBack = () => (onBack ? onBack() : navigate(-1));
   const handleBrush = () => (onBrushClick ? onBrushClick() : navigate(themePath));
 
-  const titleCls = 'text-[48px] leading-none font-bold tracking-tight';
+  const titleCls = 'text-[24px] leading-none font-bold tracking-tight';
 
   return (
     <header
@@ -62,12 +62,12 @@ export default function Header({
               type="button"
               aria-label="뒤로가기"
               onClick={handleBack}
-              className="p-2 rounded-full bg-transparent border border-transparent flex items-center justify-center hover:shadow-md active:scale-95 transition"
+              className="rounded-full bg-transparent border border-transparent flex items-center justify-center hover:shadow-md active:scale-95 transition"
             >
               <img
                 src={backArrow}
                 alt="뒤로가기"
-                className={compact ? 'w-6 h-6' : 'w-[48px] h-[48px]'}
+                className={compact ? 'w-6 h-6' : 'w-[24px] h-[24px]'}
               />
             </button>
           )}
@@ -89,9 +89,9 @@ export default function Header({
               type="button"
               aria-label="테마 변경"
               onClick={handleBrush}
-              className="p-2 rounded-full bg-transparent border border-transparent flex items-center justify-center hover:shadow-md active:scale-95 transition"
+              className=" rounded-full bg-transparent border border-transparent flex items-center justify-center hover:shadow-md active:scale-95 transition"
             >
-              <img src={brushIcon} alt="테마 변경" className={'w-[34px] h-[52px]'} />
+              <img src={brushIcon} alt="테마 변경" className={'w-[17px] h-[26px]'} />
             </button>
           )}
 
@@ -100,15 +100,15 @@ export default function Header({
               <button
                 type="button"
                 aria-label="메뉴 열기"
-                onClick={() => setDrawer(true)} 
-                className="p-2 rounded-full bg-transparent border border-transparent flex items-center justify-center hover:shadow-md active:scale-95 transition"
+                onClick={() => setDrawer(true)}
+                className=" rounded-full bg-transparent border border-transparent flex items-center justify-center hover:shadow-md active:scale-95 transition"
               >
-                <img src={menuIcon} alt="메뉴" className={'w-[34px] h-[23px]'} />
+                <img src={menuIcon} alt="메뉴" className={'w-[17px] h-[12px]'} />
               </button>
 
               <DrawerMenu
                 open={drawerOpen}
-               onOpen={() => setDrawer(true)}           
+                onOpen={() => setDrawer(true)}
                 onClose={() => setDrawer(false)}
                 onSelect={(key) => {
                   switch (key) {
