@@ -1,11 +1,8 @@
-// src/components/BottomSheet.tsx
 import * as React from 'react';
-import SwipeableDrawer from '@mui/material/SwipeableDrawer';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { grey } from '@mui/material/colors';
+import { Drawer } from './Drawer';
+// import { Drawer } from '@/components/DrawerAnchor.tailwind';
 
-type BottomSheetProps = {
+export type BottomSheetProps = {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   /** 닫혀 있을 때 살짝 보이는 헤드 높이(px) */
@@ -18,10 +15,15 @@ type BottomSheetProps = {
   suspended?: boolean;
 };
 
+/**
+ * Material UI 의 SwipeableDrawer 대신, 커스텀 Drawer(Framer Motion)로 구성한 BottomSheet
+ * - 스와이프 제스처는 제공하지 않지만, 동일한 props API(open/onOpenChange/peek) 유지
+ * - 외부/내부 헤드 모두 Tailwind 로 구현
+ */
 export default function BottomSheet({
   open: controlledOpen,
   onOpenChange,
-  peekHeight = 96,
+  peekHeight = 50,
   height = '64vh',
   title = '오늘의 추천',
   children,
@@ -32,148 +34,77 @@ export default function BottomSheet({
   const open = controlledOpen ?? uncontrolled;
   const setOpen = (v: boolean) => (onOpenChange ? onOpenChange(v) : setUncontrolled(v));
 
-  // 제스처/애니메이션 중에는 외부 헤드 숨기기
-  const [isSwiping, setIsSwiping] = React.useState(false);
-  const closeTimer = React.useRef<number | null>(null);
-  const clearCloseTimer = () => {
-    if (closeTimer.current) {
-      window.clearTimeout(closeTimer.current);
-      closeTimer.current = null;
-    }
-  };
+  // 제스처/애니메이션 중에는 외부 헤드 숨기기 (애니메이션 기반이라 간단 플래그만 유지)
+  const [isAnimating, setIsAnimating] = React.useState(false);
 
   if (suspended) return null;
 
   return (
     <>
-      {/* 닫혀 있고 + 스와이프/애니메이션 중 아님 → 외부 헤드 표시 */}
-      {!open && !isSwiping && (
-        <Box
-          sx={{
-            position: 'fixed',
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 1300,
-            pointerEvents: 'none',
-          }}
+      {/* 닫혀 있고 + 애니메이션 중 아님 → 외부 헤드 표시 */}
+      {!open && !isAnimating && (
+        <div
+          className="fixed inset-x-0 bottom-0 z-[1300] pointer-events-none"
+          aria-hidden="true"
         >
-          <Box
-            sx={{
-              width: '100%',
+          <div
+            className="pointer-events-auto relative mx-0 w-full bg-white shadow-[0_-6px_16px_rgba(0,0,0,0.12)]"
+            style={{
               height: peekHeight,
-              bgcolor: '#fff',
               borderTopLeftRadius: 12,
               borderTopRightRadius: 12,
-              boxShadow: '0 -6px 16px rgba(0,0,0,0.12)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              pb: 'env(safe-area-inset-bottom)',
-              position: 'relative',
+              paddingBottom: 'env(safe-area-inset-bottom)'
             }}
+            onClick={() => setOpen(true)}
+            role="button"
+            tabIndex={0}
           >
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 8,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: 44,
-                height: 5,
-                borderRadius: 999,
-                backgroundColor: grey[300],
-              }}
+            <div
+              className="absolute left-1/2 top-2 h-[5px] w-11 -translate-x-1/2 rounded-full bg-neutral-300"
             />
-            <Typography sx={{ fontSize: 14, color: '#666', fontWeight: 600 }}>
-              {title}
-            </Typography>
-          </Box>
-        </Box>
+            <div className="flex h-full items-center justify-center">
+              <span className="text-[14px] font-semibold text-neutral-600">{title}</span>
+            </div>
+          </div>
+        </div>
       )}
 
-      <SwipeableDrawer
+      {/* 패널: 커스텀 Drawer 사용 */}
+      <Drawer
         anchor="bottom"
         open={open}
-        onOpen={() => {
-          // 열림 완료
-          clearCloseTimer();
-          setIsSwiping(false);
-          setOpen(true);
-        }}
-        onClose={() => {
-          // 닫힘 시작: 외부 헤드 숨김 유지
-          setIsSwiping(true);
-          setOpen(false);
-          // 혹시 transitionend 이벤트가 누락될 경우를 대비해 폴백
-          clearCloseTimer();
-          closeTimer.current = window.setTimeout(() => setIsSwiping(false), 350);
-        }}
-        disableSwipeToOpen={false}
-        swipeAreaWidth={peekHeight}
-        ModalProps={{ keepMounted: true }}
-        PaperProps={{
-          // 드로어 패널 전환 종료 시점 포착
-          onTransitionEnd: (e: React.TransitionEvent<HTMLDivElement>) => {
-            // transform 전환이 끝났고 현재는 '닫힌 상태'라면 외부 헤드 다시 보이도록
-            if (e.target === e.currentTarget && e.propertyName === 'transform' && !open) {
-              clearCloseTimer();
-              setIsSwiping(false);
-            }
-          },
-          // 열린 상태에서 끌어내릴 때도 숨김
-          onTouchStart: () => setIsSwiping(true),
-          onMouseDown: () => setIsSwiping(true),
-          sx: {
-            height: `calc(${height} - ${peekHeight}px)`,
-            overflow: 'visible',
-            borderTopLeftRadius: 12,
-            borderTopRightRadius: 12,
-            backgroundColor: '#fff',
-            zIndex: 1400,
-            pb: 'env(safe-area-inset-bottom)',
-          },
-        }}
-        SwipeAreaProps={{
-          // 닫혀 있을 때 끌어올리는 동안도 숨김
-          onTouchStart: () => setIsSwiping(true),
-          onMouseDown: () => setIsSwiping(true),
-          onTouchEnd: () => setIsSwiping(false),
-          onMouseUp: () => setIsSwiping(false),
-          onTouchCancel: () => setIsSwiping(false),
-        }}
+        onClose={() => setOpen(false)}
+        size={height}
+        ariaLabel="bottom sheet"
       >
-        {/* 내부 헤드(드로어 위쪽에 붙어 보이는 바) */}
-        <Box
-          sx={{
-            position: 'absolute',
-            top: -peekHeight,
-            left: 0,
-            right: 0,
-            py: 1.25,
-            display: 'flex',
-            alignItems: 'center',
-            flexDirection: 'column',
-            bgcolor: '#fff',
-            borderTopLeftRadius: 12,
-            borderTopRightRadius: 12,
-          }}
+        <div
+          className="relative h-full overflow-visible bg-white"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+          // 애니메이션 시작/끝 추정 (Framer Motion hook 없이 간단히 처리)
+          onAnimationStart={() => setIsAnimating(true)}
+          onAnimationEnd={() => setIsAnimating(false)}
         >
-          <Box
-            sx={{
-              width: 44,
-              height: 5,
-              borderRadius: 999,
-              backgroundColor: grey[300],
-              mb: 10,
+          {/* 내부 헤드(시트 상단 외부로 살짝 보이는 부분) */}
+          <div
+            className="absolute inset-x-0 -top-[--peek] flex flex-col items-center bg-white"
+            style={{
+              // Tailwind CSS 에서 CSS 변수 사용 (동적으로 높이 전달)
+              // @ts-expect-error -- custom property for runtime
+              '--peek': `${peekHeight}px`,
+              borderTopLeftRadius: 12,
+              borderTopRightRadius: 12,
+              paddingTop: 5,
+              paddingBottom: 10,
             }}
-          />
-          <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>{title}</Typography>
-        </Box>
+          >
+            <div className="mb-2 h-[5px] w-11 rounded-full bg-neutral-300" />
+            <div className="text-[14px] text-neutral-500">{title}</div>
+          </div>
 
-        {/* 본문 */}
-        <Box sx={{ px: 2, pb: 2, height: '100%', overflow: 'auto' }}>{children}</Box>
-      </SwipeableDrawer>
+          {/* 본문 */}
+          <div className="h-full overflow-auto px-4 pb-4 pt-4">{children}</div>
+        </div>
+      </Drawer>
     </>
   );
 }

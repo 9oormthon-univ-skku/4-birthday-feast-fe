@@ -1,6 +1,6 @@
 // 퀴즈 
 import { useNavigate } from 'react-router-dom';
-import Header from '../../layouts/Header';
+import Header from '../../components/Header';
 import quizEditIcon from '../../assets/images/quiz-edit.svg';
 
 const mockQuiz = Array.from({ length: 10 }).map((_, i) => `생일 퀴즈 내용 ${i + 1}`);

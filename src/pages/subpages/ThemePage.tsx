@@ -1,5 +1,5 @@
 // src/pages/ThemePage.tsx
-import Header from '../../layouts/Header';
+import Header from '../../components/Header';
 
 export default function ThemePage() {
   return (
