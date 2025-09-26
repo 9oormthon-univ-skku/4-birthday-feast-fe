@@ -1,9 +1,5 @@
 /* src/styles/global.css */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 /* 폰트 등록 */
 @font-face {
   font-family: 'Pretendard';
