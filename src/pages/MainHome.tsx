@@ -1,5 +1,5 @@
 // src/pages/MainHome.tsx
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Header from '../ui/Header'; // 프로젝트 경로에 맞게 유지하세요
 import table from '../assets/images/table.svg';
 import lBalloon from '../assets/images/left-balloon.svg';
@@ -15,19 +15,23 @@ import food4 from '../assets/images/food-4.svg';
 import food5 from '../assets/images/food-5.svg';
 import food6 from '../assets/images/food-6.svg';
 
-// ✅ 커스텀 BottomSheet (Tailwind + framer-motion 버전)
-// import BottomSheet from '@/components/BottomSheet.tailwind';
-
 import TableCakes from '../features/message/TableCakes';
 // 더미 메시지에서 카드 목록을 가져오는 훅(React Query 미사용 버전)
 import { useBirthdayCards } from '@/features/message/useBirthdayCards';
 import BottomSheet from '@/ui/BottomSheet';
+import Modal from '@/ui/Modal';
 
 type CakeItem = { id: number | string; src: string; alt?: string };
 
 const MainHome: React.FC = () => {
   // 헤더에서 열리는 Drawer/메뉴 등 외부 오버레이가 뜰 경우 바텀시트 숨김 처리
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // 접속 시마다 welcome 모달 열기 
+  const [welcomeOpen, setWelcomeOpen] = useState(false);
+  useEffect(() => {
+    setWelcomeOpen(true);
+  }, []);
 
   // 1) 더미 메시지(= messageCakes.js)에서 카드 데이터 가져오기
   const { data: cards = [] } = useBirthdayCards();
@@ -109,6 +113,26 @@ const MainHome: React.FC = () => {
           </ul>
         </div>
       </BottomSheet>
+
+      <Modal
+        open={welcomeOpen}
+        type="welcome"
+        highlightText="사용자"
+        message={
+          <>
+            생일한상에 오신 것을 환영합니다!
+            <br />
+            <br />
+            생일상을 꾸미고 공유해서 친구들에게 생일축하를 받아보아요!
+            <br />
+            <br />
+            생일축하 메시지는 14일 전부터 등록할 수 있으며, 생일 당일에 공개됩니다!
+          </>
+        }
+        helperText="공개 범위는 설정할 수 있어요."
+        onConfirm={() => setWelcomeOpen(false)}
+        onClose={() => setWelcomeOpen(false)}
+      />
     </div>
   );
 };
