@@ -1,6 +1,6 @@
 // src/pages/BirthdayMessagePage.tsx
 import React, { useMemo, useState } from 'react';
-import food6 from '../../assets/images/food-6.svg';
+import food6 from '@/assets/images/food-6.svg';
 import AppLayout from '@/layouts/AppLayout';
 
 export type Message = {
@@ -63,50 +63,45 @@ export default function MessagePage({
         <section className="relative w-full">
           <div
             className="
-              relative mx-auto mt-[200px]
+              relative mx-auto mt-20
               rounded-[5px] bg-white
               shadow-[0px_0px_4px_0px_rgba(0,0,0,0.25)]
-              w-[80%] aspect-[329/406]
+              w-full aspect-[329/406]
               p-10"
           >
-            <div className="absolute top-[-1.5rem] left-0 w-full flex flex-col items-center">
-              <div className="w-[70%] flex items-center justify-between gap-6">
+            <div className="rounded-full bg-[#FFF4DF] grid place-items-center shadow-[0_2px_4px_rgba(0,0,0,0.08)]">
+              <img
+                src={msg?.imgSrc || food6}
+                alt={msg?.imgAlt ?? msg?.title ?? '기본 디저트'}
+                className="w-[120%] h-[120%] object-contain select-none pointer-events-none"
+                draggable={false}
+              />
+            </div>
+            <div className="absolute top-7 left-0 w-full flex flex-col items-center">
+              <div className="w-[80%] flex items-center justify-between gap-6">
                 <button
                   type="button"
                   aria-label="이전 메세지"
                   onClick={goPrev}
                   disabled={!canPrev}
-                  className="grid place-items-center w-8 h-8 rounded-full border border-[#E5E7EB] bg-white
-                             hover:bg-black/5 disabled:opacity-30 disabled:hover:bg-white transition"
                 >
-                  <ChevronLeft className="text-[#777]" />
+                  {goPrevIcon}
                 </button>
-
-                <div className="rounded-full bg-[#FFEDEB] grid place-items-center shadow-[0_2px_4px_rgba(0,0,0,0.08)]">
-                  <img
-                    src={msg?.imgSrc || food6}
-                    alt={msg?.imgAlt ?? msg?.title ?? '기본 디저트'}
-                    className="w-[120%] h-[120%] object-contain select-none pointer-events-none"
-                    draggable={false}
-                  />
-                </div>
 
                 <button
                   type="button"
                   aria-label="다음 메세지"
                   onClick={goNext}
                   disabled={!canNext}
-                  className="grid place-items-center w-8 h-8 rounded-full border border-[#E5E7EB] bg-white
-                             hover:bg-black/5 disabled:opacity-30 disabled:hover:bg-white transition"
                 >
-                  <ChevronRight className="text-[#777]" />
+                  {goNextIcon}
                 </button>
               </div>
 
-              <h2 className="mt-2 text-center text-[40px] font-extrabold text-[#FF8B8B]">
+              <h2 className="mt-2 text-center text-xl font-extrabold text-[#FF8B8B]">
                 {msg?.title ?? ''}
               </h2>
-              <p className="mt-1 text-[#60343F] text-[30px] font-medium leading-normal text-center">
+              <p className="mt-1 mx-7 text-[#60343F] text-base font-medium leading-normal text-left break-keep ">
                 {msg?.body ?? ''}
               </p>
             </div>
@@ -146,3 +141,11 @@ function ChevronRight(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
+// ---------- 아이콘 svg ----------
+const goPrevIcon = <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30" fill="none">
+  <path d="M18.75 22.5L11.25 15L18.75 7.5" stroke="#FF8B8B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+</svg>
+const goNextIcon = <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30" fill="none">
+  <path d="M11.25 22.5L18.75 15L11.25 7.5" stroke="#FF8B8B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+</svg>

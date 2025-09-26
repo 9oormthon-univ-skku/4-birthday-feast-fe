@@ -10,7 +10,7 @@ import MyFeastQRPage from './pages/subpages/MyFeastQRPage';
 import HistoryPage from './pages/subpages/HistoryPage';
 import VisibilityPage from './pages/subpages/VisibilityPage';
 import AccountSettingsPage from './pages/subpages/AccountSettingsPage';
-import MessagePage from './pages/subpages/MessagePage';
+import MessagePage from './pages/MessagePage';
 import Loading from './pages/LoadingPage';
 import Login from './pages/LoginPage';
 
