@@ -4,7 +4,7 @@
 @font-face {
   font-family: 'Pretendard';
   src: url('../assets/fonts/PretendardVariable.ttf') format('truetype');
-  font-weight: 600;
+  font-weight: 100 900;
   font-style: normal;
 }
 @font-face {
@@ -33,7 +33,7 @@
 }
 
 /* 전체 적용 */
-body {
+html, body {
   margin: 0;
   padding: 0;
   font-family: 'Pretendard', sans-serif;
