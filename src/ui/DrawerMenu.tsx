@@ -33,7 +33,7 @@ const secondary = [
 export default function DrawerMenu({
   open,
   onOpen,
-  onClose,
+  onClose,  
   anchor = 'right',
   width = '75vw',
   userName = '사용자님',
