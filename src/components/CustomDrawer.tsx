@@ -1,16 +1,17 @@
+// src/components/DrawerAnchor.tailwind.tsx
 import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { createPortal } from "react-dom";
 
 /**
  * Generic Drawer (no MUI) — Tailwind CSS + framer-motion
- * (방법 2 적용: variants 객체 없이 initial/animate/exit를 직접 지정)
  * - anchor: 'top' | 'right' | 'bottom' | 'left'
  * - open: boolean
  * - onClose: () => void
- * - size: number | string  (px or css size; width for left/right, height for top/bottom)
- * - ariaLabel: string (for accessibility)
- * - children: React.ReactNode
- * - ESC로 닫기, 백드롭 클릭 닫기, body 스크롤 잠금, 초기 포커스 처리
+ * - size: number | string
+ * - ariaLabel: string
+ * - usePortal: boolean (기본 true) — body로 포털 렌더
+ * - container: 포털 대상 지정 (기본 document.body)
  */
 export function Drawer({
   anchor = "right",
@@ -19,6 +20,8 @@ export function Drawer({
   size,
   ariaLabel,
   children,
+  usePortal = true,
+  container,
 }: {
   anchor?: "top" | "right" | "bottom" | "left";
   open: boolean;
@@ -26,6 +29,8 @@ export function Drawer({
   size?: number | string;
   ariaLabel?: string;
   children?: React.ReactNode;
+  usePortal?: boolean;
+  container?: Element;
 }) {
   const panelRef = React.useRef<HTMLDivElement>(null);
 
@@ -62,7 +67,6 @@ export function Drawer({
 
   const transitionSpring = { type: "spring", stiffness: 420, damping: 42 } as const;
 
-  // 방법 2: 각 prop에 직접 객체 할당 (축을 일관되게 유지)
   const initial =
     anchor === "left"  ? { x: "-100%" } :
     anchor === "right" ? { x: "100%" }  :
@@ -108,7 +112,7 @@ export function Drawer({
       ? { width: typeof resolvedSize === "number" ? `${resolvedSize}px` : resolvedSize }
       : { height: typeof resolvedSize === "number" ? `${resolvedSize}px` : resolvedSize };
 
-  return (
+  const content = (
     <AnimatePresence>
       {open && (
         <>
@@ -141,6 +145,11 @@ export function Drawer({
       )}
     </AnimatePresence>
   );
+
+  // SSR 안전 처리 및 포털 렌더
+  if (!usePortal) return content;
+  const target = container ?? (typeof document !== "undefined" ? document.body : null);
+  return target ? createPortal(content, target) : content;
 }
 
 /**
@@ -164,16 +173,14 @@ export default function DrawerAnchor() {
             aria-pressed={open[a]}
             onClick={toggle(a, true)}
             data-active={open[a] ? "true" : "false"}
-            className={
-              "cursor-pointer select-none rounded-full border-0 bg-[var(--surface-1,#fff)] px-3.5 py-2.5 font-semibold tracking-wide text-[var(--text-2,#6f737b)] transition-[transform,box-shadow,background,color] duration-150 ease-out data-[active=true]:bg-[var(--brand-1,#0e7400)] data-[active=true]:text-white data-[active=true]:shadow-[0_2px_10px_rgba(0,0,0,0.12)] hover:-translate-y-0.5 active:translate-y-0"
-            }
+            className="cursor-pointer select-none rounded-full border-0 bg-[var(--surface-1,#fff)] px-3.5 py-2.5 font-semibold tracking-wide text-[var(--text-2,#6f737b)] transition-[transform,box-shadow,background,color] duration-150 ease-out data-[active=true]:bg-[var(--brand-1,#0e7400)] data-[active=true]:text-white data-[active=true]:shadow-[0_2px_10px_rgba(0,0,0,0.12)] hover:-translate-y-0.5 active:translate-y-0"
           >
             {a}
           </button>
         ))}
       </div>
 
-      {/* Drawers */}
+      {/* Drawers (포털 기본 활성화) */}
       {anchors.map((a) => (
         <Drawer key={a} anchor={a} open={open[a]} onClose={toggle(a, false)} ariaLabel={`${a} drawer`}>
           {/* Header */}
@@ -182,7 +189,7 @@ export default function DrawerAnchor() {
             <button
               onClick={toggle(a, false)}
               aria-label="Close drawer"
-              className="rounded-lg border-0 bg-transparent px-2 py-1.5 text-[18px] leading-none text-[var(--text-2,#6f737b)] hover:bg-[var(--surface-2,#f6f7fa)]"
+              className="rounded-lg border-0 bg-transparent px-2 py-1.5 text-[18px] leading-none text-[var(--text-2,#6f737b)] hover:bg-[var(--surface-2,#f1f4f8)]"
             >
               ✕
             </button>
