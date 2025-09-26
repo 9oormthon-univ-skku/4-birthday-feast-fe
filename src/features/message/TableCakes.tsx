@@ -197,9 +197,9 @@ export default function TableCakes({
 // ---------- 아이콘 svg ---------
 const goLeft = <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30" fill="none">
   <rect width="30" height="30" rx="15" transform="matrix(-1 0 0 1 30 0)" fill="#60343F" />
-  <path d="M18.75 22.5L11.25 15L18.75 7.5" stroke="#FF8B8B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M18.75 22.5L11.25 15L18.75 7.5" stroke="#FF8B8B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 </svg>
 const goRight = <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30" fill="none">
   <rect width="30" height="30" rx="15" fill="#60343F" />
-  <path d="M11.25 22.5L18.75 15L11.25 7.5" stroke="#FF8B8B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M11.25 22.5L18.75 15L11.25 7.5" stroke="#FF8B8B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 </svg>

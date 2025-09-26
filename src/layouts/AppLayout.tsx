@@ -21,7 +21,6 @@ export default function AppLayout({
   onBack,
   showMenu = true,
   showBrush = true,
-  compact = false,
   onBrushClick,
   themePath = '/theme',
   rightExtra,
@@ -43,7 +42,6 @@ export default function AppLayout({
         onBack={onBack}
         showMenu={showMenu}
         showBrush={showBrush}
-        compact={compact}
         onBrushClick={onBrushClick}
         themePath={themePath}
         rightExtra={rightExtra}

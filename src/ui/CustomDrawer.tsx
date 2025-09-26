@@ -88,7 +88,7 @@ export function Drawer({
     anchor === "left"
       ? "rounded-r-2xl"
       : anchor === "right"
-      ? "rounded-l-2xl"
+      ? ""
       : anchor === "top"
       ? "rounded-b-2xl"
       : "rounded-t-2xl";

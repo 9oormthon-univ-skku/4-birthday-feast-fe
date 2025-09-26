@@ -24,8 +24,7 @@ export default function BottomSheet({
   open: controlledOpen,
   onOpenChange,
   peekHeight = 50,
-  height = '64vh',
-  title = '오늘의 추천',
+  height = '80vh',
   children,
   suspended = false,
 }: BottomSheetProps) {
@@ -41,29 +40,23 @@ export default function BottomSheet({
 
   return (
     <>
-      {/* 닫혀 있고 + 애니메이션 중 아님 → 외부 헤드 표시 */}
+      닫혀 있고 + 애니메이션 중 아님 → 외부 헤드 표시
       {!open && !isAnimating && (
         <div
           className="fixed inset-x-0 bottom-0 z-[1300] pointer-events-none"
           aria-hidden="true"
         >
           <div
-            className="pointer-events-auto relative mx-0 w-full bg-white shadow-[0_-6px_16px_rgba(0,0,0,0.12)]"
+            className="pointer-events-auto relative mx-0 w-full h-9 rounded-t-2xl bg-white shadow-[0_-4px_4px_rgba(0,0,0,0.05)]"
             style={{
-              height: peekHeight,
-              borderTopLeftRadius: 12,
-              borderTopRightRadius: 12,
               paddingBottom: 'env(safe-area-inset-bottom)'
             }}
             onClick={() => setOpen(true)}
             role="button"
             tabIndex={0}
           >
-            <div
-              className="absolute left-1/2 top-2 h-[5px] w-11 -translate-x-1/2 rounded-full bg-neutral-300"
-            />
             <div className="flex h-full items-center justify-center">
-              <span className="text-[14px] font-semibold text-neutral-600">{title}</span>
+              {arrowUp}
             </div>
           </div>
         </div>
@@ -78,7 +71,7 @@ export default function BottomSheet({
         ariaLabel="bottom sheet"
       >
         <div
-          className="relative h-full overflow-visible bg-white"
+          className="relative h-full overflow-visible"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
           // 애니메이션 시작/끝 추정 (Framer Motion hook 없이 간단히 처리)
           onAnimationStart={() => setIsAnimating(true)}
@@ -86,25 +79,29 @@ export default function BottomSheet({
         >
           {/* 내부 헤드(시트 상단 외부로 살짝 보이는 부분) */}
           <div
-            className="absolute inset-x-0 -top-[--peek] flex flex-col items-center bg-white"
+            className="pointer-events-auto relative mx-0 w-full h-9 rounded-t-2xl bg-white shadow-[0_-4px_4px_rgba(0,0,0,0.05)]"
             style={{
-              // Tailwind CSS 에서 CSS 변수 사용 (동적으로 높이 전달)
-              // @ts-expect-error -- custom property for runtime
-              '--peek': `${peekHeight}px`,
-              borderTopLeftRadius: 12,
-              borderTopRightRadius: 12,
-              paddingTop: 5,
-              paddingBottom: 10,
+              paddingBottom: 'env(safe-area-inset-bottom)'
             }}
           >
-            <div className="mb-2 h-[5px] w-11 rounded-full bg-neutral-300" />
-            <div className="text-[14px] text-neutral-500">{title}</div>
+            <div className="flex h-full items-center justify-center">
+              {arrowDown}
+            </div>
           </div>
 
           {/* 본문 */}
-          <div className="h-full overflow-auto px-4 pb-4 pt-4">{children}</div>
+          <div className="h-full overflow-auto px-8 py-1">{children}</div>
         </div>
       </Drawer>
     </>
   );
 }
+
+// --------- 아이콘 svg ----------
+const arrowUp = <svg xmlns="http://www.w3.org/2000/svg" width="20" height="12" viewBox="0 0 20 12" fill="none">
+  <path d="M18 10L10 2L2 10" stroke="#D9D9D9" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+</svg>
+
+const arrowDown = <svg xmlns="http://www.w3.org/2000/svg" width="20" height="12" viewBox="0 0 20 12" fill="none">
+  <path d="M2 2L10 10L18 2" stroke="#D9D9D9" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+</svg>

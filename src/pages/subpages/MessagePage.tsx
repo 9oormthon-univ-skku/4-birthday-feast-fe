@@ -54,7 +54,6 @@ export default function MessagePage({
       onBack={onBack}
       showMenu={false}
       showBrush={false}
-      compact={false}
       footerButtonLabel="처음으로"
       onFooterButtonClick={onHome}
     >

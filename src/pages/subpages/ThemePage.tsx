@@ -5,7 +5,6 @@ export default function ThemePage() {
   return (
     <div className="min-h-screen bg-[#FFFFFF]">
       <Header
-        // ✅ compact 안 씀 = 메인 홈과 같은 48px 타이틀/헤더 높이 유지
         showBack
         showMenu={false}
         showBrush={false}

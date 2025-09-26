@@ -7,7 +7,7 @@ export type DrawerMenuProps = {
   onOpen?: () => void;
   onClose: () => void;
   anchor?: 'left' | 'right' | 'top' | 'bottom';
-  /** 좌/우 드로어 폭, 기본 75vw */
+  /** 좌/우 드로어 폭 */
   width?: number | string;
   /** 메뉴 선택 시 호출 (예: 'account', 'visibility' ...) */
   onSelect?: (key: string) => void;
@@ -33,9 +33,9 @@ const secondary = [
 export default function DrawerMenu({
   open,
   onOpen,
-  onClose,  
+  onClose,
   anchor = 'right',
-  width = '75vw',
+  width = '80vw',
   userName = '사용자님',
   onSelect,
   children,
@@ -60,43 +60,47 @@ export default function DrawerMenu({
 
   return (
     <Drawer anchor={anchor} open={open} onClose={onClose} size={size} ariaLabel={`${anchor} menu`}>
-      <div className="flex h-full max-h-full flex-col bg-white">
+      <div className="w-[80%] mx-auto flex h-full max-h-full flex-col bg-white">
         {/* 상단 사용자 영역 */}
-        <div className="flex items-center gap-3 px-4 py-4">
-          <div className="grid h-9 w-9 place-items-center rounded-full bg-[#FFE1E1] text-sm font-bold text-[#FF8B8B]">사</div>
+        <div className="flex items-center gap-4 py-6 border-b border-[#D9D9D9]">
+          <div className="grid h-10 w-10 place-items-center rounded-full bg-[#D9D9D9] text-zinc-500 font-bold text-">사</div>
           <div className="text-xl font-bold text-[#FF8B8B]">{userName}</div>
         </div>
 
         {/* 1차 메뉴 */}
-        <nav className="px-1">
-          <ul className="divide-y divide-neutral-100 rounded-xl bg-white">
+        <nav className='py-4'>
+          <ul className="divide-y divide-neutral-50 rounded-xl bg-white">
             {primary.map((item) => (
               <li key={item.key}>
                 <button
                   onClick={() => handleClick(item.key)}
-                  className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-neutral-50"
+                  className="flex w-full items-center justify-between px-4 py-2 text-left hover:bg-neutral-50"
                 >
-                  <span className="text-base font-[600] tracking-[0.02em] text-[#A0A0A0]">{item.label}</span>
-                  <span aria-hidden className="text-neutral-300">›</span>
+                  <span className="text-base font-semibold tracking-[0.02em] text-[#A0A0A0]">{item.label}</span>
+                  <span aria-hidden className='pr-3'>
+                    {rightArrow}
+                  </span>
                 </button>
               </li>
             ))}
           </ul>
         </nav>
 
-        <hr className="my-4 border-t border-neutral-100" />
+        <hr className="my-4 border-t border-[#D9D9D9]" />
 
         {/* 2차 메뉴 */}
-        <nav className="px-1">
-          <ul className="divide-y divide-neutral-100 rounded-xl bg-white">
+        <nav className="py-4">
+          <ul className="divide-y divide-neutral-50 rounded-xl bg-white">
             {secondary.map((item) => (
               <li key={item.key}>
                 <button
                   onClick={() => handleClick(item.key)}
-                  className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-neutral-50"
+                  className="flex w-full items-center justify-between px-4 py-2 text-left hover:bg-neutral-50"
                 >
-                  <span className="text-base font-[600] tracking-[0.02em] text-[#A0A0A0]">{item.label}</span>
-                  <span aria-hidden className="text-neutral-700">›</span>
+                  <span className="text-base font-semibold tracking-[0.02em] text-[#A0A0A0]">{item.label}</span>
+                  <span aria-hidden className='pr-3'>
+                    {rightArrow}
+                  </span>
                 </button>
               </li>
             ))}
@@ -114,3 +118,7 @@ export default function DrawerMenu({
     </Drawer>
   );
 }
+
+const rightArrow = <svg xmlns="http://www.w3.org/2000/svg" width="7" height="12" viewBox="0 0 7 12" fill="none">
+  <path d="M1 11L6 6L1 0.999998" stroke="#A0A0A0" strokeLinecap="round" strokeLinejoin="round" />
+</svg>
