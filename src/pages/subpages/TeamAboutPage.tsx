@@ -1,6 +1,6 @@
-// src/pages/TeamAboutPage.tsx
-import { useNavigate } from 'react-router-dom';
-import Header from '../../components/ui/Header';
+// src/pages/subpages/TeamAboutPage.tsx
+import React from 'react';
+import AppLayout from '../../layouts/AppLayout';
 
 type Member = { name: string; school: string; email: string };
 
@@ -33,25 +33,19 @@ const sections: { title: string; members: Member[] }[] = [
 ];
 
 export default function TeamAboutPage() {
-  const navigate = useNavigate();
-
   return (
-    <div className="min-h-screen bg-[#FFFFFF]">
-      {/* 헤더: 메인과 동일 크기/스타일 유지 + 뒤로가기 */}
-      <Header
-        showBack
-        showMenu={false}
-        showBrush={false}
-        title={
-          <>
-            <span className="text-[#A0A0A0]">생일한상 </span>
-            <span className="text-[#FF8B8B]">팀 소개</span>
-          </>
-        }
-      />
-
-      {/* 본문 */}
-      <main className="mx-[60px] max-w-md px-4 pb-28">
+    <AppLayout
+      title={
+        <>
+          <span className="text-[#A0A0A0]">생일한상 </span>
+          <span className="text-[#FF8B8B]">팀 소개</span>
+        </>
+      }
+      showBack
+      showMenu={false}
+      showBrush={false}
+    >
+      <div className="mx-auto">
         <p className="text-[28px] leading-6 text-[#8A8A8A]">
           생일한상은 성균관대학교와 한국예술종합학교 연합이 제작한
           생일 축하 앱 개발 프로젝트입니다.
@@ -68,26 +62,17 @@ export default function TeamAboutPage() {
                   <div className="text-[#555] font-medium">
                     {m.name} <span className="text-[#A0A0A0]">| {m.school}</span>
                   </div>
-                  <div className="text-[#A0A0A0]">{m.email}</div>
+                  <div className="text-[#A0A0A0]">
+                    <a href={`mailto:${m.email}`} className="hover:underline">
+                      {m.email}
+                    </a>
+                  </div>
                 </li>
               ))}
             </ul>
           </section>
         ))}
-      </main>
-
-      {/* 하단 고정 CTA */}
-      {/* <div className="fixed bottom-0 left-0 right-0 bg-[#FFF4DF] border-t border-[#EFD9C6] backdrop-blur">
-        <div className="mx-[60px] max-w-md px-4 py-3">
-          <button
-            onClick={() => navigate(-1)}
-            className="w-full py-3.5 rounded-xl bg-[#FF8B8B] text-white font-bold shadow-md active:scale-[0.98] transition"
-            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 14px)' }}
-          >
-            확인
-          </button>
-        </div>
-      </div> */}
-    </div>
+      </div>
+    </AppLayout>
   );
 }
