@@ -9,7 +9,7 @@
       "sequence": 1
     },
     {
-      "questionId": 9007199254740992,
+      "questionId": 9007199254749994,
       "content": "생일 퀴즈 문항 2입니다.",
       "answer": false,
       "sequence": 2
@@ -33,7 +33,7 @@
       "sequence": 5
     },
     {
-      "questionId": 9007199254740996,
+      "questionId": 9007199254749996,
       "content": "생일 퀴즈 문항 6입니다.",
       "answer": false,
       "sequence": 6
@@ -57,7 +57,7 @@
       "sequence": 9
     },
     {
-      "questionId": 9007199254741000,
+      "questionId": 9007199254741990,
       "content": "생일 퀴즈 문항 10입니다.",
       "answer": false,
       "sequence": 10
