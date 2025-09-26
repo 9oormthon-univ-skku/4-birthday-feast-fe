@@ -1,20 +1,13 @@
 import * as React from 'react';
-import SwipeableDrawer from '@mui/material/SwipeableDrawer';
-import Box from '@mui/material/Box';
-import List from '@mui/material/List';
-import Divider from '@mui/material/Divider';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import Typography from '@mui/material/Typography';
-import Avatar from '@mui/material/Avatar';
+import { Drawer } from './CustomDrawer';
+// import { Drawer } from '@/components/DrawerAnchor.tailwind';
 
-type DrawerMenuProps = {
+export type DrawerMenuProps = {
   open: boolean;
-  onOpen: () => void;
+  onOpen?: () => void;
   onClose: () => void;
   anchor?: 'left' | 'right' | 'top' | 'bottom';
+  /** 좌/우 드로어 폭, 기본 75vw */
   width?: number | string;
   /** 메뉴 선택 시 호출 (예: 'account', 'visibility' ...) */
   onSelect?: (key: string) => void;
@@ -42,7 +35,7 @@ export default function DrawerMenu({
   onOpen,
   onClose,
   anchor = 'right',
-  // width = 300,   // ← 더 이상 필요 없다면 제거해도 됨
+  width = '75vw',
   userName = '사용자님',
   onSelect,
   children,
@@ -52,74 +45,72 @@ export default function DrawerMenu({
     onClose();
   };
 
+  // SwipeableDrawer의 onOpen 대체: 외부에서 open=true로 변경되면 콜백 통지
+  const prevOpen = React.useRef(open);
+  React.useEffect(() => {
+    if (!prevOpen.current && open) onOpen?.();
+    prevOpen.current = open;
+  }, [open, onOpen]);
+
+  // Drawer size: 좌/우는 폭, 상/하는 높이 사용
+  const size = ((): string | number => {
+    if (anchor === 'left' || anchor === 'right') return typeof width === 'number' ? `${width}px` : width;
+    return '56vh';
+  })();
+
   return (
-    <SwipeableDrawer
-      anchor={anchor}
-      open={open}
-      onOpen={onOpen}
-      onClose={onClose}
-      // ✅ Drawer 패널 자체 폭을 75%로
-      PaperProps={{
-        sx: {
-          width: '75vw', 
-          maxWidth: '100vw',     // 안전장치
-        },
-      }}
-    >
-      {/* ✅ 안쪽 컨텐츠는 100%로 채우기 */}
-      <Box sx={{ width: '100%', bgcolor: '#fff' }} role="presentation">
+    <Drawer anchor={anchor} open={open} onClose={onClose} size={size} ariaLabel={`${anchor} menu`}>
+      <div className="flex h-full max-h-full flex-col bg-white">
         {/* 상단 사용자 영역 */}
-        <Box sx={{ px: 2.5, py: 2.5, display: 'flex', alignItems: 'center', gap: 1.25 }}>
-          <Avatar sx={{ width: 36, height: 36, bgcolor: '#FFE1E1', color: '#FF8B8B', fontWeight: 700 }}>
-            사
-          </Avatar>
-          <Typography sx={{ fontSize: 48,fontWeight: 700, color: '#FF8B8B' }}>{userName}</Typography>
-        </Box>
+        <div className="flex items-center gap-3 px-4 py-4">
+          <div className="grid h-9 w-9 place-items-center rounded-full bg-[#FFE1E1] text-sm font-bold text-[#FF8B8B]">사</div>
+          <div className="text-xl font-extrabold text-[#FF8B8B]">{userName}</div>
+        </div>
 
         {/* 1차 메뉴 */}
-        <List dense disablePadding>
-          {primary.map((item) => (
-            <ListItem key={item.key} disablePadding>
-              <ListItemButton onClick={() => handleClick(item.key)} sx={{ px: 2.5, py: 1.25 }}>
-                <ListItemText
-                  primary={item.label}
-                  primaryTypographyProps={{
-                    sx: { fontSize: 32, color: '#555', letterSpacing: 0.2 },
-                  }}
-                />
-                <ChevronRightIcon sx={{ color: '#bbb', fontSize: 20 }} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+        <nav className="px-1">
+          <ul className="divide-y divide-neutral-100 rounded-xl bg-white">
+            {primary.map((item) => (
+              <li key={item.key}>
+                <button
+                  onClick={() => handleClick(item.key)}
+                  className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-neutral-50"
+                >
+                  <span className="text-base font-medium tracking-[0.02em] text-neutral-700">{item.label}</span>
+                  <span aria-hidden className="text-neutral-300">›</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
-        <Divider sx={{ my: 1.5 }} />
+        <hr className="my-4 border-t border-neutral-100" />
 
         {/* 2차 메뉴 */}
-        <List dense disablePadding>
-          {secondary.map((item) => (
-            <ListItem key={item.key} disablePadding>
-              <ListItemButton onClick={() => handleClick(item.key)} sx={{ px: 2.5, py: 1.25 }}>
-                <ListItemText
-                  primary={item.label}
-                  primaryTypographyProps={{
-                    sx: { fontSize: 32, color: '#555', letterSpacing: 0.2 },
-                  }}
-                />
-                <ChevronRightIcon sx={{ color: '#bbb', fontSize: 20 }} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+        <nav className="px-1">
+          <ul className="divide-y divide-neutral-100 rounded-xl bg-white">
+            {secondary.map((item) => (
+              <li key={item.key}>
+                <button
+                  onClick={() => handleClick(item.key)}
+                  className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-neutral-50"
+                >
+                  <span className="text-base font-medium tracking-[0.02em] text-neutral-700">{item.label}</span>
+                  <span aria-hidden className="text-neutral-300">›</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
         {/* (선택) 추가 섹션 */}
         {children && (
           <>
-            <Divider sx={{ my: 1.5 }} />
-            <Box sx={{ px: 2.5, py: 1 }}>{children}</Box>
+            <hr className="my-4 border-t border-neutral-100" />
+            <div className="px-4 py-3">{children}</div>
           </>
         )}
-      </Box>
-    </SwipeableDrawer>
+      </div>
+    </Drawer>
   );
 }

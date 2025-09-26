@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Drawer } from './Drawer';
+import { Drawer } from './CustomDrawer';
 // import { Drawer } from '@/components/DrawerAnchor.tailwind';
 
 export type BottomSheetProps = {

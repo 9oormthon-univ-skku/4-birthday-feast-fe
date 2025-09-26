@@ -82,7 +82,7 @@ const MainHome: React.FC = () => {
       </div>
 
       {/* 하단 바텀시트 (Drawer/오버레이 열릴 땐 suspended로 숨김) */}
-      <BottomSheet title="" suspended={drawerOpen} peekHeight={50} height="80vh">
+      <BottomSheet title="" suspended={drawerOpen} peekHeight={35} height="80vh">
         {/* ↓↓↓ 시트 내부 콘텐츠 예시 (필요 시 교체) ↓↓↓ */}
         <div className="mx-auto max-w-md space-y-3">
           <div className="text-center text-base font-semibold text-neutral-700">

@@ -4,7 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import menuIcon from '@/assets/images/menu.svg';
 import brushIcon from '@/assets/images/brush.svg';
 import backArrow from '@/assets/images/nav-arrow-left.svg';
-import DrawerMenu from '@/components/DrawerMenu';
+import DrawerMenu from './DrawerMenu';
+// Tailwind + Drawer 버전으로 교체
+// import DrawerMenu from '@/components/DrawerMenu.tailwind';
 
 export type HeaderProps = {
   /** 문자열뿐 아니라 JSX도 허용 (색상 하이라이트 등) */
@@ -21,6 +23,7 @@ export type HeaderProps = {
   themePath?: string;
   /** 우측에 추가 버튼/아이콘 넣고 싶을 때(선택) */
   rightExtra?: React.ReactNode;
+  /** 헤더에서 열리는 드로어 상태를 부모에 통지 */
   onDrawerOpenChange?: (open: boolean) => void;
 };
 
@@ -54,7 +57,7 @@ export default function Header({
       className="sticky top-0 z-50 w-full bg-[#FFFFFF] shadow-[0px_8px_8px_0px_rgba(0,0,0,0.07)] backdrop-blur"
       style={{ fontFamily: 'KoreanSWGIG1, Pretendard, sans-serif' }}
     >
-      <div className={`flex items-center justify-between p-4`}>
+      <div className="flex items-center justify-between p-4">
         {/* Left: Back + Title */}
         <div className="flex items-center gap-3">
           {showBack && (
@@ -62,12 +65,12 @@ export default function Header({
               type="button"
               aria-label="뒤로가기"
               onClick={handleBack}
-              className="rounded-full bg-transparent border border-transparent flex items-center justify-center hover:shadow-md active:scale-95 transition"
+              className="flex items-center justify-center rounded-full border border-transparent bg-transparent transition hover:shadow-md active:scale-95"
             >
               <img
                 src={backArrow}
                 alt="뒤로가기"
-                className={compact ? 'w-6 h-6' : 'w-[24px] h-[24px]'}
+                className={compact ? 'h-6 w-6' : 'h-[24px] w-[24px]'}
               />
             </button>
           )}
@@ -89,9 +92,9 @@ export default function Header({
               type="button"
               aria-label="테마 변경"
               onClick={handleBrush}
-              className=" rounded-full bg-transparent border border-transparent flex items-center justify-center hover:shadow-md active:scale-95 transition"
+              className="flex items-center justify-center rounded-full border border-transparent bg-transparent transition hover:shadow-md active:scale-95"
             >
-              <img src={brushIcon} alt="테마 변경" className={'w-[17px] h-[26px]'} />
+              <img src={brushIcon} alt="테마 변경" className="h-[26px] w-[17px]" />
             </button>
           )}
 
@@ -101,15 +104,16 @@ export default function Header({
                 type="button"
                 aria-label="메뉴 열기"
                 onClick={() => setDrawer(true)}
-                className=" rounded-full bg-transparent border border-transparent flex items-center justify-center hover:shadow-md active:scale-95 transition"
+                className="flex items-center justify-center rounded-full border border-transparent bg-transparent transition hover:shadow-md active:scale-95"
               >
-                <img src={menuIcon} alt="메뉴" className={'w-[17px] h-[12px]'} />
+                <img src={menuIcon} alt="메뉴" className="h-[12px] w-[17px]" />
               </button>
 
               <DrawerMenu
                 open={drawerOpen}
                 onOpen={() => setDrawer(true)}
                 onClose={() => setDrawer(false)}
+                userName="사용자님"
                 onSelect={(key) => {
                   switch (key) {
                     case 'about':
@@ -133,7 +137,8 @@ export default function Header({
                     case 'account':
                       navigate('/account');
                       break;
-                    // 필요 시 다른 항목 라우팅 추가
+                    default:
+                      break;
                   }
                 }}
               />
