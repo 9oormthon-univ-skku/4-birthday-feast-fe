@@ -1,0 +1,97 @@
+// src/features/home/MainList.tsx
+import React from 'react';
+import clsx from 'clsx';
+import { useBirthdayCards } from '@/features/message/useBirthdayCards';
+import type { BirthdayCard } from '@/types/birthday';
+
+type MainListProps = {
+  /** 기본 4열 (2~4 지원) */
+  columns?: 2 | 3 | 4;
+  /** 아이템 클릭 콜백(선택) */
+  onSelect?: (card: BirthdayCard) => void;
+  className?: string;
+};
+
+const colClass = (n: 2 | 3 | 4) =>
+  ({ 2: 'grid-cols-2', 3: 'grid-cols-3', 4: 'grid-cols-4' }[n]);
+
+const MainList: React.FC<MainListProps> = ({ columns = 4, onSelect, className }) => {
+  const { data, isLoading, error } = useBirthdayCards();
+
+  if (error) {
+    return (
+      <div className={clsx('w-full py-8 text-center text-sm text-red-500', className)}>
+        데이터를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return <SkeletonGrid columns={columns} className={className} />;
+  }
+
+  return (
+    <ul
+      className={clsx(
+        'grid gap-x-6 gap-y-5 w-full max-w-[520px] mx-auto',
+        colClass(columns),
+        className
+      )}
+      role="list"
+    >
+      {data.map((c) => (
+        <li key={(c as any).birthdayCardId ?? (c as any).id ?? `${c.nickname}-${c.imageUrl}`}>
+          <button
+            type="button"
+            onClick={() => onSelect?.(c)}
+            className="group flex w-full flex-col items-center outline-none"
+          >
+            {/* 원형 썸네일 */}
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#FFF2DD] ring-1 ring-black/5 shadow-[inset_0_-3px_0_rgba(0,0,0,0.03)] md:h-24 md:w-24">
+              <img
+                src={c.imageUrl}
+                alt={c.nickname ?? '디저트'}
+                loading="lazy"
+                className="h-12 w-auto object-contain md:h-14"
+              />
+            </div>
+
+            {/* 닉네임 */}
+            <div className="mt-2 w-24 text-center text-[11px] font-semibold leading-tight text-[#FF8B8B] md:w-28 md:text-xs break-keep">
+              {c.nickname ?? '손님'}
+            </div>
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+};
+
+export default MainList;
+
+/* -------- 로딩 스켈레톤 -------- */
+function SkeletonGrid({
+  columns,
+  className,
+}: {
+  columns: 2 | 3 | 4;
+  className?: string;
+}) {
+  const items = Array.from({ length: columns * 4 }); // 2~3행 정도 보여주기
+  return (
+    <ul
+      className={clsx(
+        'grid gap-x-6 gap-y-5 w-full max-w-[520px] mx-auto',
+        colClass(columns),
+        className
+      )}
+    >
+      {items.map((_, i) => (
+        <li key={i} className="flex flex-col items-center">
+          <div className="h-20 w-20 animate-pulse rounded-full bg-neutral-200/70 md:h-24 md:w-24" />
+          <div className="mt-2 h-3 w-20 animate-pulse rounded bg-neutral-200/70 md:w-24" />
+        </li>
+      ))}
+    </ul>
+  );
+}
