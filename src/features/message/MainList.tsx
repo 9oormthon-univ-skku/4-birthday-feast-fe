@@ -47,17 +47,17 @@ const MainList: React.FC<MainListProps> = ({ columns = 4, onSelect, className })
             className="group flex w-full flex-col items-center outline-none"
           >
             {/* 원형 썸네일 */}
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#FFF2DD] ring-1 ring-black/5 shadow-[inset_0_-3px_0_rgba(0,0,0,0.03)] md:h-24 md:w-24">
+            <div className="flex h-15 w-15 items-center justify-center rounded-full bg-[#FFFDF9]">
               <img
                 src={c.imageUrl}
                 alt={c.nickname ?? '디저트'}
                 loading="lazy"
-                className="h-12 w-auto object-contain md:h-14"
+                className="h-14 mt-2 w-auto object-contain"
               />
             </div>
 
             {/* 닉네임 */}
-            <div className="mt-2 w-24 text-center text-[11px] font-semibold leading-tight text-[#FF8B8B] md:w-28 md:text-xs break-keep">
+            <div className="mt-2 w-24 text-center text-sm font-semibold leading-tight text-[#FF8B8B] break-keep">
               {c.nickname ?? '손님'}
             </div>
           </button>
