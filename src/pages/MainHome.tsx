@@ -1,11 +1,6 @@
 // src/pages/MainHome.tsx
 import React, { useEffect, useMemo, useState } from 'react';
 import Header from '../ui/Header';
-import table from '../assets/images/table.svg';
-import lBalloon from '../assets/images/left-balloon.svg';
-import rBalloon from '../assets/images/right-balloon.svg';
-import host from '../assets/images/host.svg';
-import mainCake from '../assets/images/main-cake.svg';
 
 import food1 from '../assets/images/food-1.svg';
 import food2 from '../assets/images/food-2.svg';
@@ -14,7 +9,6 @@ import food4 from '../assets/images/food-4.svg';
 import food5 from '../assets/images/food-5.svg';
 import food6 from '../assets/images/food-6.svg';
 
-import TableCakes from '../features/message/TableCakes';
 import { useBirthdayCards } from '@/features/message/useBirthdayCards';
 import BottomSheet from '@/ui/BottomSheet';
 import Modal from '@/ui/Modal';
@@ -24,6 +18,7 @@ import ModeToggle from '@/features/home/ModeToggle';
 import ViewToggle from '@/features/home/ViewToggle';
 import FeatureButtons from '@/features/home/FeatureButtons';
 import EventBanner from '@/features/event/EventBanner';
+import MainFeast from '@/features/message/MainFeast';
 
 type CakeItem = { id: number | string; src: string; alt?: string };
 
@@ -81,7 +76,7 @@ const MainHomeBody: React.FC = () => {
       <ModeToggle className="absolute right-3 top-50 z-[60]" />
 
       <Header onDrawerOpenChange={setDrawerOpen} showBrush={isHost} />
-      <div className="z-100 flex w-[90%] mx-auto my-5 items-center justify-between gap-3">
+      <div className="z-100 flex w-[90%] mx-auto my-4 items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
           <ViewToggle />
           <FeatureButtons />
@@ -91,24 +86,7 @@ const MainHomeBody: React.FC = () => {
         </div>
       </div>
 
-
-
-      {/* 메인 이미지 영역 */}
-      <div className="relative mt-auto w-full">
-        <img src={lBalloon} alt="" className="absolute left-0 z-30 -translate-y-[75%] transform" />
-        <img src={rBalloon} alt="" className="absolute right-0 z-30 -translate-y-[75%] transform" />
-        <img src={host} alt="" className="absolute left-1/2 z-0 -translate-x-1/2 -translate-y-[83%] transform" />
-        <img
-          src={mainCake}
-          alt=""
-          className="absolute left-1/2 z-20 -translate-x-1/2 -translate-y-[60%] transform drop-shadow-[0_8px_8px_rgba(0,0,0,0.15)]"
-        />
-
-        <div className="relative h-full w-full">
-          <img src={table} alt="table" className="z-10 h-auto w-full" />
-          <TableCakes items={cakes} />
-        </div>
-      </div>
+      <MainFeast />
 
       {/* 하단 바텀시트: 모드별로 다른 콘텐츠 */}
       <BottomSheet title={bottomSheetTitle} suspended={drawerOpen} peekHeight={35} height="80vh">
