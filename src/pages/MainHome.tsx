@@ -81,13 +81,16 @@ const MainHomeBody: React.FC = () => {
       <ModeToggle className="absolute right-3 top-50 z-[60]" />
 
       <Header onDrawerOpenChange={setDrawerOpen} showBrush={isHost} />
-      <div className='flex justify-center content-between'>
-        <div className='flex justify-center gap-2'>
+      <div className="z-100 flex w-[90%] mx-auto my-5 items-center justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
           <ViewToggle />
           <FeatureButtons />
         </div>
-        <EventBanner />
+        <div className="shrink-0">
+          <EventBanner />
+        </div>
       </div>
+
 
 
       {/* 메인 이미지 영역 */}

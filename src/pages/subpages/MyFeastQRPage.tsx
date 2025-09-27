@@ -102,9 +102,9 @@ export default function MyFeastQRPage() {
 
 // ------------ 아이콘 svg -----------
 const share = <svg xmlns="http://www.w3.org/2000/svg" width="22" height="24" viewBox="0 0 22 24" fill="none">
-  <path d="M17.5 23.0002C19.3226 23.0002 20.8 21.5228 20.8 19.7003C20.8 17.8778 19.3226 16.4004 17.5 16.4004C15.6774 16.4004 14.2 17.8778 14.2 19.7003C14.2 21.5228 15.6774 23.0002 17.5 23.0002Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-  <path d="M17.5 7.59983C19.3226 7.59983 20.8 6.1224 20.8 4.29991C20.8 2.47743 19.3226 1 17.5 1C15.6774 1 14.2 2.47743 14.2 4.29991C14.2 6.1224 15.6774 7.59983 17.5 7.59983Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-  <path d="M4.30002 15.299C6.12257 15.299 7.60004 13.8217 7.60004 11.9991C7.60004 10.1766 6.12257 8.69922 4.30002 8.69922C2.47747 8.69922 1 10.1766 1 11.9991C1 13.8217 2.47747 15.299 4.30002 15.299Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M17.5 23.0002C19.3226 23.0002 20.8 21.5228 20.8 19.7003C20.8 17.8778 19.3226 16.4004 17.5 16.4004C15.6774 16.4004 14.2 17.8778 14.2 19.7003C14.2 21.5228 15.6774 23.0002 17.5 23.0002Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  <path d="M17.5 7.59983C19.3226 7.59983 20.8 6.1224 20.8 4.29991C20.8 2.47743 19.3226 1 17.5 1C15.6774 1 14.2 2.47743 14.2 4.29991C14.2 6.1224 15.6774 7.59983 17.5 7.59983Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  <path d="M4.30002 15.299C6.12257 15.299 7.60004 13.8217 7.60004 11.9991C7.60004 10.1766 6.12257 8.69922 4.30002 8.69922C2.47747 8.69922 1 10.1766 1 11.9991C1 13.8217 2.47747 15.299 4.30002 15.299Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   <path d="M14.7501 5.9502L7.05005 10.3501" stroke="white" strokeWidth="2" />
   <path d="M7.05005 13.6504L14.7501 18.0503" stroke="white" strokeWidth="2" />
 </svg>
