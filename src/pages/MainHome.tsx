@@ -20,13 +20,18 @@ import food3 from '../assets/images/food-3.svg';
 import food4 from '../assets/images/food-4.svg';
 import food5 from '../assets/images/food-5.svg';
 import food6 from '../assets/images/food-6.svg';
+import FooterButton from '@/ui/FooterButton';
+import { useNavigate } from 'react-router-dom';
+import DevPlayQuizButton from '@/features/quiz/DevPlayQuizButton';
 
 type CakeItem = { id: number | string; src: string; alt?: string };
 
 const MainHomeBody: React.FC = () => {
+  const navigate = useNavigate();
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [welcomeOpen, setWelcomeOpen] = useState(false);
-  const [isIconView, setIsIconView] = useState(true); // ✅ 메인에서 상태 관리
+  const [isIconView, setIsIconView] = useState(true);
 
   useEffect(() => { setWelcomeOpen(true); }, []);
 
@@ -49,7 +54,7 @@ const MainHomeBody: React.FC = () => {
     return [...mapped, ...fills];
   }, [cards]);
 
-  const { isHost } = useBirthdayMode();
+  const { isHost, isGuest } = useBirthdayMode();
 
   const welcomeMessage = isHost
     ? "생일한상에 오신 것을 환영합니다!\n\n생일상을 꾸미고 공유해서\n친구들에게 생일축하를 받아보아요!\n\n생일축하 메시지는 14일 전부터\n등록할 수 있으며,\n생일 당일에 공개됩니다!"
@@ -67,20 +72,26 @@ const MainHomeBody: React.FC = () => {
   return (
     <div className="relative flex h-screen w-screen max-w-[520px] flex-col bg-[#FFF4DF]">
       <ModeToggle className="absolute right-3 top-30 z-[60]" />
+      <DevPlayQuizButton />
+
+
       <Header onDrawerOpenChange={setDrawerOpen} showBrush={isHost} />
 
       {/* 상단 컨트롤 바 */}
       <div className="z-100 mx-auto my-4 flex w-[90%] items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
-          <ViewToggle isIconView={isIconView} onToggle={setIsIconView} /> {/* ✅ 제어 */}
-          <FeatureButtons />
+          <ViewToggle isIconView={isIconView} onToggle={setIsIconView} />
+          {isHost && <FeatureButtons />}
         </div>
-        <div className="shrink-0">
-          <EventBanner />
-        </div>
+
+        {isHost && (
+          <div className="shrink-0">
+            <EventBanner />
+          </div>
+        )}
       </div>
 
-      {/* ✅ 메인 영역 토글: 아이콘(Feast) vs 리스트 */}
+      {/* 메인 영역 토글: 아이콘(Feast) vs 리스트 */}
       {isIconView ? (
         <MainFeast />
       ) : (
@@ -153,6 +164,16 @@ const MainHomeBody: React.FC = () => {
           }
         />
       </BottomSheet>
+      {(isGuest && !drawerOpen) && (
+        <footer className="fixed bottom-8 left-0 right-0 z-100 flex justify-center bg-transparent">
+          <div className="w-full max-w-[520px] px-8 py-4 pt-15 pb-[env(safe-area-inset-bottom)]">
+            <FooterButton
+              label="사용자님에게 생일 메시지 남기기"
+              onClick={() => navigate('/write')}
+            />
+          </div>
+        </footer>
+      )}
 
       <Modal
         open={welcomeOpen}
@@ -164,6 +185,7 @@ const MainHomeBody: React.FC = () => {
         onClose={() => setWelcomeOpen(false)}
       />
     </div>
+
   );
 };
 

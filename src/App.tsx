@@ -16,6 +16,7 @@ import Login from './pages/LoginPage';
 
 // 더미데이터 훅(React Query 미사용 버전)
 import { useBirthdayCards } from '@/features/message/useBirthdayCards';
+import WriteMessagePage from './pages/subpages/WriteMessagePage';
 
 // 라우트용 래퍼: 쿼리 파싱 + 더미 데이터 매핑
 function BirthdayMessageRoute() {
@@ -84,6 +85,8 @@ export default function App() {
 
       {/* 생일 메시지 라우트 */}
       <Route path="/message" element={<BirthdayMessageRoute />} />
+
+       <Route path="/write" element={<WriteMessagePage />} />
 
       {/* 그 외 경로는 홈으로 */}
       <Route path="*" element={<Navigate to="/" replace />} />
