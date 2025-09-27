@@ -1,15 +1,6 @@
 // src/pages/MainHome.tsx
 import React, { useEffect, useMemo, useState } from 'react';
 import Header from '../ui/Header';
-
-import food1 from '../assets/images/food-1.svg';
-import food2 from '../assets/images/food-2.svg';
-import food3 from '../assets/images/food-3.svg';
-import food4 from '../assets/images/food-4.svg';
-import food5 from '../assets/images/food-5.svg';
-import food6 from '../assets/images/food-6.svg';
-
-import { useBirthdayCards } from '@/features/message/useBirthdayCards';
 import BottomSheet from '@/ui/BottomSheet';
 import Modal from '@/ui/Modal';
 
@@ -18,17 +9,26 @@ import ModeToggle from '@/features/home/ModeToggle';
 import ViewToggle from '@/features/home/ViewToggle';
 import FeatureButtons from '@/features/home/FeatureButtons';
 import EventBanner from '@/features/event/EventBanner';
+
 import MainFeast from '@/features/message/MainFeast';
+import MainList from '@/features/message/MainList';
+
+import { useBirthdayCards } from '@/features/message/useBirthdayCards';
+import food1 from '../assets/images/food-1.svg';
+import food2 from '../assets/images/food-2.svg';
+import food3 from '../assets/images/food-3.svg';
+import food4 from '../assets/images/food-4.svg';
+import food5 from '../assets/images/food-5.svg';
+import food6 from '../assets/images/food-6.svg';
 
 type CakeItem = { id: number | string; src: string; alt?: string };
 
 const MainHomeBody: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
-
   const [welcomeOpen, setWelcomeOpen] = useState(false);
-  useEffect(() => {
-    setWelcomeOpen(true);
-  }, []);
+  const [isIconView, setIsIconView] = useState(true); // ✅ 메인에서 상태 관리
+
+  useEffect(() => { setWelcomeOpen(true); }, []);
 
   const { data: cards = [] } = useBirthdayCards();
 
@@ -39,9 +39,7 @@ const MainHomeBody: React.FC = () => {
       src: c.imageUrl,
       alt: c.nickname,
     }));
-
     if (mapped.length >= 6) return mapped;
-
     const need = Math.max(0, 6 - mapped.length);
     const fills = Array.from({ length: need }).map((_, i) => ({
       id: `fallback-${i + 1}`,
@@ -51,34 +49,30 @@ const MainHomeBody: React.FC = () => {
     return [...mapped, ...fills];
   }, [cards]);
 
-  // ⬇️ 모드별 분기 데이터/문구
-  const { isHost, isGuest } = useBirthdayMode();
+  const { isHost } = useBirthdayMode();
 
-  const welcomeMessage = isHost ? (
-    "생일한상에 오신 것을 환영합니다!\n\n생일상을 꾸미고 공유해서\n친구들에게 생일축하를 받아보아요!\n\n생일축하 메시지는 14일 전부터\n등록할 수 있으며,\n생일 당일에 공개됩니다!"
-  ) : (
-    <>
-      생일한상에 오신 것을 환영합니다, <b>게스트</b>님!<br />
-      <br />
-      축하 메시지와 디저트를 남겨 생일자를 빛나게 해주세요.
-      <br />
-      <br />
-      메시지는 <b>생일 14일 전</b>부터 남길 수 있고, 공개는 <b>당일</b>에 이루어져요.
-    </>
-  );
+  const welcomeMessage = isHost
+    ? "생일한상에 오신 것을 환영합니다!\n\n생일상을 꾸미고 공유해서\n친구들에게 생일축하를 받아보아요!\n\n생일축하 메시지는 14일 전부터\n등록할 수 있으며,\n생일 당일에 공개됩니다!"
+    : (
+      <>
+        생일한상에 오신 것을 환영합니다, <b>게스트</b>님!<br /><br />
+        축하 메시지와 디저트를 남겨 생일자를 빛나게 해주세요.<br /><br />
+        메시지는 <b>생일 14일 전</b>부터 남길 수 있고, 공개는 <b>당일</b>에 이루어져요.
+      </>
+    );
 
   const bottomSheetTitle = isHost ? '호스트 추천 액션' : '오늘의 추천';
   const primaryActionLabel = isHost ? '상에 올리기' : '담기';
 
   return (
     <div className="relative flex h-screen w-screen max-w-[520px] flex-col bg-[#FFF4DF]">
-      {/* 개발용: 빠른 전환 버튼 */}
-      <ModeToggle className="absolute right-3 top-50 z-[60]" />
-
+      <ModeToggle className="absolute right-3 top-30 z-[60]" />
       <Header onDrawerOpenChange={setDrawerOpen} showBrush={isHost} />
-      <div className="z-100 flex w-[90%] mx-auto my-4 items-center justify-between gap-3">
-        <div className="flex items-center gap-2 min-w-0">
-          <ViewToggle />
+
+      {/* 상단 컨트롤 바 */}
+      <div className="z-100 mx-auto my-4 flex w-[90%] items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <ViewToggle isIconView={isIconView} onToggle={setIsIconView} /> {/* ✅ 제어 */}
           <FeatureButtons />
         </div>
         <div className="shrink-0">
@@ -86,9 +80,16 @@ const MainHomeBody: React.FC = () => {
         </div>
       </div>
 
-      <MainFeast />
+      {/* ✅ 메인 영역 토글: 아이콘(Feast) vs 리스트 */}
+      {isIconView ? (
+        <MainFeast />
+      ) : (
+        <div className="mx-auto w-full max-w-[520px] px-4 pb-3">
+          <MainList columns={4} />
+        </div>
+      )}
 
-      {/* 하단 바텀시트: 모드별로 다른 콘텐츠 */}
+      {/* 바텀시트(기존 로직 그대로) */}
       <BottomSheet title={bottomSheetTitle} suspended={drawerOpen} peekHeight={35} height="80vh">
         <ModeGate
           host={
@@ -96,7 +97,7 @@ const MainHomeBody: React.FC = () => {
               <ul className="space-y-2">
                 <li className="rounded-xl bg-white/80 p-4 shadow-sm">
                   <div className="text-sm font-bold text-neutral-900">초대 링크 만들기</div>
-                  <div className="text-xs text-neutral-500 mt-1">링크를 공유해 메시지를 모아보세요.</div>
+                  <div className="mt-1 text-xs text-neutral-500">링크를 공유해 메시지를 모아보세요.</div>
                   <div className="mt-2">
                     <button className="rounded-lg bg-[var(--brand-1,#0e7400)] px-3 py-1.5 text-xs font-bold text-white">
                       링크 생성
@@ -105,7 +106,7 @@ const MainHomeBody: React.FC = () => {
                 </li>
                 <li className="rounded-xl bg-white/80 p-4 shadow-sm">
                   <div className="text-sm font-bold text-neutral-900">메시지 검수</div>
-                  <div className="text-xs text-neutral-500 mt-1">부적절한 메시지는 숨길 수 있어요.</div>
+                  <div className="mt-1 text-xs text-neutral-500">부적절한 메시지는 숨길 수 있어요.</div>
                   <div className="mt-2">
                     <button className="rounded-lg bg-neutral-900 px-3 py-1.5 text-xs font-bold text-white">
                       검수하러 가기
@@ -136,7 +137,7 @@ const MainHomeBody: React.FC = () => {
               <div className="text-center text-base font-semibold text-neutral-700">오늘의 추천</div>
               <ul className="space-y-2">
                 {cakes.map((c) => (
-                  <li key={c.id} className="flex items-center gap-3 rounded-xl bg白/80 p-3 shadow-sm bg-white/80">
+                  <li key={c.id} className="flex items-center gap-3 rounded-xl bg-white/80 p-3 shadow-sm">
                     <img src={c.src} alt={c.alt ?? ''} className="h-10 w-10 shrink-0" />
                     <div className="flex-1">
                       <div className="text-sm font-bold text-neutral-900">{c.alt ?? '달콤한 디저트'}</div>
@@ -166,13 +167,10 @@ const MainHomeBody: React.FC = () => {
   );
 };
 
-// 최상위에서 Provider로 감싸기
-const MainHome: React.FC = () => {
-  return (
-    <BirthdayModeProvider defaultMode="guest">
-      <MainHomeBody />
-    </BirthdayModeProvider>
-  );
-};
+const MainHome: React.FC = () => (
+  <BirthdayModeProvider defaultMode="guest">
+    <MainHomeBody />
+  </BirthdayModeProvider>
+);
 
 export default MainHome;
