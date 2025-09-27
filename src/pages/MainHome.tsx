@@ -21,6 +21,9 @@ import Modal from '@/ui/Modal';
 
 import { BirthdayModeProvider, ModeGate, useBirthdayMode } from '@/features/home/ModeContext';
 import ModeToggle from '@/features/home/ModeToggle';
+import ViewToggle from '@/features/home/ViewToggle';
+import FeatureButtons from '@/features/home/FeatureButtons';
+import EventBanner from '@/features/event/EventBanner';
 
 type CakeItem = { id: number | string; src: string; alt?: string };
 
@@ -57,14 +60,7 @@ const MainHomeBody: React.FC = () => {
   const { isHost, isGuest } = useBirthdayMode();
 
   const welcomeMessage = isHost ? (
-    <>
-      생일한상에 오신 것을 환영합니다, <b>생일자</b>님!<br />
-      <br />
-      상을 꾸미고 초대 링크를 만들어 친구들에게 공유하세요.
-      <br />
-      <br />
-      메시지는 <b>생일 14일 전</b>부터 모집되고, <b>당일 공개</b>돼요.
-    </>
+    "생일한상에 오신 것을 환영합니다!\n\n생일상을 꾸미고 공유해서\n친구들에게 생일축하를 받아보아요!\n\n생일축하 메시지는 14일 전부터\n등록할 수 있으며,\n생일 당일에 공개됩니다!"
   ) : (
     <>
       생일한상에 오신 것을 환영합니다, <b>게스트</b>님!<br />
@@ -82,9 +78,17 @@ const MainHomeBody: React.FC = () => {
   return (
     <div className="relative flex h-screen w-screen max-w-[520px] flex-col bg-[#FFF4DF]">
       {/* 개발용: 빠른 전환 버튼 */}
-      <ModeToggle className="absolute right-3 top-10 z-[60]" />
+      <ModeToggle className="absolute right-3 top-50 z-[60]" />
 
-      <Header onDrawerOpenChange={setDrawerOpen} showBrush={isHost}/>
+      <Header onDrawerOpenChange={setDrawerOpen} showBrush={isHost} />
+      <div className='flex justify-center content-between'>
+        <div className='flex justify-center gap-2'>
+          <ViewToggle />
+          <FeatureButtons />
+        </div>
+        <EventBanner />
+      </div>
+
 
       {/* 메인 이미지 영역 */}
       <div className="relative mt-auto w-full">
@@ -171,9 +175,9 @@ const MainHomeBody: React.FC = () => {
       <Modal
         open={welcomeOpen}
         type="welcome"
-        highlightText={isHost ? '생일자' : '게스트'}
+        highlightText={isHost ? '사용자' : '게스트'}
         message={welcomeMessage}
-        helperText={isHost ? '공개 범위를 설정하고 메시지를 검수할 수 있어요.' : '공개 범위는 호스트가 설정해요.'}
+        helperText={isHost ? '공개 기간은 설정할 수 있어요.' : '공개 범위는 호스트가 설정해요.'}
         onConfirm={() => setWelcomeOpen(false)}
         onClose={() => setWelcomeOpen(false)}
       />

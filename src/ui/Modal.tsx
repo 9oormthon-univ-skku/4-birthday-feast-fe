@@ -124,7 +124,7 @@ export default function Modal({
       <div className="absolute inset-0 bg-black/50" onClick={handleBackdropClick} />
       <div
         className={clsx(
-          "relative mx-auto w-[74%] max-w-sm rounded-sm bg-white shadow-xl",
+          "relative mx-auto w-[74%] max-w-sm rounded-[5px] bg-white shadow-[0px_0px_4px_0px_rgba(0,0,0,0.25)]",
           "animate-[fadeIn_120ms_ease-out]",
           className
         )}
@@ -132,25 +132,25 @@ export default function Modal({
       >
         <div className="px-6 pt-6 pb-3 text-center">
           {isWelcome && (
-            <div className="mb-2 text-sm font-semibold text-rose-500">
+            <div className="text-base font-semibold text-[#FF8B8B]">
               {highlightText ? (
                 <>
-                  <span className="text-rose-500">{highlightText}</span>
-                  <span className="text-gray-500">님!</span>
+                  <span className="text-[#FF8B8B]">{highlightText}</span>
+                  <span className="text-[#373737]">님!</span>
                 </>
               ) : null}
             </div>
           )}
 
-          {title && <h3 className="mb-2 text-lg font-semibold text-gray-900">{title}</h3>}
+          {title && <h3 className="text-base font-semibold text-[#373737]">{title}</h3>}
 
           {message && (
-            <div className="mb-4 whitespace-pre-line text-[15px] leading-6 text-gray-800">
+            <div className="whitespace-pre-line text-base font-semibold leading-6 text-[#373737]">
               {message}
             </div>
           )}
 
-          {helperText && <p className="mt-1 text-sm leading-5 text-gray-400">{helperText}</p>}
+          {helperText && <p className="text-sm leading-5 text-[#A0A0A0]">{helperText}</p>}
 
           {isPrompt && (
             <div className="mt-4">
@@ -168,14 +168,14 @@ export default function Modal({
           )}
         </div>
 
-        <div className="h-px w-full bg-gray-200" />
+        <div className="h-px mx-6 bg-gray-200" />
 
         <div className="flex">
           {isConfirm ? (
             <>
               <button
                 ref={okBtnRef}
-                className="flex-1 py-3 text-base font-semibold text-gray-500 focus:outline-none active:opacity-80"
+                className="flex-1 py-4 text-base font-semibold text-[#A0A0A0] focus:outline-none active:opacity-80"
                 onClick={() => onConfirm?.()}
               >
                 {_confirmText}
