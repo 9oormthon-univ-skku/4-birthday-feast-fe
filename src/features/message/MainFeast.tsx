@@ -53,15 +53,21 @@ const MainFeast: React.FC<MainFeastProps> = ({ className }) => {
   return (
     <div className={clsx('relative mt-auto w-full', className)}>
       {/* 풍선 */}
-      <img src={lBalloon} alt="" className="absolute left-0 z-30 -translate-y-[75%] transform" />
-      <img src={rBalloon} alt="" className="absolute right-0 z-30 -translate-y-[75%] transform" />
+      <img src={lBalloon} alt="" 
+      className="absolute left-0 z-30 -translate-y-[73%] transform
+      w-[31%]" />
+      <img src={rBalloon} alt="" 
+      className="absolute right-0 z-30 -translate-y-[75%] transform
+      w-[34%]" />
 
       {/* 호스트/케이크 */}
-      <img src={host} alt="" className="absolute left-1/2 z-0 -translate-x-1/2 -translate-y-[83%] transform" />
+      <img src={host} alt="" className="absolute left-1/2 z-0 -translate-x-1/2 -translate-y-[83%] transform
+      w-[46%]" />
       <img
         src={mainCake}
         alt=""
-        className="absolute left-1/2 z-20 -translate-x-1/2 -translate-y-[60%] transform drop-shadow-[0_8px_8px_rgba(0,0,0,0.15)]"
+        className="absolute left-1/2 z-20 -translate-x-1/2 -translate-y-[60%] transform drop-shadow-[0_8px_8px_rgba(0,0,0,0.15)]
+        w-[50%]"
       />
 
       {/* 테이블 + 케이크들 */}
