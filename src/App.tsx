@@ -68,8 +68,8 @@ function BirthdayMessageRoute() {
 export default function App() {
   return (
     <Routes>
-      {/* <Route path="/loading" element={<Loading />} /> */}
-      {/* <Route path="/login" element={<Login />} /> */}
+      <Route path="/loading" element={<Loading />} />
+      <Route path="/login" element={<Login />} />
 
       <Route path="/" element={<MainHome />} />
       <Route path="/theme" element={<ThemePage />} />
