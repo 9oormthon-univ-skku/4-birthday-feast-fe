@@ -3,6 +3,7 @@ import React, { useMemo, useState } from 'react';
 import AppLayout from '@/layouts/AppLayout';
 import rawQuiz from '@/features/quiz/quizDummy.json';
 import QuizResultList from '@/features/quiz/QuizResultList';
+import QuizRankList from '@/features/quiz/QuizRankList';
 
 type QuizQuestion = {
   questionId: number;
@@ -103,17 +104,18 @@ export default function PlayQuizPage() {
         /* ---------------- 결과 화면 ---------------- */
         <section className="pt-9">
           <h2 className="text-4xl font-normal font-['KoreanSWGIG3'] text-[#FF8B8B]">결과는?</h2>
-          <p className="mt-1 text-2xl font-normal font-['KoreanSWGIG3'] text-[#A0A0A0]">
+          <p className="mt-1 mb-4 text-2xl font-normal font-['KoreanSWGIG3'] text-[#A0A0A0]">
             {total}문제 중 <span className="text-[#FF8B8B]">{correctCount}</span>문제 맞췄어요!
           </p>
 
           {/* ✅ 분리된 스크롤 리스트 */}
-          <QuizResultList
+          {/* <QuizResultList
             questions={questions}
             userAnswers={userAnswers}
             total={total}
             heightClassName="max-h-[70vh]"
-          />
+          /> */}
+          <QuizRankList />
         </section>
       )}
     </AppLayout>
@@ -123,11 +125,11 @@ export default function PlayQuizPage() {
 // ---------- 아이콘 svg ----------
 const O = (
   <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 25 25" fill="none">
-    <path d="M12.6207 23.2414C18.4863 23.2414 23.2414 18.4863 23.2414 12.6207C23.2414 6.75504 18.4863 2 12.6207 2C6.75504 2 2 6.75504 2 12.6207C2 18.4863 6.75504 23.2414 12.6207 23.2414Z" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12.6207 23.2414C18.4863 23.2414 23.2414 18.4863 23.2414 12.6207C23.2414 6.75504 18.4863 2 12.6207 2C6.75504 2 2 6.75504 2 12.6207C2 18.4863 6.75504 23.2414 12.6207 23.2414Z" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 const X = (
   <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 23 23" fill="none">
-    <path d="M21.3556 2L2 21.3556M2 2L21.3556 21.3556" stroke="#FF8B8B" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M21.3556 2L2 21.3556M2 2L21.3556 21.3556" stroke="#FF8B8B" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );

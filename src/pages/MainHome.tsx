@@ -23,6 +23,7 @@ import food6 from '../assets/images/food-6.svg';
 import FooterButton from '@/ui/FooterButton';
 import { useNavigate } from 'react-router-dom';
 import DevPlayQuizButton from '@/features/quiz/DevPlayQuizButton';
+import QuizRankList from '@/features/quiz/QuizRankList';
 
 type CakeItem = { id: number | string; src: string; alt?: string };
 
@@ -100,8 +101,13 @@ const MainHomeBody: React.FC = () => {
         </div>
       )}
 
+      <BottomSheet>
+        <h2 className='my-2 text-[#FF8B8B] text-xl font-bold'>방문자 퀴즈 랭킹</h2>
+        <QuizRankList />
+      </BottomSheet>
+
       {/* 바텀시트(기존 로직 그대로) */}
-      <BottomSheet title={bottomSheetTitle} suspended={drawerOpen} peekHeight={35} height="80vh">
+      {/* <BottomSheet title={bottomSheetTitle} suspended={drawerOpen} peekHeight={35} height="80vh">
         <ModeGate
           host={
             <div className="mx-auto max-w-md space-y-3">
@@ -163,7 +169,8 @@ const MainHomeBody: React.FC = () => {
             </div>
           }
         />
-      </BottomSheet>
+      </BottomSheet> */}
+
       {(isGuest && !drawerOpen) && (
         <footer className="fixed bottom-8 left-0 right-0 z-100 flex justify-center bg-transparent">
           <div className="w-full max-w-[520px] px-8 py-4 pt-15 pb-[env(safe-area-inset-bottom)]">
