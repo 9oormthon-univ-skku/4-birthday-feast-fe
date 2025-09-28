@@ -108,7 +108,7 @@ export default function PlayQuizPage() {
             {total}문제 중 <span className="text-[#FF8B8B]">{correctCount}</span>문제 맞췄어요!
           </p>
 
-          {/* ✅ 분리된 스크롤 리스트 */}
+          {/* 분리된 스크롤 리스트 */}
           {/* <QuizResultList
             questions={questions}
             userAnswers={userAnswers}
