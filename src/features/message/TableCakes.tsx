@@ -24,13 +24,13 @@ const SLOTS: Slot[] = [
 export default function TableCakes({
   items,
   uniformWidth,
-  zIndex = 20,
+  // zIndex = 20,
   onSelect,
   buttonClassName,
 }: {
   items: CakeItem[];
   uniformWidth?: string;
-  zIndex?: number;
+  // zIndex?: number;
   onSelect?: (item: CakeItem, index: number, e: MouseEvent<HTMLButtonElement>) => void;
   buttonClassName?: string;
 }) {
@@ -107,7 +107,7 @@ export default function TableCakes({
   return (
     <>
       {/* 스와이프 영역 래퍼 (테이블 이미지와 같은 relative 컨테이너 안에서 절대 위치) */}
-      <div ref={swipeRef} className="absolute inset-0 z-20 pointer-events-none">
+      <div ref={swipeRef} className="absolute inset-0 z-100 pointer-events-none">
         {/* 케이크 6개 배치 */}
         {pageItems.map((cake, i) => {
           const slot = SLOTS[i];
@@ -119,7 +119,7 @@ export default function TableCakes({
             bottom: slot.bottom,
             width: uniformWidth ?? slot.width,
             transform: slot.anchorCenter ? 'translateX(-50%)' : undefined,
-            zIndex,
+            // zIndex,
           };
 
           const globalIndex = page * PAGE_SIZE + i;

@@ -24,6 +24,7 @@ import FooterButton from '@/ui/FooterButton';
 import { useNavigate } from 'react-router-dom';
 import DevPlayQuizButton from '@/features/quiz/DevPlayQuizButton';
 import QuizRankList from '@/features/quiz/QuizRankList';
+import PlayQuizButton from '@/features/quiz/QuizButton';
 
 type CakeItem = { id: number | string; src: string; alt?: string };
 
@@ -73,7 +74,8 @@ const MainHomeBody: React.FC = () => {
   return (
     <div className="relative flex h-screen w-screen max-w-[520px] flex-col bg-[#FFF4DF]">
       <ModeToggle className="absolute right-3 top-30 z-[60]" />
-      <DevPlayQuizButton />
+      {/* <DevPlayQuizButton /> */}
+      
 
 
       <Header onDrawerOpenChange={setDrawerOpen} showBrush={isHost} />

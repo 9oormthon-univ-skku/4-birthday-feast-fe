@@ -20,6 +20,7 @@ import food6 from '@/assets/images/food-6.svg';
 // 내부에서 TableCakes & 카드 데이터 훅 사용
 import TableCakes from '@/features/message/TableCakes';
 import { useBirthdayCards } from '@/features/message/useBirthdayCards';
+import PlayQuizButton from '../quiz/QuizButton';
 
 export type CakeItem = { id: number | string; src: string; alt?: string };
 
@@ -53,21 +54,34 @@ const MainFeast: React.FC<MainFeastProps> = ({ className }) => {
   return (
     <div className={clsx('relative mt-auto w-full', className)}>
       {/* 풍선 */}
-      <img src={lBalloon} alt="" 
-      className="absolute left-0 z-30 -translate-y-[73%] transform
-      w-[31%]" />
-      <img src={rBalloon} alt="" 
-      className="absolute right-0 z-30 -translate-y-[75%] transform
-      w-[34%]" />
+      <img
+        src={lBalloon}
+        alt=""
+        className="absolute left-0 z-30 -translate-y-[73%] w-[31%]"
+      />
+      <img
+        src={rBalloon}
+        alt=""
+        className="absolute right-0 z-30 -translate-y-[75%] w-[34%]"
+      />
 
       {/* 호스트/케이크 */}
-      <img src={host} alt="" className="absolute left-1/2 z-0 -translate-x-1/2 -translate-y-[83%] transform
-      w-[46%]" />
+      <div className="absolute left-1/2 z-40 -translate-x-1/2 -translate-y-[83%] w-[46%]">
+        <img src={host} alt="host" className="w-full" />
+        <div className="absolute left-0 top-1/2 -translate-x-[55%] -translate-y-1/2">
+          <PlayQuizButton
+            variant="inline"
+            imgSizeClassName="h-17 w-21"
+            ariaLabel="퀴즈 플레이 버튼"
+          />
+        </div>
+      </div>
+
       <img
         src={mainCake}
         alt=""
-        className="absolute left-1/2 z-20 -translate-x-1/2 -translate-y-[60%] transform drop-shadow-[0_8px_8px_rgba(0,0,0,0.15)]
-        w-[50%]"
+        className="absolute left-1/2 z-50 -translate-x-1/2 -translate-y-[60%] 
+        w-[50%] drop-shadow-[0_8px_8px_rgba(0,0,0,0.15)]"
       />
 
       {/* 테이블 + 케이크들 */}
