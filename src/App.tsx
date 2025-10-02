@@ -2,7 +2,6 @@
 import { useMemo } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import MainHome from './pages/MainHome';
-import ThemePage from './pages/subpages/ThemePage';
 import TeamAboutPage from './pages/subpages/TeamAboutPage';
 import ContactPage from './pages/subpages/ContactPage';
 import QuizPage from './pages/QuizPage';
@@ -18,6 +17,7 @@ import Login from './pages/LoginPage';
 import { useBirthdayCards } from '@/features/message/useBirthdayCards';
 import WriteMessagePage from './pages/subpages/WriteMessagePage';
 import PlayQuizPage from './pages/subpages/PlayQuizPage';
+import ThemeSettingsPage from './pages/subpages/ThemeSettingsPage';
 
 // 라우트용 래퍼: 쿼리 파싱 + 더미 데이터 매핑
 function BirthdayMessageRoute() {
@@ -74,7 +74,7 @@ export default function App() {
       <Route path="/login" element={<Login />} />
 
       <Route path="/" element={<MainHome />} />
-      <Route path="/theme" element={<ThemePage />} />
+      <Route path="/theme" element={<ThemeSettingsPage />} />
       <Route path="/about-team" element={<TeamAboutPage />} />
 
       <Route path="/contact" element={<ContactPage />} />
