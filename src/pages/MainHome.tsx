@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import QuizRankList from '@/features/quiz/QuizRankList';
 import WelcomeModal from '@/features/home/WelcomeModal';
 import NicknameModal from '@/features/auth/NicknameModal';
+import CapturePreview from '@/features/home/CapturePreview';
 
 const MainHomeBody: React.FC = () => {
   const navigate = useNavigate();
@@ -109,45 +110,11 @@ const MainHomeBody: React.FC = () => {
         onClose={() => setNicknameOpen(false)}
       />
 
-      {shotUrl && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-4"
-          onClick={() => setShotUrl(null)}
-        >
-          <div
-            className="relative max-w-[520px] w-full rounded-2xl bg-white p-4 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="mb-3 text-lg font-semibold text-gray-800">캡쳐 미리보기</h3>
-
-            <div className="max-h-[70vh] overflow-auto rounded-xl border">
-              <img src={shotUrl} alt="캡쳐 이미지" className="w-full h-auto block" />
-            </div>
-
-            <div className="mt-4 flex justify-end gap-2">
-              <button
-                onClick={() => {
-                  const a = document.createElement("a");
-                  a.href = shotUrl;
-                  a.download = `birthday-feast-${new Date().toISOString().replace(/[:.]/g, "-")}.png`;
-                  a.click();
-                }}
-                className="px-3 py-2 rounded-xl bg-[#FF8B8B] text-white"
-              >
-                다운로드
-              </button>
-              <button
-                onClick={() => setShotUrl(null)}
-                className="px-3 py-2 rounded-xl bg-gray-200 text-gray-800"
-              >
-                닫기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <CapturePreview
+        open={!!shotUrl}
+        src={shotUrl}
+        onClose={() => setShotUrl(null)}
+      />
     </div>
   );
 };
