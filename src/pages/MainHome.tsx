@@ -26,9 +26,36 @@ const MainHomeBody: React.FC = () => {
   const [nicknameOpen, setNicknameOpen] = useState(false);
   const [isIconView, setIsIconView] = useState(true);
 
-  useEffect(() => { setWelcomeOpen(true); }, []);
-
   const { isHost, isGuest } = useBirthdayMode();
+
+  // (변경) 초기 모달 오픈 로직: 역할/닉네임 유무에 따라 분기
+  useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10); // 예: 2025-10-06
+    const lastShown = localStorage.getItem('welcome_shown_date');
+
+    // 게스트면서 닉네임이 아직 없으면 닉네임 모달부터 오픈
+    if (isGuest) {
+      const hasNickname = !!localStorage.getItem('guest_nickname');
+      if (!hasNickname) {
+        setNicknameOpen(true);
+        setWelcomeOpen(false); 
+        return;
+      } 
+    }
+    if (lastShown !== today) {
+      setWelcomeOpen(true);
+    }
+  }, [isHost, isGuest, nicknameOpen]);
+
+  const handleWelcomeClose = () => {
+    const today = new Date().toISOString().slice(0, 10);
+    localStorage.setItem('welcome_shown_date', today);
+    setWelcomeOpen(false);
+    if (isGuest && !localStorage.getItem('guest_nickname')) {
+      setNicknameOpen(true);
+    }
+  };
+
 
   const captureRef = useRef<HTMLDivElement | null>(null);
   const [shotUrl, setShotUrl] = useState<string | null>(null);
@@ -98,10 +125,8 @@ const MainHomeBody: React.FC = () => {
       <WelcomeModal
         open={welcomeOpen}
         isHost={isHost}
-        onClose={() => {
-          setWelcomeOpen(false);
-          if (isGuest) setNicknameOpen(true);
-        }}
+        nickname={localStorage.getItem('guest_nickname') || ''}
+        onClose={handleWelcomeClose}
       />
       <NicknameModal
         open={isGuest && nicknameOpen}
