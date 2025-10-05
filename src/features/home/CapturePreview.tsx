@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+import { toPng } from "html-to-image";
+import React, { useEffect, useRef } from "react";
 
 type Props = {
   open: boolean;
@@ -22,6 +23,8 @@ export default function CapturePreview({
   className,
   titleDate = "2025. 00. 00",
 }: Props) {
+  const cardRef = useRef<HTMLDivElement | null>(null);
+
   // ESC 닫기
   useEffect(() => {
     if (!open) return;
@@ -32,7 +35,31 @@ export default function CapturePreview({
 
   if (!open || !src) return null;
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
+    // 1) 카드 DOM을 직접 PNG로 저장
+    if (cardRef.current) {
+      try {
+        const dataUrl = await toPng(cardRef.current, {
+          cacheBust: true,
+          pixelRatio: 2,
+          backgroundColor: "#FFFFFF",
+          // 필요시 특정 요소 제외하고 싶으면 클래스/데이터 속성으로 필터링
+          // filter: (n) => !(n instanceof Element && n.classList.contains("capture-ignore")),
+        });
+
+        if (onDownload) return onDownload(dataUrl);
+
+        const a = document.createElement("a");
+        a.href = dataUrl;
+        a.download = `birthday-feast-${new Date().toISOString().replace(/[:.]/g, "-")}.png`;
+        a.click();
+        return;
+      } catch (e) {
+        console.error("Card capture failed, fallback to src download.", e);
+      }
+    }
+
+    // 2) (폴백) 기존 src 저장
     if (onDownload) return onDownload(src);
     const a = document.createElement("a");
     a.href = src;
@@ -41,24 +68,20 @@ export default function CapturePreview({
   };
 
   const handleShare = async () => {
-    if (onShare) return onShare(src);
+    if (onShare) return onShare(src!);
     try {
-      // dataURL -> Blob
-      const res = await fetch(src);
+      const res = await fetch(src!);
       const blob = await res.blob();
-      // Web Share API (파일 공유 지원 브라우저 한정)
       // @ts-ignore
       if (navigator.canShare && navigator.canShare({ files: [] })) {
         const file = new File([blob], "birthday-feast.png", { type: "image/png" });
         // @ts-ignore
         await navigator.share({ files: [file], title: "생일한상 캡쳐" });
       } else {
-        await navigator.clipboard.writeText(src);
+        await navigator.clipboard.writeText(src!);
         alert("이미지 주소를 클립보드에 복사했어요.");
       }
-    } catch {
-      // 실패는 조용히 무시
-    }
+    } catch {}
   };
 
   return (
@@ -69,7 +92,7 @@ export default function CapturePreview({
       onClick={closeOnBackdrop ? onClose : undefined}
     >
       {/* 카드 + 플로팅 버튼 컨테이너 */}
-      <div
+      <div ref={cardRef}
         className="relative max-w-[468px] w-[90%] rounded-[5px] bg-white p-5 pb-3"
         onClick={(e) => e.stopPropagation()}
       >
@@ -90,13 +113,13 @@ export default function CapturePreview({
 
         <div
           className="absolute left-1/2 -translate-x-1/2 -bottom-21 flex items-center gap-5
-                     pb-[env(safe-area-inset-bottom)]"
+                    pb-[env(safe-area-inset-bottom)]"
         >
           <button
             aria-label="공유하기"
             onClick={handleShare}
             className="w-14 h-14 rounded-full bg-[#FF8B8B] text-white shadow-md active:scale-95 transition
-                       flex items-center justify-center"
+                      flex items-center justify-center"
           >
             {shareIcon}
           </button>
@@ -104,7 +127,7 @@ export default function CapturePreview({
             aria-label="다운로드"
             onClick={handleDownload}
             className="w-14 h-14 rounded-full bg-[#FF8B8B] text-white shadow-md active:scale-95 transition
-                       flex items-center justify-center"
+                      flex items-center justify-center"
           >
             {downloadIcon}
           </button>
