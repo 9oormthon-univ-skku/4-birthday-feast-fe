@@ -62,7 +62,7 @@ function BirthdayMessageRoute() {
       messages={messages}
       initialIndex={safeInitialIndex}
       onBack={() => navigate(-1)}
-      onHome={() => navigate('/')}
+      onHome={() => navigate('/main')}
     />
   );
 }
@@ -70,10 +70,11 @@ function BirthdayMessageRoute() {
 export default function App() {
   return (
     <Routes>
-      <Route path="/loading" element={<Loading />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
+
       <Route path="/login" element={<Login />} />
 
-      <Route path="/" element={<MainHome />} />
+      <Route path="/main" element={<MainHome />} />
       <Route path="/theme" element={<ThemeSettingsPage />} />
       <Route path="/about-team" element={<TeamAboutPage />} />
 
