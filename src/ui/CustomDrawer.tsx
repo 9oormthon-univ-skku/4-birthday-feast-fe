@@ -118,7 +118,7 @@ export function Drawer({
         <>
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 z-[998] bg-black/40 backdrop-blur-[2px] backdrop-saturate-125"
+            className="fixed inset-0 z-1000 bg-black/40 backdrop-blur-[2px] backdrop-saturate-125"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { duration: 0.12 } }}
             exit={{ opacity: 0, transition: { duration: 0.12 } }}
@@ -133,7 +133,7 @@ export function Drawer({
             aria-modal="true"
             aria-label={ariaLabel || `${anchor} drawer`}
             tabIndex={-1}
-            className={`fixed z-[999] bg-white text-neutral-900 shadow-2xl outline-none ${roundByAnchor} ${positionByAnchor}`}
+            className={`fixed z-10000 bg-white text-neutral-900 shadow-2xl outline-none ${roundByAnchor} ${positionByAnchor}`}
             style={sizeStyle}
             initial={initial}
             animate={animate}
