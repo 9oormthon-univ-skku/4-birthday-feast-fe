@@ -3,11 +3,10 @@ import React from 'react';
 import clsx from 'clsx';
 import { useBirthdayCards } from '@/features/message/useBirthdayCards';
 import type { BirthdayCard } from '@/types/birthday';
+import { useNavigate } from 'react-router-dom'; // ✅ 추가
 
 type MainListProps = {
-  /** 기본 4열 (2~4 지원) */
   columns?: 2 | 3 | 4;
-  /** 아이템 클릭 콜백(선택) */
   onSelect?: (card: BirthdayCard) => void;
   className?: string;
 };
@@ -17,6 +16,7 @@ const colClass = (n: 2 | 3 | 4) =>
 
 const MainList: React.FC<MainListProps> = ({ columns = 4, onSelect, className }) => {
   const { data, isLoading, error } = useBirthdayCards();
+  const navigate = useNavigate(); // ✅ 추가
 
   if (error) {
     return (
@@ -30,6 +30,12 @@ const MainList: React.FC<MainListProps> = ({ columns = 4, onSelect, className })
     return <SkeletonGrid columns={columns} className={className} />;
   }
 
+  const handleClick = (c: BirthdayCard, index: number) => {
+    onSelect?.(c); // ✅ TableCakes와 동일: 콜백 먼저
+    const id = (c as any).birthdayCardId ?? (c as any).id ?? '';
+    navigate(`/message?i=${index}`, { state: { cakeId: id } }); // ✅ 동일 동작
+  };
+
   return (
     <ul
       className={clsx(
@@ -39,14 +45,14 @@ const MainList: React.FC<MainListProps> = ({ columns = 4, onSelect, className })
       )}
       role="list"
     >
-      {data.map((c) => (
+      {data.map((c, idx) => (
         <li key={(c as any).birthdayCardId ?? (c as any).id ?? `${c.nickname}-${c.imageUrl}`}>
           <button
             type="button"
-            onClick={() => onSelect?.(c)}
+            onClick={() => handleClick(c, idx)}
             className="group flex w-full flex-col items-center outline-none"
           >
-            {/* 원형 썸네일 */}
+            {/* 원형 썸네일 (중첩 button → div로 교체) */}
             <div className="flex h-15 w-15 items-center justify-center rounded-full bg-[#FFFDF9]">
               <img
                 src={c.imageUrl}
@@ -58,7 +64,7 @@ const MainList: React.FC<MainListProps> = ({ columns = 4, onSelect, className })
 
             {/* 닉네임 */}
             <div className="mt-2 w-24 text-center text-sm font-semibold leading-tight text-[#FF8B8B] break-keep">
-              {c.nickname ?? '손님'}
+              {c.nickname ?? '방문자'}
             </div>
           </button>
         </li>

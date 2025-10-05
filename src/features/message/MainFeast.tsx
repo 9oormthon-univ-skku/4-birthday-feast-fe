@@ -8,14 +8,6 @@ import rBalloon from '@/assets/images/right-balloon.svg';
 import host from '@/assets/images/host.svg';
 import mainCake from '@/assets/images/main-cake.svg';
 
-// 케이크 폴백 이미지(최소 6개 보장)
-import food1 from '@/assets/images/food-1.svg';
-import food2 from '@/assets/images/food-2.svg';
-import food3 from '@/assets/images/food-3.svg';
-import food4 from '@/assets/images/food-4.svg';
-import food5 from '@/assets/images/food-5.svg';
-import food6 from '@/assets/images/food-6.svg';
-
 // 내부에서 TableCakes & 카드 데이터 훅 사용
 import TableCakes from '@/features/message/TableCakes';
 import { useBirthdayCards } from '@/features/message/useBirthdayCards';
@@ -30,28 +22,17 @@ export type MainFeastProps = {
 const MainFeast: React.FC<MainFeastProps> = ({ className }) => {
   const { data: cards = [] } = useBirthdayCards();
 
+  // 🎂 로컬스토리지 카드만 사용 — 폴백 없음
   const cakes: CakeItem[] = useMemo(() => {
-    const fallback = [food1, food2, food3, food4, food5, food6];
-
-    const mapped = cards.map((c: any, idx: number) => ({
+    return cards.map((c: any, idx: number) => ({
       id: c.birthdayCardId ?? `card-${idx}`,
       src: c.imageUrl,
       alt: c.nickname,
     }));
-
-    if (mapped.length >= 6) return mapped;
-
-    const need = Math.max(0, 6 - mapped.length);
-    const fills = Array.from({ length: need }).map((_, i) => ({
-      id: `fallback-${i + 1}`,
-      src: fallback[i],
-      alt: `디저트${i + 1}`,
-    }));
-    return [...mapped, ...fills];
   }, [cards]);
 
   return (
-    <div className='relative w-full max-w-[520px]'>
+    <div className="relative w-full max-w-[520px]">
       {/* 풍선 */}
       <img
         src={lBalloon}
@@ -64,7 +45,7 @@ const MainFeast: React.FC<MainFeastProps> = ({ className }) => {
         className="absolute right-0 z-30 -translate-y-[75%] w-[34%]"
       />
 
-      {/* 호스트/케이크 */}
+      {/* 호스트 / 퀴즈 버튼 */}
       <div className="absolute left-1/2 z-40 -translate-x-1/2 -translate-y-[83%] w-[46%]">
         <img src={host} alt="host" className="w-full" />
         <div className="absolute left-0 top-1/2 -translate-x-[55%] -translate-y-1/2">
