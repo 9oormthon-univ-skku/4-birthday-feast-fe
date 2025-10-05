@@ -36,40 +36,46 @@ export default function CapturePreview({
   if (!open || !src) return null;
 
   const handleDownload = async () => {
-    // 1) 카드 DOM을 직접 PNG로 저장
-    if (cardRef.current) {
-      try {
+    try {
+      if (cardRef.current) {
         const dataUrl = await toPng(cardRef.current, {
           cacheBust: true,
           pixelRatio: 2,
           backgroundColor: "#FFFFFF",
-          // 필요시 특정 요소 제외하고 싶으면 클래스/데이터 속성으로 필터링
-          // filter: (n) => !(n instanceof Element && n.classList.contains("capture-ignore")),
         });
 
-        if (onDownload) return onDownload(dataUrl);
+        if (onDownload) onDownload(dataUrl);
+        else {
+          const a = document.createElement("a");
+          a.href = dataUrl;
+          a.download = `birthday-feast-${new Date().toISOString().replace(/[:.]/g, "-")}.png`;
+          a.click();
+        }
+        return;
+      }
 
+      // 폴백
+      if (onDownload) onDownload(src!);
+      else {
         const a = document.createElement("a");
-        a.href = dataUrl;
+        a.href = src!;
         a.download = `birthday-feast-${new Date().toISOString().replace(/[:.]/g, "-")}.png`;
         a.click();
-        return;
-      } catch (e) {
-        console.error("Card capture failed, fallback to src download.", e);
       }
+    } catch (e) {
+      console.error("Card capture failed, fallback to src download.", e);
+    } finally {
+      alert("이미지를 저장했어요.");
+      onClose(); // 완료 후 모달 닫기
     }
-
-    // 2) (폴백) 기존 src 저장
-    if (onDownload) return onDownload(src);
-    const a = document.createElement("a");
-    a.href = src;
-    a.download = `birthday-feast-${new Date().toISOString().replace(/[:.]/g, "-")}.png`;
-    a.click();
   };
 
   const handleShare = async () => {
-    if (onShare) return onShare(src!);
     try {
+      if (onShare) {
+        onShare(src!);
+        return;
+      }
       const res = await fetch(src!);
       const blob = await res.blob();
       // @ts-ignore
@@ -81,7 +87,11 @@ export default function CapturePreview({
         await navigator.clipboard.writeText(src!);
         alert("이미지 주소를 클립보드에 복사했어요.");
       }
-    } catch {}
+    } catch (e) {
+      console.error(e);
+    } finally {
+      onClose(); // 완료 후 모달 닫기
+    }
   };
 
   return (
@@ -137,7 +147,6 @@ export default function CapturePreview({
   );
 }
 
-/* 아이콘 */
 const shareIcon = (
   <svg xmlns="http://www.w3.org/2000/svg" width="22" height="24" viewBox="0 0 22 24" fill="none">
   <path d="M17.5 23.0002C19.3226 23.0002 20.8001 21.5228 20.8001 19.7003C20.8001 17.8778 19.3226 16.4004 17.5 16.4004C15.6774 16.4004 14.2 17.8778 14.2 19.7003C14.2 21.5228 15.6774 23.0002 17.5 23.0002Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
