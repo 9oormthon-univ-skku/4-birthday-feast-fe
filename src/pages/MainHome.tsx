@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Header from '../ui/Header';
-import BottomSheet from '@/ui/BottomSheet';;
+import BottomSheet from '@/ui/BottomSheet';
 
 import { BirthdayModeProvider, useBirthdayMode } from '@/features/home/ModeContext';
 import ModeToggle from '@/features/home/ModeToggle';
@@ -29,12 +29,12 @@ const MainHomeBody: React.FC = () => {
 
   const { isHost, isGuest } = useBirthdayMode();
 
+  const captureRef = useRef<HTMLDivElement | null>(null);
+  const [shotUrl, setShotUrl] = useState<string | null>(null);
+
   // 닉네임 저장 처리 
   const handleNicknameSubmit = (nickname: string) => {
-    // 예시: 로컬 저장 또는 API 호출
-    try {
-      localStorage.setItem('guest_nickname', nickname);
-    } catch { }
+    try { localStorage.setItem('guest_nickname', nickname); } catch { }
     setNicknameOpen(false);
   };
 
@@ -45,9 +45,17 @@ const MainHomeBody: React.FC = () => {
 
       {/* 상단 컨트롤 바 */}
       <div className="z-100 mx-auto my-4 flex w-[90%] max-w-[468px] items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2"
+        >
           <ViewToggle isIconView={isIconView} onToggle={setIsIconView} />
-          {isHost && <FeatureButtons />}
+          {isHost && (
+            <FeatureButtons
+              targetRef={captureRef}                 // 캡쳐 타깃 전달
+              fileName="birthday-feast"
+              backgroundColor="#FFF4DF"
+              onCaptured={(url) => setShotUrl(url)}  // 미리보기 열기
+            />
+          )}
         </div>
 
         {isHost && (
@@ -57,16 +65,18 @@ const MainHomeBody: React.FC = () => {
         )}
       </div>
 
-      {/* 메인 영역 토글: 아이콘(Feast) vs 리스트 */}
-      {isIconView ? (
-        <div className="w-full mt-auto flex justify-center">
-          <MainFeast />
-        </div>
-      ) : (
-        <div className="mx-auto w-full max-w-[520px] px-4 pb-3">
-          <MainList columns={4} />
-        </div>
-      )}
+      <div ref={captureRef} className={isIconView ? "mt-auto pt-[95%]" : ""}>
+        {isIconView ? (
+          <div className="w-full flex justify-center">
+            <MainFeast />
+          </div>
+        ) : (
+          <div className="mx-auto w-full max-w-[520px] px-4 pb-3">
+            <MainList columns={4} />
+          </div>
+        )}
+      </div>
+
 
       <BottomSheet>
         <h2 className='my-2 text-[#FF8B8B] text-xl font-bold'>방문자 퀴즈 랭킹</h2>
@@ -98,8 +108,47 @@ const MainHomeBody: React.FC = () => {
         onSubmit={handleNicknameSubmit}
         onClose={() => setNicknameOpen(false)}
       />
-    </div>
 
+      {shotUrl && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setShotUrl(null)}
+        >
+          <div
+            className="relative max-w-[520px] w-full rounded-2xl bg-white p-4 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="mb-3 text-lg font-semibold text-gray-800">캡쳐 미리보기</h3>
+
+            <div className="max-h-[70vh] overflow-auto rounded-xl border">
+              <img src={shotUrl} alt="캡쳐 이미지" className="w-full h-auto block" />
+            </div>
+
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  const a = document.createElement("a");
+                  a.href = shotUrl;
+                  a.download = `birthday-feast-${new Date().toISOString().replace(/[:.]/g, "-")}.png`;
+                  a.click();
+                }}
+                className="px-3 py-2 rounded-xl bg-[#FF8B8B] text-white"
+              >
+                다운로드
+              </button>
+              <button
+                onClick={() => setShotUrl(null)}
+                className="px-3 py-2 rounded-xl bg-gray-200 text-gray-800"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

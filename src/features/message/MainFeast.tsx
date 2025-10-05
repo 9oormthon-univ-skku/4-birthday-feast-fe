@@ -1,4 +1,3 @@
-// src/features/home/MainFeast.tsx
 import React, { useMemo } from 'react';
 import clsx from 'clsx';
 

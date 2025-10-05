@@ -164,6 +164,7 @@ export default function TableCakes({
               disabled={!canPrev}
               aria-label="이전"
               className="pointer-events-auto absolute left-2 top-1/4 -translate-y-1/2 bg-transparent disabled:opacity-40 z-30"
+              data-capture="hide"
             >
               {goLeft}
             </button>
@@ -173,20 +174,10 @@ export default function TableCakes({
               disabled={!canNext}
               aria-label="다음"
               className="pointer-events-auto absolute right-2 top-1/4 -translate-y-1/2 bg-transparent disabled:opacity-40 z-30"
+              data-capture="hide"
             >
               {goRight}
             </button>
-
-            <div className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
-              {Array.from({ length: pageCount }).map((_, i) => (
-                <span
-                  key={i}
-                  className={`h-1.5 w-1.5 rounded-full ${i === page ? 'bg-neutral-800' : 'bg-neutral-300'
-                    }`}
-                  aria-hidden
-                />
-              ))}
-            </div>
           </>
         )}
       </div>
