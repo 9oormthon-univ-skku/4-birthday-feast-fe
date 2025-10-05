@@ -88,7 +88,7 @@ export default function CapturePreview({
     <div
       role="dialog"
       aria-modal="true"
-      className={`fixed inset-0 z-1000 flex items-center justify-center bg-black/50 p-4 ${className ?? ""}`}
+      className={`fixed inset-0 z-10000 flex items-center justify-center bg-black/50 p-4 ${className ?? ""}`}
       onClick={closeOnBackdrop ? onClose : undefined}
     >
       {/* 카드 + 플로팅 버튼 컨테이너 */}
