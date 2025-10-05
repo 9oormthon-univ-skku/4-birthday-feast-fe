@@ -1,6 +1,7 @@
 // src/pages/MessageComposePage.tsx
 import React, { useMemo, useState } from 'react';
 import AppLayout from '@/layouts/AppLayout';
+import Modal from '@/ui/Modal';
 
 // 아이콘 에셋
 import food1 from '@/assets/images/food-1.svg';
@@ -9,10 +10,12 @@ import food3 from '@/assets/images/food-3.svg';
 import food4 from '@/assets/images/food-4.svg';
 import food5 from '@/assets/images/food-5.svg';
 import food6 from '@/assets/images/food-6.svg';
+import { useNavigate } from 'react-router-dom';
 
 type IconItem = { id: string; src: string; alt: string };
 
 export default function WriteMessagePage() {
+  const navigate = useNavigate();
   const [message, setMessage] = useState('');
   const [selectedId, setSelectedId] = useState<string>('food-1');
 
@@ -35,12 +38,16 @@ export default function WriteMessagePage() {
 
   const disabled = message.trim().length === 0;
 
+
+  const [doneOpen, setDoneOpen] = useState(false);
+
   const handleSubmit = () => {
     if (disabled) return;
-    // TODO: API 연동/페이지 이동
+    // TODO: API 연동
     console.log('submit', { message, icon: selectedId });
-    alert('메시지를 남겼어요!');
+    setDoneOpen(true); // 모달 오픈
   };
+
 
   return (
     <AppLayout
@@ -111,6 +118,18 @@ export default function WriteMessagePage() {
           );
         })}
       </div>
+      <Modal
+        open={doneOpen}
+        type="alert" // 단일 버튼
+        message="생일 메시지를 남겼습니다."
+        confirmText="확인"
+        onConfirm={() => {
+          setDoneOpen(false);
+          setMessage('');
+          navigate(-1);
+        }}
+        onClose={() => setDoneOpen(false)}
+      />
     </AppLayout>
   );
 }

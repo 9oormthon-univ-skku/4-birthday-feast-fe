@@ -1,4 +1,3 @@
-// src/components/ConfirmModal.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
@@ -36,7 +35,6 @@ function getOrCreateTopLayer(): HTMLElement | null {
   if (!el) {
     el = document.createElement("div");
     el.id = id;
-    // body 맨 뒤에 붙여 항상 최상단 레이어 역할
     document.body.appendChild(el);
   }
   return el;
@@ -63,9 +61,9 @@ export default function Modal({
   zIndex = 10000,
 }: ConfirmModalProps) {
   const [value, setValue] = useState(defaultValue);
+  const [errorText, setErrorText] = useState<string | null>(null);
   const okBtnRef = useRef<HTMLButtonElement>(null);
 
-  // 포털 컨테이너: top-layer가 true면 전용 루트 사용
   const container = useMemo<HTMLElement | null>(() => {
     if (typeof window === "undefined") return null;
     return topLayer ? getOrCreateTopLayer() : document.body;
@@ -79,18 +77,16 @@ export default function Modal({
   }, [open]);
 
   useEffect(() => {
-    if (open) setValue(defaultValue);
+    if (open) {
+      setValue(defaultValue);
+      setErrorText(null);
+    }
   }, [open, defaultValue]);
 
   const isPrompt = type === "prompt";
   const isAlert = type === "alert";
   const isConfirm = type === "confirm";
   const isWelcome = type === "welcome";
-
-  const canConfirm = useMemo(() => {
-    if (!isPrompt) return true;
-    return validate ? validate(value) : value.trim().length > 0;
-  }, [isPrompt, validate, value]);
 
   const _confirmText = confirmText ?? (isAlert || isWelcome ? "확인" : "예");
   const _cancelText = cancelText ?? "아니오";
@@ -101,13 +97,30 @@ export default function Modal({
     if (isConfirm) onCancel?.();
   };
 
+  const handleConfirmClick = () => {
+    if (isPrompt) {
+      const valid = validate ? validate(value) : value.trim().length > 0;
+      if (!valid) {
+        setErrorText("닉네임은 공란일 수 없습니다.");
+        return;
+      }
+      setErrorText(null);
+      onConfirm?.(value.trim());
+      onClose?.();
+    } else {
+      onConfirm?.();
+      onClose?.();
+    }
+  };
+
   const handleKeyDown: React.KeyboardEventHandler = (e) => {
     if (e.key === "Escape") {
       onClose?.();
       if (isConfirm) onCancel?.();
     }
-    if (e.key === "Enter" && isPrompt && canConfirm) {
-      onConfirm?.(value.trim());
+    if (e.key === "Enter" && isPrompt) {
+      e.preventDefault();
+      handleConfirmClick();
     }
   };
 
@@ -118,7 +131,6 @@ export default function Modal({
       className="fixed inset-0 flex items-center justify-center font-pretendard"
       aria-modal="true"
       role="dialog"
-      // z-index를 인라인 스타일로 확실히 고정
       style={{ zIndex }}
     >
       <div className="absolute inset-0 bg-black/50" onClick={handleBackdropClick} />
@@ -130,7 +142,7 @@ export default function Modal({
         )}
         onKeyDown={handleKeyDown}
       >
-        <div className="px-6 pt-6 pb-3 text-center">
+        <div className="px-6 pt-9 pb-8 text-center">
           {isWelcome && (
             <div className="text-base font-semibold text-[#FF8B8B]">
               {highlightText ? (
@@ -142,7 +154,7 @@ export default function Modal({
             </div>
           )}
 
-          {title && <h3 className="text-base font-semibold text-[#373737]">{title}</h3>}
+          {title && <h3 className="text-base font-semibold text-[#383838]">{title}</h3>}
 
           {message && (
             <div className="whitespace-pre-line text-base font-semibold leading-6 text-[#373737]">
@@ -153,17 +165,23 @@ export default function Modal({
           {helperText && <p className="text-sm leading-5 text-[#A0A0A0]">{helperText}</p>}
 
           {isPrompt && (
-            <div className="mt-4">
+            <div className="mt-8">
               <input
                 className={clsx(
-                  "w-full rounded-xl bg-gray-100 px-4 py-3 text-gray-900",
+                  "w-full rounded-[5px] bg-gray-100 px-4 py-3 text-gray-900",
                   "placeholder:text-gray-400 outline-none",
                   "focus:ring-2 focus:ring-rose-200"
                 )}
                 placeholder={placeholder}
                 value={value}
-                onChange={(e) => setValue(e.target.value)}
+                onChange={(e) => {
+                  setValue(e.target.value);
+                  if (errorText) setErrorText(null); // 입력 시 에러 제거
+                }}
               />
+              {errorText && (
+                <p className="mt-2 ms-2 text-start text-sm text-[#FF8B8B]">{errorText}</p>
+              )}
             </div>
           )}
         </div>
@@ -194,16 +212,11 @@ export default function Modal({
           ) : (
             <button
               ref={okBtnRef}
-              disabled={isPrompt && !canConfirm}
               className={clsx(
                 "w-full py-3 text-base font-semibold focus:outline-none active:opacity-80",
-                isPrompt && !canConfirm ? "text-gray-300" : "text-gray-500"
+                "text-gray-500"
               )}
-              onClick={() => {
-                if (isPrompt) onConfirm?.(value.trim());
-                else onConfirm?.();
-                onClose?.();
-              }}
+              onClick={handleConfirmClick}
             >
               {_confirmText}
             </button>

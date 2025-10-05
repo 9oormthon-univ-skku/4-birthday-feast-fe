@@ -1,9 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '../ui/Header';
-import BottomSheet from '@/ui/BottomSheet';
-import Modal from '@/ui/Modal';
+import BottomSheet from '@/ui/BottomSheet';;
 
-import { BirthdayModeProvider, ModeGate, useBirthdayMode } from '@/features/home/ModeContext';
+import { BirthdayModeProvider, useBirthdayMode } from '@/features/home/ModeContext';
 import ModeToggle from '@/features/home/ModeToggle';
 import ViewToggle from '@/features/home/ViewToggle';
 import FeatureButtons from '@/features/home/FeatureButtons';
@@ -12,62 +11,40 @@ import EventBanner from '@/features/event/EventBanner';
 import MainFeast from '@/features/message/MainFeast';
 import MainList from '@/features/message/MainList';
 
-import { useBirthdayCards } from '@/features/message/useBirthdayCards';
-import food1 from '../assets/images/food-1.svg';
-import food2 from '../assets/images/food-2.svg';
-import food3 from '../assets/images/food-3.svg';
-import food4 from '../assets/images/food-4.svg';
-import food5 from '../assets/images/food-5.svg';
-import food6 from '../assets/images/food-6.svg';
 import FooterButton from '@/ui/FooterButton';
 import { useNavigate } from 'react-router-dom';
 import QuizRankList from '@/features/quiz/QuizRankList';
 import WelcomeModal from '@/features/home/WelcomeModal';
-
-type CakeItem = { id: number | string; src: string; alt?: string };
+import NicknameModal from '@/features/auth/NicknameModal';
 
 const MainHomeBody: React.FC = () => {
   const navigate = useNavigate();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [welcomeOpen, setWelcomeOpen] = useState(false);
+  const [nicknameOpen, setNicknameOpen] = useState(false);
   const [isIconView, setIsIconView] = useState(true);
 
   useEffect(() => { setWelcomeOpen(true); }, []);
 
-  const { data: cards = [] } = useBirthdayCards();
-
-  const cakes: CakeItem[] = useMemo(() => {
-    const fallback = [food1, food2, food3, food4, food5, food6];
-    const mapped = cards.map((c: any, idx: number) => ({
-      id: c.birthdayCardId ?? `card-${idx}`,
-      src: c.imageUrl,
-      alt: c.nickname,
-    }));
-    if (mapped.length >= 6) return mapped;
-    const need = Math.max(0, 6 - mapped.length);
-    const fills = Array.from({ length: need }).map((_, i) => ({
-      id: `fallback-${i + 1}`,
-      src: fallback[i],
-      alt: `디저트${i + 1}`,
-    }));
-    return [...mapped, ...fills];
-  }, [cards]);
-
   const { isHost, isGuest } = useBirthdayMode();
 
+  // 닉네임 저장 처리 
+  const handleNicknameSubmit = (nickname: string) => {
+    // 예시: 로컬 저장 또는 API 호출
+    try {
+      localStorage.setItem('guest_nickname', nickname);
+    } catch { }
+    setNicknameOpen(false);
+  };
 
   return (
-    <div className="relative flex h-screen w-screen max-w-[520px] flex-col bg-[#FFF4DF]">
+    <div className="relative flex h-screen w-screen flex-col bg-[#FFF4DF]">
       <ModeToggle className="absolute right-3 top-30 z-[60]" />
-      {/* <DevPlayQuizButton /> */}
-      
-
-
       <Header onDrawerOpenChange={setDrawerOpen} showBrush={isHost} />
 
       {/* 상단 컨트롤 바 */}
-      <div className="z-100 mx-auto my-4 flex w-[90%] items-center justify-between gap-3">
+      <div className="z-100 mx-auto my-4 flex w-[90%] max-w-[468px] items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <ViewToggle isIconView={isIconView} onToggle={setIsIconView} />
           {isHost && <FeatureButtons />}
@@ -82,7 +59,9 @@ const MainHomeBody: React.FC = () => {
 
       {/* 메인 영역 토글: 아이콘(Feast) vs 리스트 */}
       {isIconView ? (
-        <MainFeast />
+        <div className="w-full mt-auto flex justify-center">
+          <MainFeast />
+        </div>
       ) : (
         <div className="mx-auto w-full max-w-[520px] px-4 pb-3">
           <MainList columns={4} />
@@ -108,7 +87,16 @@ const MainHomeBody: React.FC = () => {
       <WelcomeModal
         open={welcomeOpen}
         isHost={isHost}
-        onClose={() => setWelcomeOpen(false)}
+        onClose={() => {
+          setWelcomeOpen(false);
+          if (isGuest) setNicknameOpen(true);
+        }}
+      />
+      <NicknameModal
+        open={isGuest && nicknameOpen}
+        defaultValue={localStorage.getItem('guest_nickname') || ''}
+        onSubmit={handleNicknameSubmit}
+        onClose={() => setNicknameOpen(false)}
       />
     </div>
 

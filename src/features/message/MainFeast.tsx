@@ -52,7 +52,7 @@ const MainFeast: React.FC<MainFeastProps> = ({ className }) => {
   }, [cards]);
 
   return (
-    <div className={clsx('relative mt-auto w-full', className)}>
+    <div className='relative w-full max-w-[520px]'>
       {/* 풍선 */}
       <img
         src={lBalloon}

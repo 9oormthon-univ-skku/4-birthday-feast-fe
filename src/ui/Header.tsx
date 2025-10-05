@@ -46,7 +46,7 @@ export default function Header({
 
   return (
     <header
-      className="sticky top-0 z-50 w-full bg-white shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] backdrop-blur"
+      className="sticky top-0 z-100 w-full bg-white shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] backdrop-blur"
       style={{ fontFamily: 'KoreanSWGIG3, Pretendard, sans-serif' }}
     >
       <div className="flex items-center justify-between px-7 py-4">

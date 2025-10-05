@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/ui/Header';
 import rawQuiz from '@/features/quiz/quizDummy.json';
+import Modal from '@/ui/Modal';
 
 // ---------- 타입 ----------
 type QuizQuestion = {
@@ -20,8 +21,34 @@ type QuizData = {
 
 // JSON 타입 단언 (런타임 값은 json 그대로, 컴파일 단에서 타입 보장)
 const initialQuizData: QuizData = rawQuiz as QuizData;
-// src/pages/QuizPage.tsx (중략은 그대로)
 export default function QuizPage() {
+  // 삭제 확인 모달 상태
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingIndex, setPendingIndex] = useState<number | null>(null);
+
+  // 삭제 버튼 클릭 시 모달 오픈
+  const askRemoveQuestion = (index: number) => {
+    setPendingIndex(index);
+    setConfirmOpen(true);
+  };
+
+  // 모달에서 "예" 선택 시 실제 삭제
+  const confirmRemove = () => {
+    if (pendingIndex !== null) {
+      removeQuestion(pendingIndex);
+    }
+    setConfirmOpen(false);
+    setPendingIndex(null);
+  };
+
+  // 모달 닫기/취소
+  const closeConfirm = () => {
+    setConfirmOpen(false);
+    setPendingIndex(null);
+  };
+
+
+
   const navigate = useNavigate();
   const [editMode, setEditMode] = useState(false);
 
@@ -51,7 +78,7 @@ export default function QuizPage() {
     setAnswers((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // ✅ 문항 텍스트 수정
+  // 문항 텍스트 수정
   const changeContent = (index: number, value: string) => {
     setQuestions((prev) => {
       const next = [...prev];
@@ -60,7 +87,7 @@ export default function QuizPage() {
     });
   };
 
-  // ✅ 편집 완료 시 현재 데이터 확인 (→ 이 자리에 저장 API 연결)
+  // 편집 완료 시 현재 데이터 확인 (→ 이 자리에 저장 API 연결)
   const handleToggleEditMode = () => {
     if (editMode) {
       const payload: QuizData = {
@@ -157,11 +184,12 @@ export default function QuizPage() {
                     <button
                       aria-label="삭제"
                       className="flex h-8 w-8 items-center justify-center rounded-full text-[#6b6b6b] hover:bg-black/5"
-                      onClick={() => removeQuestion(i)}
+                      onClick={() => askRemoveQuestion(i)}   // 변경: 바로 지우지 말고 모달 열기
                       title="문항 삭제"
                     >
                       {trashBin}
                     </button>
+
                   </div>
                 )}
               </li>
@@ -169,6 +197,17 @@ export default function QuizPage() {
           </ul>
         )}
       </main>
+      <Modal
+        open={confirmOpen}
+        type="confirm"
+        title="정말 이 퀴즈를 삭제할까요?"
+        confirmText="예"
+        cancelText="아니오"
+        onConfirm={confirmRemove}   // 예
+        onCancel={closeConfirm}     // 아니오
+        onClose={closeConfirm}      // 바깥 클릭/ESC
+      />
+
     </div>
   );
 }
