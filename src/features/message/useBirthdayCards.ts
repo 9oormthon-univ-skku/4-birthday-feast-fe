@@ -95,24 +95,11 @@ export function useBirthdayCards() {
       if (local.length > 0) {
         setData(adaptToBirthdayCard(local));
         setError(null);
-        return;
+      } else {
+        // 로컬 데이터 없으면 빈 배열
+        setData([]);
+        setError(null);
       }
-
-      // ⬇️ 로컬에 없으면 더미(JSON) 폴백
-      const users = raw as BirthdayUser[];
-      const user = users[0];
-
-      const cards = user.birthdayCards.map((c, idx) => {
-        const explicitKey = (c as any).imageKey as string | undefined;
-        const fallbackKey = FOOD_KEYS[idx % Math.max(FOOD_KEYS.length, 1)] || "food-1";
-        const keyToUse = explicitKey ?? fallbackKey;
-        const localUrl = resolveAssetUrl(keyToUse) ?? c.imageUrl;
-
-        return { ...c, imageUrl: localUrl } as BirthdayCard;
-      });
-
-      setData(cards);
-      setError(null);
     } catch (e) {
       setError(e as Error);
     } finally {
