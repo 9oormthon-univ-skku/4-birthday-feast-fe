@@ -1,13 +1,12 @@
 // src/pages/MainHome.tsx
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import Header from '../ui/Header';
 import BottomSheet from '@/ui/BottomSheet';
 import FooterButton from '@/ui/FooterButton';
 
 import { BirthdayModeProvider, useBirthdayMode } from '@/features/home/ModeContext';
-import ModeToggle from '@/features/home/ModeToggle';
 import ViewToggle from '@/features/home/ViewToggle';
 import FeatureButtons from '@/features/home/FeatureButtons';
 import EventBanner from '@/features/event/EventBanner';
@@ -22,11 +21,7 @@ import CapturePreview from '@/features/home/CapturePreview';
 
 import { useAuth } from '@/features/auth/useAuth';
 import OnboardingGate from '@/features/onboarding/OnboardingGate';
-
-// ✅ 추가: 방문자 온보딩 게이트 & 아이콘
-// import VisitorOnboardingGate from '@/features/onboarding/visitor/VisitorOnboardingGate';
-// import quizIcon from '@/assets/images/quiz-icon.svg'; // 프로젝트 아이콘 경로에 맞춰 조정
-import VisitorOnboardingGate from '@/features/visitorOnboarding/visitorOnboardingGate';
+import VisitorOnboardingGate from '@/features/visitorOnboarding/VisitorOnboardingGate';
 
 const MainHomeBody: React.FC = () => {
   const navigate = useNavigate();
@@ -36,7 +31,7 @@ const MainHomeBody: React.FC = () => {
   const [nicknameOpen, setNicknameOpen] = useState(false);
   const [isIconView, setIsIconView] = useState(true);
 
-  const { isHost, isGuest } = useBirthdayMode();
+  const { isHost, isGuest, sharedHostId } = useBirthdayMode();
 
   const [guestNickname, setGuestNickname] = useState<string | null>(
     () => localStorage.getItem('guest_nickname') || null
@@ -85,7 +80,6 @@ const MainHomeBody: React.FC = () => {
 
   return (
     <div className="relative flex h-screen w-screen flex-col bg-[#FFF4DF]">
-      <ModeToggle className="absolute right-3 top-30 z-[60]" />
       <Header onDrawerOpenChange={setDrawerOpen} showBrush={isHost} />
 
       {/* 상단 컨트롤 바 */}
@@ -112,10 +106,13 @@ const MainHomeBody: React.FC = () => {
       <div ref={captureRef} className={isIconView ? 'mt-auto pt-[95%]' : ''}>
         {isIconView ? (
           <div className="w-full flex justify-center">
+            {/* 주석: 공유 모드라면 내부에서 sharedHostId로 데이터 로드하도록 수정 가능 */}
+            {/* <MainFeast ownerId={sharedHostId ?? 'self'} /> */}
             <MainFeast />
           </div>
         ) : (
           <div className="mx-auto w-full max-w-[520px] px-4 pb-3">
+            {/* <MainList columns={4} ownerId={sharedHostId ?? 'self'} /> */}
             <MainList columns={4} />
           </div>
         )}
@@ -167,17 +164,19 @@ const MainHomeBody: React.FC = () => {
 const MainHome: React.FC = () => {
   // 로그인 토큰 존재 여부로 Host/Guest 분기
   const { isAuthenticated } = useAuth();
-  const initialMode = isAuthenticated ? 'host' : 'guest';
+  const { hostId } = useParams(); // ⬅️ URL 파라미터 읽기 (feast/:hostId 라우트에서만 존재)
+  const isShareView = !!hostId;
+  const initialMode = isShareView ? 'guest' : (isAuthenticated ? 'host' : 'guest');
 
   return (
     <BirthdayModeProvider
       defaultMode={initialMode as 'host' | 'guest'}
-      // 토큰이 바뀌면 Provider 리마운트 → 모드 즉시 반영
-      key={`mode-${initialMode}`}
+      sharedHostId={hostId ?? null}                  // ⬅️ 공유 대상 ID 주입
+      key={`mode-${initialMode}-${hostId ?? 'self'}`} // 모드/대상 바뀌면 리마운트
     >
-      {/* (생일자용) 온보딩 */}
-      <OnboardingGate />
-      {/* 메인 */}
+      {/* 공유 뷰에서는 생일자 온보딩을 숨겨 UX 단순화(선택) */}
+      {!isShareView && <OnboardingGate />}
+
       <MainHomeBody />
     </BirthdayModeProvider>
   );
