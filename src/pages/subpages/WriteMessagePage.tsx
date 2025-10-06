@@ -70,7 +70,7 @@ export default function WriteMessagePage() {
     if (disabled) return;
 
     // 닉네임, 이미지 경로 가져오기
-    const nickname = localStorage.getItem('guest_nickname') || '익명';
+    const nickname = localStorage.getItem('bh.visitor.nickname') || '익명';
     const icon = icons.find((it) => it.id === selectedId);
 
     // 🎯 저장할 구조: birthdayCardId / message / nickname / imageUrl
