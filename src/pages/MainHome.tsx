@@ -22,11 +22,12 @@ import CapturePreview from '@/features/home/CapturePreview';
 
 import { useAuth } from '@/features/auth/useAuth';
 import OnboardingGate from '@/features/onboarding/OnboardingGate';
+import VisitorOnboardingGate from '@/features/visitorOnboarding/VisitorOnboardingGate';
 
 // ✅ 추가: 방문자 온보딩 게이트 & 아이콘
 // import VisitorOnboardingGate from '@/features/onboarding/visitor/VisitorOnboardingGate';
 // import quizIcon from '@/assets/images/quiz-icon.svg'; // 프로젝트 아이콘 경로에 맞춰 조정
-import VisitorOnboardingGate from '@/features/visitorOnboarding/visitorOnboardingGate';
+// import VisitorOnboardingGate from '@/features/visitorOnboarding/visitorOnboardingGate';
 
 const MainHomeBody: React.FC = () => {
   const navigate = useNavigate();
