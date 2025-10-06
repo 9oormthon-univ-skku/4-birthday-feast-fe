@@ -1,6 +1,5 @@
-// src/features/onboarding/visitor/VisitorQuizPromptModal.tsx
-import React, { useEffect } from "react";
-import clsx from "clsx";
+import React from "react";
+import Modal from "@/ui/Modal";
 
 type Props = {
   open: boolean;
@@ -21,52 +20,37 @@ export default function VisitorQuizPromptModal({
   closeOnBackdrop = true,
   className,
 }: Props) {
-  // ESC 닫기
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-
-  if (!open) return null;
+  const helper = (
+    <p className="mt-2 text-center text-sm">
+      {nickname ? (
+        <>
+          <b>{nickname}</b>님, 지금 바로 참여하면
+          <br />
+          퀴즈 순위를 볼 수 있어요!
+        </>
+      ) : (
+        <>
+          지금 바로 참여하면
+          <br />
+          퀴즈 순위를 볼 수 있어요!
+        </>
+      )}
+    </p>
+  );
 
   return (
-    <div
-      className={clsx(
-        "fixed inset-0 z-[10000] flex items-end md:items-center justify-center bg-black/40",
-        className
-      )}
-      onClick={() => closeOnBackdrop && onClose()}
-    >
-      <div
-        className="w-full md:w-[420px] rounded-t-2xl md:rounded-2xl bg-white p-6 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-      >
-        <h2 className="text-lg font-semibold text-gray-900">
-          퀴즈 플레이 하시겠습니까?
-        </h2>
-        <p className="mt-2 text-sm text-gray-600">
-          {nickname ? <b>{nickname}</b> : "방문자"} 님, 지금 바로 참여하면 순위에 기록돼요!
-        </p>
-
-        <div className="mt-5 grid grid-cols-2 gap-3">
-          <button
-            onClick={onSkip}
-            className="h-11 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium"
-          >
-            건너뛰기
-          </button>
-          <button
-            onClick={onParticipate}
-            className="h-11 rounded-xl bg-[#FF8B8B] text-white text-sm font-semibold"
-          >
-            참여하기
-          </button>
-        </div>
-      </div>
-    </div>
+    <Modal
+      open={open}
+      type="confirm"
+      title={<span className="text-[#FF8B8B] text-lg">퀴즈 플레이 하시겠습니까?</span>}
+      helperText={helper}
+      confirmText="참여하기"
+      cancelText="건너뛰기"
+      onConfirm={onParticipate}
+      onCancel={onSkip}
+      onClose={onClose}
+      closeOnBackdrop={closeOnBackdrop}
+      className={className}
+    />
   );
 }
