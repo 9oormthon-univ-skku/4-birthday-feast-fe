@@ -1,10 +1,12 @@
-import { useNavigate } from 'react-router-dom';
-import kakaoBtn from '@/assets/images/kakao_login_large_wide.png';
-import { useEffect, useState } from 'react';
-import Loading from './LoadingPage';
+import { useNavigate } from "react-router-dom";
+import kakaoBtn from "@/assets/images/kakao_login_large_wide.png";
+import { useEffect, useState } from "react";
+import Loading from "./LoadingPage";
+import { kakaoAuthorize } from "@/features/auth/kakaoAuthorize";
+// import { kakaoAuthorize } from "@/features/auth/kakaoAuthorize"; // ✅ 추가
 
-// 더미 토큰 키 상수 (다른 곳에서도 통일해서 사용할 수 있게)
-const TOKEN_KEY = 'bh.auth.token';
+// 토큰 키 (더미용 → 실제 토큰은 서버에서 받아와야 함)
+const TOKEN_KEY = "bh.auth.token";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -18,16 +20,19 @@ const Login = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  /** 로그인 버튼 클릭 */
+  /** 카카오 로그인 버튼 클릭 */
   const handleLogin = () => {
-    // 더미 토큰 생성 (UUID-like)
-    const dummyToken = `token_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    // 로컬스토리지에 저장
-    localStorage.setItem(TOKEN_KEY, dummyToken);
-
-    // 메인 페이지로 이동
-    navigate('/main');
+    // 콘솔과 동일 스코프로 요청
+    kakaoAuthorize(["profile_nickname", "profile_image", "birthday", "birthyear"]);
   };
+
+
+  // --- 기존 더미 로그인 (테스트용)
+  // const handleLogin = () => {
+  //   const dummyToken = `token_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  //   localStorage.setItem(TOKEN_KEY, dummyToken);
+  //   navigate("/main");
+  // };
 
   if (showSplash) return <Loading />;
 
@@ -35,18 +40,21 @@ const Login = () => {
     <div className="relative w-screen h-screen bg-[#FFFFFF] overflow-hidden text-[#FF8B8B] font-['KoreanSWGIG3']">
       <h1
         className="absolute left-1/2 -translate-x-1/2
-                  text-6xl leading-none text-center 
-                  whitespace-nowrap top-[25.17%]"
+                    text-6xl leading-none text-center 
+                    whitespace-nowrap top-[25.17%]"
       >
         생일한상
       </h1>
       <p
         className="absolute left-1/2 -translate-x-1/2 top-[37.75%]
-                  text-xl leading-6 text-center text-[#FF8B8B]"
+                    text-xl leading-6 text-center text-[#FF8B8B]"
       >
-        멀리 있어도 함께하는<br />디지털 생일상
+        멀리 있어도 함께하는
+        <br />
+        디지털 생일상
       </p>
 
+      {/* 카카오 로그인 버튼 */}
       <img
         src={kakaoBtn}
         alt="카카오톡으로 계속하기"
