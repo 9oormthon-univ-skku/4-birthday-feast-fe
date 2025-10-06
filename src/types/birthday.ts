@@ -1,5 +1,5 @@
 export type BirthdayCard = {
-  birthdayCardId: number;
+  birthdayCardId: string | number;
   message: string;
   nickname: string;
   imageUrl: string;
