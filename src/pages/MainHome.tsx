@@ -23,6 +23,11 @@ import CapturePreview from '@/features/home/CapturePreview';
 import { useAuth } from '@/features/auth/useAuth';
 import OnboardingGate from '@/features/onboarding/OnboardingGate';
 
+// ✅ 추가: 방문자 온보딩 게이트 & 아이콘
+// import VisitorOnboardingGate from '@/features/onboarding/visitor/VisitorOnboardingGate';
+// import quizIcon from '@/assets/images/quiz-icon.svg'; // 프로젝트 아이콘 경로에 맞춰 조정
+import VisitorOnboardingGate from '@/features/visitorOnboarding/visitorOnboardingGate';
+
 const MainHomeBody: React.FC = () => {
   const navigate = useNavigate();
 
@@ -32,6 +37,10 @@ const MainHomeBody: React.FC = () => {
   const [isIconView, setIsIconView] = useState(true);
 
   const { isHost, isGuest } = useBirthdayMode();
+
+  const [guestNickname, setGuestNickname] = useState<string | null>(
+    () => localStorage.getItem('guest_nickname') || null
+  );
 
   // 초기 모달 오픈 로직: 역할/닉네임 유무에 따라 분기
   useEffect(() => {
@@ -50,7 +59,7 @@ const MainHomeBody: React.FC = () => {
     if (lastShown !== today) {
       setWelcomeOpen(true);
     }
-  }, [isHost, isGuest, nicknameOpen]);
+  }, [isHost, isGuest, nicknameOpen, guestNickname]);
 
   const handleWelcomeClose = () => {
     const today = new Date().toISOString().slice(0, 10);
@@ -68,7 +77,9 @@ const MainHomeBody: React.FC = () => {
   const handleNicknameSubmit = (nickname: string) => {
     try {
       localStorage.setItem('guest_nickname', nickname);
+      localStorage.setItem('bh.visitor.nickname', nickname.trim());
     } catch { }
+    setGuestNickname(nickname);          // 상태 갱신 → 게이트가 즉시 반응
     setNicknameOpen(false);
   };
 
@@ -126,6 +137,15 @@ const MainHomeBody: React.FC = () => {
         </footer>
       )}
 
+      {/* 방문자 온보딩 게이트: 닉네임 변경 즉시 모달 뜸 */}
+      {isGuest && (
+        <VisitorOnboardingGate
+          // quizIconSrc={quizIcon}
+          quizPlayPath="/play"
+          nicknameOverride={guestNickname}
+        />
+      )}
+
       <WelcomeModal
         open={welcomeOpen}
         isHost={isHost}
@@ -155,7 +175,9 @@ const MainHome: React.FC = () => {
       // 토큰이 바뀌면 Provider 리마운트 → 모드 즉시 반영
       key={`mode-${initialMode}`}
     >
+      {/* (생일자용) 온보딩 */}
       <OnboardingGate />
+      {/* 메인 */}
       <MainHomeBody />
     </BirthdayModeProvider>
   );
