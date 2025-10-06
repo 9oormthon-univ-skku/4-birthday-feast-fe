@@ -142,7 +142,7 @@ export default function Modal({
         )}
         onKeyDown={handleKeyDown}
       >
-        <div className="px-6 pt-9 pb-8 text-center">
+        <div className="px-6 pt-8 pb-7 text-center">
           {isWelcome && (
             <div className="text-base font-semibold text-[#FF8B8B]">
               {highlightText ? (
@@ -193,7 +193,7 @@ export default function Modal({
             <>
               <button
                 ref={okBtnRef}
-                className="flex-1 py-4 text-base font-semibold text-[#A0A0A0] focus:outline-none active:opacity-80"
+                className="flex-1 py-4 text-base font-semibold text-[#FF8B8B] focus:outline-none active:opacity-80"
                 onClick={() => onConfirm?.()}
               >
                 {_confirmText}

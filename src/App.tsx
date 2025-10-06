@@ -18,6 +18,8 @@ import { useBirthdayCards } from '@/features/message/useBirthdayCards';
 import WriteMessagePage from './pages/subpages/WriteMessagePage';
 import PlayQuizPage from './pages/subpages/PlayQuizPage';
 import ThemeSettingsPage from './pages/subpages/ThemeSettingsPage';
+import OnboardingGate from './features/onboarding/OnboardingGate';
+import CreateQuizPage from './pages/CreateQuizPage';
 
 // 라우트용 래퍼: 쿼리 파싱 + 더미 데이터 매핑
 function BirthdayMessageRoute() {
@@ -69,31 +71,39 @@ function BirthdayMessageRoute() {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+    <>
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" replace />} />
 
-      <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Login />} />
 
-      <Route path="/main" element={<MainHome />} />
-      <Route path="/theme" element={<ThemeSettingsPage />} />
-      <Route path="/about-team" element={<TeamAboutPage />} />
+        <Route path="/main" element={<MainHome />} />
+        <Route path="/theme" element={<ThemeSettingsPage />} />
+        <Route path="/about-team" element={<TeamAboutPage />} />
 
-      <Route path="/contact" element={<ContactPage />} />
-      <Route path="/quiz" element={<QuizPage />} />
-      <Route path="/my-feast-qr" element={<MyFeastQRPage />} />
-      <Route path="/history" element={<HistoryPage />} />
-      <Route path="/visibility" element={<VisibilityPage />} />
-      <Route path="/account" element={<AccountSettingsPage />} />
+        <Route path="/contact" element={<ContactPage />} />
 
-      {/* 생일 메시지 라우트 */}
-      <Route path="/message" element={<BirthdayMessageRoute />} />
+        <Route path="/create-quiz" element={<CreateQuizPage />} />
 
-      <Route path="/write" element={<WriteMessagePage />} />
-      <Route path="/play" element={<PlayQuizPage />} />
+        {/* 편집/작성용 퀴즈 페이지 (온보딩에서 이동) */}
+        <Route path="/quiz" element={<QuizPage />} />
+        {/* 호환 라우트: 캔버스 코드가 /quiz로 이동하지만, 혹시 모를 링크 대비 */}
+        <Route path="/quiz/edit" element={<QuizPage />} />
 
+        <Route path="/my-feast-qr" element={<MyFeastQRPage />} />
+        <Route path="/history" element={<HistoryPage />} />
+        <Route path="/visibility" element={<VisibilityPage />} />
+        <Route path="/account" element={<AccountSettingsPage />} />
 
-      {/* 그 외 경로는 홈으로 */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        {/* 생일 메시지 라우트 */}
+        <Route path="/message" element={<BirthdayMessageRoute />} />
+
+        <Route path="/write" element={<WriteMessagePage />} />
+        <Route path="/play" element={<PlayQuizPage />} />
+
+        {/* 그 외 경로는 홈으로 */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   );
 }
