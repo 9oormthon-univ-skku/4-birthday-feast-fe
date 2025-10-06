@@ -35,7 +35,7 @@ const MainHomeBody: React.FC = () => {
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);
     const lastShown = localStorage.getItem('welcome_shown_date');
-    const hasGuestNickname = !!localStorage.getItem('guest_nickname');
+    const hasGuestNickname = !!localStorage.getItem('bh.visitor.nickname');
 
     if (isGuest) {
       if (hasGuestNickname && lastShown !== today) {

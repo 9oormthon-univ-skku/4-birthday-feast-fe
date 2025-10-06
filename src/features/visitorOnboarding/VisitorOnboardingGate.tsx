@@ -27,6 +27,7 @@ function useIsOnMain() {
 }
 
 const LS_NICK = "bh.visitor.nickname";
+const LS_WELCOME = "bh.visitor.welcomeShownDate";
 
 export default function VisitorOnboardingGate({
   quizIconSrc,
@@ -57,6 +58,9 @@ export default function VisitorOnboardingGate({
   const [showSkipInfo, setShowSkipInfo] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
 
+  const today = new Date().toISOString().slice(0, 10);
+
+  // 닉네임 없으면 닉네임 모달
   useEffect(() => {
     if (!isOnMain) {
       setShowNickname(false);
@@ -65,7 +69,16 @@ export default function VisitorOnboardingGate({
     setShowNickname(!nickname);
   }, [isOnMain, nickname]);
 
-  // 환영 모달이 열려있을 때는 프롬프트 자동 오픈 금지
+  // 닉네임이 있고, 오늘 환영 모달을 아직 안봤다면 자동으로 환영 모달 오픈
+  useEffect(() => {
+    if (!isOnMain || !nickname) return;
+    const lastShown = localStorage.getItem(LS_WELCOME);
+    if (lastShown !== today) {
+      setShowWelcome(true);
+    }
+  }, [isOnMain, nickname, today]);
+
+  // 환영 모달이 열려 있을 땐 프롬프트 자동 오픈 금지
   useEffect(() => {
     if (isOnMain && nickname && !hasSeenPlayPrompt && !showWelcome) {
       setShowPlayPrompt(true);
@@ -74,6 +87,7 @@ export default function VisitorOnboardingGate({
     }
   }, [isOnMain, nickname, hasSeenPlayPrompt, showWelcome]);
 
+  // 메인 이탈 시 정리
   useEffect(() => {
     if (!isOnMain) {
       setShowPlayPrompt(false);
@@ -83,6 +97,7 @@ export default function VisitorOnboardingGate({
     }
   }, [isOnMain]);
 
+  // 닉네임 제출 -> 환영 모달(오늘 미노출 시) 또는 곧바로 프롬프트
   const handleNicknameSubmit = (name: string) => {
     const trimmed = name.trim();
     try {
@@ -90,11 +105,20 @@ export default function VisitorOnboardingGate({
     } catch {}
     setLocalNickname(trimmed);
     setShowNickname(false);
-    setShowWelcome(true); // 닉네임 입력 직후 환영 모달 표시
+
+    const lastShown = localStorage.getItem(LS_WELCOME);
+    if (lastShown !== today) {
+      setShowWelcome(true);
+    } else if (isOnMain && !hasSeenPlayPrompt) {
+      setShowPlayPrompt(true);
+    }
   };
 
-  // 환영 모달 닫힌 직후 프롬프트 조건이면 곧바로 표시
+  // 환영 모달 닫힘 -> 오늘 본 것으로 기록 후 프롬프트(조건 시) 열기
   const handleWelcomeClose = () => {
+    try {
+      localStorage.setItem(LS_WELCOME, today);
+    } catch {}
     setShowWelcome(false);
     if (isOnMain && (nickname ?? localNickname) && !hasSeenPlayPrompt) {
       setShowPlayPrompt(true);
