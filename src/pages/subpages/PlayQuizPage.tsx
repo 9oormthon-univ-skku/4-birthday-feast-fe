@@ -1,35 +1,94 @@
 // src/pages/QuizPage.tsx
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import AppLayout from '@/layouts/AppLayout';
-import rawQuiz from '@/features/quiz/quizDummy.json';
+// 필요 시 결과/랭크 컴포넌트 사용
 import QuizResultList from '@/features/quiz/QuizResultList';
 import QuizRankList from '@/features/quiz/QuizRankList';
+import { useNavigate } from 'react-router-dom';
 
+/* ---------- 타입 ---------- */
 type QuizQuestion = {
-  questionId: number;
+  questionId: number | string;
   content: string;
-  answer: boolean;
+  answer: boolean; // true=O, false=X
   sequence: number;
 };
 type QuizData = {
-  quizId: number;
-  birthdayId: number;
+  quizId: number | string;
+  birthdayId?: number | string;
   questions: QuizQuestion[];
+  updatedAt?: string;
 };
 
-const initialQuizData: QuizData = rawQuiz as QuizData;
+/* ---------- 로컬 스토리지 ---------- */
+const STORAGE_KEY = 'bh.quiz.ox.draft';
 
+// 안전 로드
+function loadFromStorage(): QuizData | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!data || !Array.isArray(data.questions)) return null;
+    return data as QuizData;
+  } catch {
+    return null;
+  }
+}
+
+// 시퀀스 정렬/보정
+function normalize(questions: QuizQuestion[]): QuizQuestion[] {
+  return questions
+    .map((q, i) => ({ ...q, sequence: q.sequence ?? i + 1 }))
+    .sort((a, b) => a.sequence - b.sequence);
+}
+
+/* ---------- 페이지 ---------- */
 export default function PlayQuizPage() {
-  const questions = useMemo<QuizQuestion[]>(
-    () => [...initialQuizData.questions].sort((a, b) => a.sequence - b.sequence),
-    []
-  );
+  const navigate = useNavigate();
+  // 최초 로드 시점에만 스토리지에서 불러오기
+  const initial = useMemo<QuizData>(() => {
+    const stored = loadFromStorage();
+    if (stored) {
+      return { ...stored, questions: normalize(stored.questions) };
+    }
+    return { quizId: 'local-quiz', questions: [], updatedAt: new Date().toISOString() };
+  }, []);
 
-  const total = questions.length;
+  const [questions, setQuestions] = useState<QuizQuestion[]>(initial.questions);
   const [index, setIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState<(boolean | null)[]>(Array(total).fill(null));
+  const [userAnswers, setUserAnswers] = useState<(boolean | null)[]>(
+    Array(initial.questions.length).fill(null)
+  );
   const [finished, setFinished] = useState(false);
 
+  // 다른 탭/창에서 변경 시 실시간 반영
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== STORAGE_KEY) return;
+      const next = loadFromStorage();
+      if (next?.questions) {
+        const normalized = normalize(next.questions);
+        setQuestions(normalized);
+        setIndex(0);
+        setUserAnswers(Array(normalized.length).fill(null));
+        setFinished(false);
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
+  // 질문 길이가 바뀌면 답안 배열/인덱스 안전 보정
+  useEffect(() => {
+    setUserAnswers((prev) => {
+      if (prev.length === questions.length) return prev;
+      return Array(questions.length).fill(null);
+    });
+    setIndex((i) => Math.min(i, Math.max(questions.length - 1, 0)));
+  }, [questions.length]);
+
+  const total = questions.length;
   const current = questions[index];
 
   const handleChoose = (ans: boolean) => {
@@ -42,16 +101,19 @@ export default function PlayQuizPage() {
     else setFinished(true);
   };
 
-  const correctCount = userAnswers.reduce(
-    (acc, v, i) => acc + (v === questions[i]?.answer ? 1 : 0),
-    0
-  );
-  const progressPct = Math.min((index / Math.max(total, 1)) * 100, 100);
+  const correctCount =
+    total === 0
+      ? 0
+      : userAnswers.reduce((acc, v, i) => acc + (v === questions[i]?.answer ? 1 : 0), 0);
+
+  const progressPct =
+    total === 0 ? 0 : Math.min(((index) / Math.max(total, 1)) * 100, 100);
 
   const reset = () => {
     setIndex(0);
     setUserAnswers(Array(total).fill(null));
     setFinished(false);
+    navigate('/main');
   };
 
   return (
@@ -63,7 +125,14 @@ export default function PlayQuizPage() {
       footerButtonLabel={finished ? '처음으로' : undefined}
       onFooterButtonClick={finished ? reset : undefined}
     >
-      {!finished ? (
+      {total === 0 ? (
+        <section className="py-20 text-center">
+          <h3 className="text-xl text-[#FF8B8B] font-['KoreanSWGIG3']">등록된 퀴즈가 없어요</h3>
+          <p className="mt-2 text-sm text-[#A0A0A0]">
+            편집 화면에서 문항을 추가하고 저장하면 여기에서 풀 수 있어요.
+          </p>
+        </section>
+      ) : !finished ? (
         <section className="pt-2">
           {/* 진행바 */}
           <div className="mt-28 mx-auto mb-8 w-64">
@@ -108,13 +177,8 @@ export default function PlayQuizPage() {
             {total}문제 중 <span className="text-[#FF8B8B]">{correctCount}</span>문제 맞췄어요!
           </p>
 
-          {/* 분리된 스크롤 리스트 */}
-          {/* <QuizResultList
-            questions={questions}
-            userAnswers={userAnswers}
-            total={total}
-            heightClassName="max-h-[70vh]"
-          /> */}
+          {/* 필요에 따라 결과/랭킹 중 택1 */}
+          {/* <QuizResultList questions={questions} userAnswers={userAnswers} total={total} heightClassName="max-h-[70vh]" /> */}
           <QuizRankList />
         </section>
       )}
@@ -122,7 +186,7 @@ export default function PlayQuizPage() {
   );
 }
 
-// ---------- 아이콘 svg ----------
+/* ---------- 아이콘 svg ---------- */
 const O = (
   <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 25 25" fill="none">
     <path d="M12.6207 23.2414C18.4863 23.2414 23.2414 18.4863 23.2414 12.6207C23.2414 6.75504 18.4863 2 12.6207 2C6.75504 2 2 6.75504 2 12.6207C2 18.4863 6.75504 23.2414 12.6207 23.2414Z" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
