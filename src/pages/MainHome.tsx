@@ -52,12 +52,6 @@ const MainHomeBody: React.FC = () => {
     }
   }, [isGuest, isHost]);
 
-  const handleWelcomeClose = () => {
-    const today = new Date().toISOString().slice(0, 10);
-    localStorage.setItem('welcome_shown_date', today);
-    setWelcomeOpen(false);
-  };
-
   const captureRef = useRef<HTMLDivElement | null>(null);
   const [shotUrl, setShotUrl] = useState<string | null>(null);
 
