@@ -15,8 +15,6 @@ import MainFeast from '@/features/message/MainFeast';
 import MainList from '@/features/message/MainList';
 import QuizRankList from '@/features/quiz/QuizRankList';
 
-import WelcomeModal from '@/features/home/WelcomeModal';
-import NicknameModal from '@/features/auth/NicknameModal';
 import CapturePreview from '@/features/home/CapturePreview';
 
 import { useAuth } from '@/features/auth/useAuth';
@@ -28,55 +26,40 @@ const MainHomeBody: React.FC = () => {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [welcomeOpen, setWelcomeOpen] = useState(false);
-  const [nicknameOpen, setNicknameOpen] = useState(false);
   const [isIconView, setIsIconView] = useState(true);
 
-  const { isHost, isGuest, sharedHostId } = useBirthdayMode();
+  const { isHost, isGuest } = useBirthdayMode();
 
-  const [guestNickname, setGuestNickname] = useState<string | null>(
-    () => localStorage.getItem('guest_nickname') || null
-  );
-
-  // 초기 모달 오픈 로직: 역할/닉네임 유무에 따라 분기
+  // 초기 모달 오픈 로직: 게스트는 닉네임 수집을 VisitorOnboardingGate가 처리하므로
+  // 환영 모달은 "닉네임이 이미 있는 경우"에만 표시
   useEffect(() => {
-    const today = new Date().toISOString().slice(0, 10); // 예: 2025-10-06
+    const today = new Date().toISOString().slice(0, 10);
     const lastShown = localStorage.getItem('welcome_shown_date');
+    const hasGuestNickname = !!localStorage.getItem('guest_nickname');
 
-    // 게스트면서 닉네임이 아직 없으면 닉네임 모달부터 오픈
     if (isGuest) {
-      const hasNickname = !!localStorage.getItem('guest_nickname');
-      if (!hasNickname) {
-        setNicknameOpen(true);
+      if (hasGuestNickname && lastShown !== today) {
+        setWelcomeOpen(true);
+      } else {
         setWelcomeOpen(false);
-        return;
       }
+      return;
     }
+
+    // 호스트는 기존 로직대로
     if (lastShown !== today) {
       setWelcomeOpen(true);
     }
-  }, [isHost, isGuest, nicknameOpen, guestNickname]);
+  }, [isGuest, isHost]);
 
   const handleWelcomeClose = () => {
     const today = new Date().toISOString().slice(0, 10);
     localStorage.setItem('welcome_shown_date', today);
     setWelcomeOpen(false);
-    if (isGuest && !localStorage.getItem('guest_nickname')) {
-      setNicknameOpen(true);
-    }
   };
 
   const captureRef = useRef<HTMLDivElement | null>(null);
   const [shotUrl, setShotUrl] = useState<string | null>(null);
-
-  // 닉네임 저장 처리
-  const handleNicknameSubmit = (nickname: string) => {
-    try {
-      localStorage.setItem('guest_nickname', nickname);
-      localStorage.setItem('bh.visitor.nickname', nickname.trim());
-    } catch { }
-    setGuestNickname(nickname);          // 상태 갱신 → 게이트가 즉시 반응
-    setNicknameOpen(false);
-  };
 
   return (
     <div className="relative flex h-screen w-screen flex-col bg-[#FFF4DF]">
@@ -88,10 +71,10 @@ const MainHomeBody: React.FC = () => {
           <ViewToggle isIconView={isIconView} onToggle={setIsIconView} />
           {isHost && (
             <FeatureButtons
-              targetRef={captureRef} // 캡쳐 타깃 전달
+              targetRef={captureRef}
               fileName="birthday-feast"
               backgroundColor="#FFF4DF"
-              onCaptured={(url) => setShotUrl(url)} // 미리보기 열기
+              onCaptured={(url) => setShotUrl(url)}
             />
           )}
         </div>
@@ -106,13 +89,10 @@ const MainHomeBody: React.FC = () => {
       <div ref={captureRef} className={isIconView ? 'mt-auto pt-[95%]' : ''}>
         {isIconView ? (
           <div className="w-full flex justify-center">
-            {/* 주석: 공유 모드라면 내부에서 sharedHostId로 데이터 로드하도록 수정 가능 */}
-            {/* <MainFeast ownerId={sharedHostId ?? 'self'} /> */}
             <MainFeast />
           </div>
         ) : (
           <div className="mx-auto w-full max-w-[520px] px-4 pb-3">
-            {/* <MainList columns={4} ownerId={sharedHostId ?? 'self'} /> */}
             <MainList columns={4} />
           </div>
         )}
@@ -134,28 +114,14 @@ const MainHomeBody: React.FC = () => {
         </footer>
       )}
 
-      {/* 방문자 온보딩 게이트: 닉네임 변경 즉시 모달 뜸 */}
+      {/* 방문자 온보딩 게이트: 닉네임 수집/플레이 프롬프트/스킵 안내를 내부에서 처리 */}
       {isGuest && (
         <VisitorOnboardingGate
           // quizIconSrc={quizIcon}
           quizPlayPath="/play"
-          nicknameOverride={guestNickname}
+        // nicknameOverride prop 제거: 게이트가 자체 관리
         />
       )}
-
-      <WelcomeModal
-        open={welcomeOpen}
-        isHost={isHost}
-        nickname={localStorage.getItem('guest_nickname') || ''}
-        onClose={handleWelcomeClose}
-      />
-      <NicknameModal
-        open={isGuest && nicknameOpen}
-        defaultValue={localStorage.getItem('guest_nickname') || ''}
-        onSubmit={handleNicknameSubmit}
-        onClose={() => setNicknameOpen(false)}
-      />
-
       <CapturePreview open={!!shotUrl} src={shotUrl} onClose={() => setShotUrl(null)} />
     </div>
   );
@@ -164,17 +130,17 @@ const MainHomeBody: React.FC = () => {
 const MainHome: React.FC = () => {
   // 로그인 토큰 존재 여부로 Host/Guest 분기
   const { isAuthenticated } = useAuth();
-  const { hostId } = useParams(); // ⬅️ URL 파라미터 읽기 (feast/:hostId 라우트에서만 존재)
+  const { hostId } = useParams();
   const isShareView = !!hostId;
   const initialMode = isShareView ? 'guest' : (isAuthenticated ? 'host' : 'guest');
 
   return (
     <BirthdayModeProvider
       defaultMode={initialMode as 'host' | 'guest'}
-      sharedHostId={hostId ?? null}                  // ⬅️ 공유 대상 ID 주입
-      key={`mode-${initialMode}-${hostId ?? 'self'}`} // 모드/대상 바뀌면 리마운트
+      sharedHostId={hostId ?? null}
+      key={`mode-${initialMode}-${hostId ?? 'self'}`}
     >
-      {/* 공유 뷰에서는 생일자 온보딩을 숨겨 UX 단순화(선택) */}
+      {/* 공유 뷰에서는 생일자 온보딩 숨김(선택) */}
       {!isShareView && <OnboardingGate />}
 
       <MainHomeBody />
