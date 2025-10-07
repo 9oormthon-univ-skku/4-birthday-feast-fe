@@ -1,18 +1,14 @@
+// src/pages/AuthKakaoCallback.tsx
 import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 import { setAccessToken } from "@/lib/authToken";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
-
-type KakaoLoginResponse = {
-  userId: number | string;
-  authToken: { accessToken: string; tokenType: string; expiresIn: number };
-};
+import { kakaoLogin } from "@/apis/auth";
 
 export default function AuthKakaoCallback() {
   const nav = useNavigate();
   const location = useLocation();
-  const didRun = useRef(false); // 중복 방지
+  const didRun = useRef(false);
 
   useEffect(() => {
     if (didRun.current) return;
@@ -37,30 +33,32 @@ export default function AuthKakaoCallback() {
 
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/auth-user/kakao-login`,{
-          method: "POST",
-          headers: { "Content-Type": "application/json;charset=UTF-8" },
-          credentials: "include",
-          body: JSON.stringify({ code }),
-        });
-
-        // 디버깅을 위해 본문을 먼저 확보
-        const text = await res.text();
-        if (!res.ok) {
-          console.error("kakao-login failed:", res.status, text);
-          // 카카오 코드 재사용 등 예상 케이스 안내용 쿼리
-          nav(`/login?error=${res.status}&desc=${encodeURIComponent(text.slice(0,200))}`, { replace: true });
-          return;
-        }
-
-        const data = JSON.parse(text) as KakaoLoginResponse;
+        const data = await kakaoLogin(code);
         setAccessToken(data?.authToken?.accessToken || "");
 
-        const from = (window.history.state && (window.history.state as any).usr?.from) || "/main";
+        const from =
+          (window.history.state && (window.history.state as any).usr?.from) ||
+          "/main";
         nav(from, { replace: true });
       } catch (e) {
-        console.error(e);
-        nav("/login?error=network", { replace: true });
+        if (axios.isAxiosError(e) && e.response) {
+          const status = e.response.status;
+          const body =
+            typeof e.response.data === "string"
+              ? e.response.data
+              : JSON.stringify(e.response.data ?? {}, null, 2);
+
+          console.error("☁️ kakao-login failed:", status, body);
+          nav(
+            `/login?error=${status}&desc=${encodeURIComponent(
+              body.slice(0, 200)
+            )}`,
+            { replace: true }
+          );
+        } else {
+          console.error(e);
+          nav("/login?error=network", { replace: true });
+        }
       }
     })();
   }, [location.search, nav]);
