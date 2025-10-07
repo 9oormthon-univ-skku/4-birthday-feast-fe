@@ -5,9 +5,6 @@ import Loading from "./LoadingPage";
 import { kakaoAuthorize } from "@/features/auth/kakaoAuthorize";
 // import { kakaoAuthorize } from "@/features/auth/kakaoAuthorize"; // ✅ 추가
 
-// 토큰 키 (더미용 → 실제 토큰은 서버에서 받아와야 함)
-const TOKEN_KEY = "bh.auth.token";
-
 const Login = () => {
   const navigate = useNavigate();
   const [showSplash, setShowSplash] = useState(true);

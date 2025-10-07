@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 
-export const TOKEN_KEY = "bh.auth.token" as const;
+export const TOKEN_KEY = "bh.auth.accessToken" as const;
 
 
 export type AuthState = {
