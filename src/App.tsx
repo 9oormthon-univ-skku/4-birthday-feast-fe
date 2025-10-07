@@ -75,7 +75,7 @@ export default function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Navigate to="/main" replace />} />
 
         <Route path="/login" element={<Login />} />
         <Route path="/auth/kakao/callback" element={<AuthKakaoCallback />} />
