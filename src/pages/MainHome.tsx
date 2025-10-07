@@ -30,26 +30,18 @@ const MainHomeBody: React.FC = () => {
 
   const { isHost, isGuest } = useBirthdayMode();
 
-  // 초기 모달 오픈 로직: 게스트는 닉네임 수집을 VisitorOnboardingGate가 처리하므로
-  // 환영 모달은 "닉네임이 이미 있는 경우"에만 표시
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);
     const lastShown = localStorage.getItem('welcome_shown_date');
     const hasGuestNickname = !!localStorage.getItem('bh.visitor.nickname');
 
     if (isGuest) {
-      if (hasGuestNickname && lastShown !== today) {
-        setWelcomeOpen(true);
-      } else {
-        setWelcomeOpen(false);
-      }
+      if (hasGuestNickname && lastShown !== today) setWelcomeOpen(true);
+      else setWelcomeOpen(false);
       return;
     }
 
-    // 호스트는 기존 로직대로
-    if (lastShown !== today) {
-      setWelcomeOpen(true);
-    }
+    if (lastShown !== today) setWelcomeOpen(true);
   }, [isGuest, isHost]);
 
   const captureRef = useRef<HTMLDivElement | null>(null);
@@ -108,35 +100,39 @@ const MainHomeBody: React.FC = () => {
         </footer>
       )}
 
-      {/* 방문자 온보딩 게이트: 닉네임 수집/플레이 프롬프트/스킵 안내를 내부에서 처리 */}
-      {isGuest && (
-        <VisitorOnboardingGate
-          // quizIconSrc={quizIcon}
-          quizPlayPath="/play"
-        // nicknameOverride prop 제거: 게이트가 자체 관리
-        />
-      )}
+      {/* 방문자 온보딩 게이트 */}
+      {isGuest && <VisitorOnboardingGate quizPlayPath="/play" />}
+
       <CapturePreview open={!!shotUrl} src={shotUrl} onClose={() => setShotUrl(null)} />
     </div>
   );
 };
 
 const MainHome: React.FC = () => {
-  // 로그인 토큰 존재 여부로 Host/Guest 분기
+  const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { hostId } = useParams();
+
   const isShareView = !!hostId;
-  const initialMode = isShareView ? 'guest' : (isAuthenticated ? 'host' : 'guest');
+
+  // 비공유 뷰에서만 로그인 강제. 토큰은 로그인 성공 여부만 확인.
+  useEffect(() => {
+    if (!isShareView && !isAuthenticated) {
+      navigate('/login', { replace: true, state: { from: '/main' } });
+    }
+  }, [isShareView, isAuthenticated, navigate]);
+
+  // 모드 결정은 "공유 뷰" 여부로만
+  const initialMode: 'host' | 'guest' = isShareView ? 'guest' : 'host';
 
   return (
     <BirthdayModeProvider
-      defaultMode={initialMode as 'host' | 'guest'}
+      defaultMode={initialMode}
       sharedHostId={hostId ?? null}
       key={`mode-${initialMode}-${hostId ?? 'self'}`}
     >
-      {/* 공유 뷰에서는 생일자 온보딩 숨김(선택) */}
+      {/* 공유 뷰에서는 온보딩 숨김 */}
       {!isShareView && <OnboardingGate />}
-
       <MainHomeBody />
     </BirthdayModeProvider>
   );
