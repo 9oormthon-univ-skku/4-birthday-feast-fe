@@ -20,13 +20,15 @@ export const refreshClient = axios.create({
 declare module "axios" {
   interface AxiosRequestConfig {
     _retry?: boolean;
+    _guest?: boolean;
   }
 }
 
 // 요청 인터셉터
 apiClient.interceptors.request.use((config) => {
   const token = getAccessToken();
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  // 게스트 요청이 아닌 경우에만 유저 토큰 자동 첨부
+  if (token && !config._guest) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
@@ -72,7 +74,7 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // 🔁 재발급은 인터셉터 없는 클라이언트로 호출
+        // 재발급은 인터셉터 없는 클라이언트로 호출
         const res = await refreshClient.post("/api/auth-user/reissue", null);
         const { accessToken } = res.data as { accessToken: string };
 
