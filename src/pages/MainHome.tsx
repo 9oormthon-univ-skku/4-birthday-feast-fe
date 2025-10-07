@@ -21,6 +21,8 @@ import { useAuth } from '@/features/auth/useAuth';
 import OnboardingGate from '@/features/onboarding/OnboardingGate';
 import VisitorOnboardingGate from '@/features/visitorOnboarding/VisitorOnboardingGate';
 
+import FeastBootstrap from '@/features/feast/FeastBootstrap';
+
 const MainHomeBody: React.FC = () => {
   const navigate = useNavigate();
 
@@ -133,6 +135,8 @@ const MainHome: React.FC = () => {
     >
       {/* 공유 뷰에서는 온보딩 숨김 */}
       {!isShareView && <OnboardingGate />}
+
+      {!isShareView && <FeastBootstrap enabled={isAuthenticated} />}
       <MainHomeBody />
     </BirthdayModeProvider>
   );

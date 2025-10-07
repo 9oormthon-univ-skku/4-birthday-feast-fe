@@ -1,19 +1,16 @@
 // src/features/message/useBirthdayCards.ts
 import { useEffect, useMemo, useState } from "react";
-import raw from "./messageCakes.json"; // 폴백용 더미
-import type { BirthdayCard, BirthdayUser } from "@/types/birthday";
+import type { BirthdayCard } from "@/types/birthday";
+import { getAllBirthdays, getThisYearBirthday } from "@/apis/birthday";
 
-// 1) assets 폴더의 food-* 이미지 전부 수집
+// ---- 에셋 매핑 유틸 (food-*) -------------------------------------------------
 const assetModules = import.meta.glob("../../assets/images/food-*.{svg,png,jpg,jpeg}", {
   eager: true,
 });
-
-// 2) 파일명 목록 → ["food-1", "food-2", ...]
 const FOOD_KEYS = Object.keys(assetModules)
   .map((p) => p.split("/").pop()!)                // "food-1.svg"
   .map((f) => f.replace(/\.(svg|png|jpe?g)$/, "")); // "food-1"
 
-// 3) "food-1" 같은 키를 실제 URL로 변환
 function resolveAssetUrl(key: string): string | undefined {
   const candidates = [
     `../../assets/images/${key}.svg`,
@@ -23,21 +20,19 @@ function resolveAssetUrl(key: string): string | undefined {
   ];
   for (const p of candidates) {
     const mod: any = (assetModules as any)[p];
-    if (mod) {
-      return mod.default ?? mod; // Vite: 에셋 임포트 default = URL
-    }
+    if (mod) return mod.default ?? mod; // Vite: 에셋 URL
   }
   return undefined;
 }
 
-const STORAGE_KEY = "birthday_cards";
+// ---- 로컬스토리지 폴백 (이 부분 추후 삭제 고려)--------------------------------------------------------
+const STORAGE_KEY = "birthday_cards"; // 기존 키 유지
 
-// 로컬스토리지 → 안전 파싱
 type LocalCard = {
   birthdayCardId: string | number;
   message: string;
   nickname?: string;
-  imageUrl?: string;         // 절대경로 URL 또는 "food-3" 같은 키일 수도 있음
+  imageUrl?: string; // 절대 URL 또는 "food-3" 같은 키
 };
 
 function readLocalCards(): LocalCard[] {
@@ -51,57 +46,113 @@ function readLocalCards(): LocalCard[] {
   }
 }
 
-// LocalCard → BirthdayCard로 어댑트 + 이미지 URL 해석
-function adaptToBirthdayCard(list: LocalCard[]): BirthdayCard[] {
-  return list.map((c, idx) => {
-    const candidateKey =
-      // imageUrl이 "food-3" 같이 키로 들어왔다면 그대로 사용
-      (c.imageUrl && /^food-\d+[a-zA-Z]*$/.test(c.imageUrl) ? c.imageUrl : undefined)
-      // 없으면 인덱스로 순환 매핑
-      ?? FOOD_KEYS[idx % Math.max(FOOD_KEYS.length, 1)]
-      ?? "food-1";
+// "food-3" 같은 키 또는 절대 URL을 최종 URL로 변환
+function toImageUrl(candidate: string | null | undefined, indexSeed = 0): string {
+  // 키 패턴이면 에셋으로
+  if (candidate && /^food-\d+[a-zA-Z]*$/.test(candidate)) {
+    const u = resolveAssetUrl(candidate);
+    if (u) return u;
+  }
+  // 절대 URL이면 그대로
+  if (candidate && /^https?:\/\//.test(candidate)) return candidate;
 
-    const assetUrl =
-      (candidateKey ? resolveAssetUrl(candidateKey) : undefined)
-      // imageUrl이 http(s)로 온 경우 그대로 사용
-      ?? (c.imageUrl && /^https?:\/\//.test(c.imageUrl) ? c.imageUrl : undefined);
-
-    const fallbackUrl = resolveAssetUrl("food-1");
-
-    // BirthdayCard 타입에 맞춰 매핑
-    const adapted: BirthdayCard = {
-      // 프로젝트의 BirthdayCard 타입에 맞춰 필드명 사용
-      // (아래 필드명이 다르면 타입 정의에 맞게 바꿔주세요)
-      birthdayCardId: c.birthdayCardId,
-      message: c.message,
-      nickname: c.nickname ?? "익명",
-      imageUrl: assetUrl ?? fallbackUrl ?? "",
-    } as BirthdayCard;
-
-    return adapted;
-  });
+  // 인덱스 기반 폴백
+  const key = FOOD_KEYS[indexSeed % Math.max(FOOD_KEYS.length, 1)] ?? "food-1";
+  return resolveAssetUrl(key) ?? "";
 }
 
+// ---- 서버 → BirthdayCard 어댑터 ----------------------------------------------
+type ServerBirthdayCard = {
+  birthdayCardId: number | string;
+  message: string;
+  nickname?: string | null;
+  imageUrl?: string | null; // 절대 URL 또는 "food-3" 등 키일 수 있음
+};
+
+function adaptServerCards(list: ServerBirthdayCard[]): BirthdayCard[] {
+  return list.map((c, i) => ({
+    birthdayCardId: c.birthdayCardId,
+    message: c.message,
+    nickname: (c.nickname ?? "").trim() || "익명",
+    imageUrl: toImageUrl(c.imageUrl ?? undefined, i),
+  }));
+}
+
+function adaptLocalCards(list: LocalCard[]): BirthdayCard[] {
+  return list.map((c, i) => ({
+    birthdayCardId: c.birthdayCardId,
+    message: c.message,
+    nickname: (c.nickname ?? "").trim() || "익명",
+    imageUrl: toImageUrl(c.imageUrl ?? undefined, i),
+  }));
+}
+
+// ---- 올해 생일상 ID 선택 (캐시 → 목록) ---------------------------------------
+const LS_LAST_BID = "bh.lastBirthdayId";
+const LS_LAST_CODE = "bh.lastBirthdayCode";
+
+async function pickAnyBirthdayIdFromCacheOrList(): Promise<string | undefined> {
+  let bid = localStorage.getItem(LS_LAST_BID) || undefined;
+  if (bid) return bid;
+
+  const list = await getAllBirthdays().catch(() => []);
+  const picked = Array.isArray(list) && list.length > 0 ? list[0] : null;
+  if (picked) {
+    bid = String(picked.birthdayId);
+    localStorage.setItem(LS_LAST_BID, bid);
+    if (picked.code) localStorage.setItem(LS_LAST_CODE, picked.code);
+  }
+  return bid;
+}
+
+// ---- 메인 훅 ------------------------------------------------------------------
 export function useBirthdayCards() {
   const [data, setData] = useState<BirthdayCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const load = () => {
+  const load = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
-      setIsLoading(true);
-
-      const local = readLocalCards();
-      if (local.length > 0) {
-        setData(adaptToBirthdayCard(local));
-        setError(null);
-      } else {
-        // 로컬 데이터 없으면 빈 배열
-        setData([]);
-        setError(null);
+      // 1) 올해 생일상 ID 확보
+      const bid = await pickAnyBirthdayIdFromCacheOrList();
+      if (!bid) {
+        // 서버 데이터가 전혀 없으면 로컬 폴백
+        /*
+        const local = readLocalCards();
+        setData(adaptLocalCards(local));
+        */
+        return;
       }
+
+      // 2) 올해 생일상 상세 조회 (여기서 birthdayCards 포함됨)
+      const thisYear = await getThisYearBirthday(bid);
+      // 응답 구조 예시: { birthdayId, code, birthdayCards: ServerBirthdayCard[] }
+      const serverCards: ServerBirthdayCard[] = Array.isArray(thisYear?.birthdayCards)
+        ? thisYear.birthdayCards
+        : [];
+
+      // 3) 서버 카드 사용, 없는 경우 로컬 폴백
+      if (serverCards.length > 0) {
+        setData(adaptServerCards(serverCards));
+      } else {
+        /*
+        const local = readLocalCards();
+        setData(adaptLocalCards(local));
+        */
+      }
+
+      // 캐시 최신화
+      if (thisYear?.birthdayId) localStorage.setItem(LS_LAST_BID, String(thisYear.birthdayId));
+      if (thisYear?.code) localStorage.setItem(LS_LAST_CODE, String(thisYear.code));
     } catch (e) {
+      // 서버 실패 → 로컬 폴백
       setError(e as Error);
+      /*
+      const local = readLocalCards();
+      setData(adaptLocalCards(local));
+      */
     } finally {
       setIsLoading(false);
     }
@@ -120,7 +171,7 @@ export function useBirthdayCards() {
   }, []);
 
   const count = useMemo(() => data.length, [data]);
-  const refetch = () => load();
+  const refetch = () => void load();
 
   return { data, isLoading, error, count, refetch };
 }
