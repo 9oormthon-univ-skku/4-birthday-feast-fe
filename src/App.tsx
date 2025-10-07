@@ -4,7 +4,7 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-
 import MainHome from './pages/MainHome';
 import TeamAboutPage from './pages/subpages/TeamAboutPage';
 import ContactPage from './pages/subpages/ContactPage';
-import QuizPage from './pages/QuizPage';
+import QuizPage from './pages/subpages/QuizPage';
 import MyFeastQRPage from './pages/subpages/MyFeastQRPage';
 import HistoryPage from './pages/subpages/HistoryPage';
 import VisibilityPage from './pages/subpages/VisibilityPage';
@@ -16,7 +16,7 @@ import Login from './pages/LoginPage';
 // 더미데이터 훅(React Query 미사용 버전)
 import { useBirthdayCards } from '@/features/message/useBirthdayCards';
 import WriteMessagePage from './pages/subpages/WriteMessagePage';
-import PlayQuizPage from './pages/subpages/PlayQuizPage';
+import PlayQuizPage from './pages/PlayQuizPage';
 import ThemeSettingsPage from './pages/subpages/ThemeSettingsPage';
 import OnboardingGate from './features/onboarding/OnboardingGate';
 import CreateQuizPage from './pages/CreateQuizPage';
