@@ -3,6 +3,7 @@ import React from "react";
 import { toPng } from "html-to-image";
 import { useShareLink } from "@/features/share/useShareLink";
 import { useAuth } from "@/features/auth/useAuth";
+import { useFeastThisYear } from "../feast/useFeastThisYear";
 
 type TargetRef =
   | React.RefObject<HTMLElement>
@@ -17,9 +18,9 @@ type Props = {
 };
 
 // (MyFeastQRPage와 동일한 방식)
-function getShareHostId(auth: ReturnType<typeof useAuth>): string | number {
-  return (auth as any)?.user?.publicId ?? (auth as any)?.user?.id ?? "u_12345";
-}
+// function getShareHostId(auth: ReturnType<typeof useAuth>): string | number {
+//   return (auth as any)?.user?.publicId ?? (auth as any)?.user?.id ?? "u_12345";
+// }
 
 export default function FeatureButtons({
   targetRef,
@@ -29,10 +30,11 @@ export default function FeatureButtons({
   autoDownload = false,
 }: Props) {
   const auth = useAuth();
-  const hostId = getShareHostId(auth);
+  const { data: feast, loading } = useFeastThisYear(); // { userId, birthdayId, code, birthdayCards }
+  const shareDisabled = loading;
 
-  // /feast/:hostId 링크 공유 훅
-  const { share } = useShareLink(hostId);
+
+  const { share } = useShareLink(feast?.code);
 
   // 공유 버튼
   const handleShare = async () => {
@@ -82,6 +84,7 @@ export default function FeatureButtons({
         onClick={handleShare}
         className="w-7 h-7 rounded-full bg-[#FF8B8B] text-white shadow-md active:scale-95 transition flex items-center justify-center"
         title="공유"
+        disabled={shareDisabled}
       >
         {shareIcon}
       </button>

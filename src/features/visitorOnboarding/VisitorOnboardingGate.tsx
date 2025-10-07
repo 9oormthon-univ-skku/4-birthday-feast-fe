@@ -20,8 +20,8 @@ function useIsOnMain() {
     if (pathname === "/") return true;
     if (pathname === "/home") return true;
     if (pathname === "/main") return true;
-    if (pathname === "/feast") return true;
-    if (pathname.startsWith("/feast/")) return true;
+    // if (pathname === "/feast") return true;
+    // if (pathname.startsWith("/feast/")) return true;
     return false;
   }, [pathname]);
 }

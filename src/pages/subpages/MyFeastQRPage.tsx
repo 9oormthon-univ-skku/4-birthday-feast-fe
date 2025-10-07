@@ -1,53 +1,46 @@
 // src/pages/subpages/MyFeastQRPage.tsx
-import React, { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import AppLayout from '../../layouts/AppLayout';
-import { useShareLink } from '@/features/share/useShareLink';
-import { useAuth } from '@/features/auth/useAuth';
-
-// (예시) 현재 로그인 유저의 공개용 hostId(slug)를 만들어/가져오는 함수
-// 실제 프로젝트의 사용자 정보/프로필에서 가져오도록 교체하세요.
-function getShareHostId(auth: ReturnType<typeof useAuth>): string | number {
-  // 예: auth.user?.publicId || auth.user?.id || 'u_12345';
-  // 여기선 임시로 userId 또는 디폴트 사용
-  return (auth as any)?.user?.publicId ?? (auth as any)?.user?.id ?? 'u_12345';
-}
+// src/pages/subpages/MyFeastQRPage.tsx
+import React, { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import AppLayout from "@/layouts/AppLayout";
+import { useShareLink } from "@/features/share/useShareLink";
+import { useFeastThisYear } from "@/features/feast/useFeastThisYear";
 
 export default function MyFeastQRPage() {
   const navigate = useNavigate();
-  const auth = useAuth();
 
-  // 공유할 대상 hostId (본인)
-  const hostId = getShareHostId(auth);
+  // 올해 생일상 정보 로드 (code 사용)
+  const { data: feast, loading } = useFeastThisYear(); // { userId, birthdayId, code, ... }
 
-  // ✅ useShareLink로 /feast/:hostId URL 생성 + 공유/복사 액션 사용
-  const { url: shareUrl, share, copy } = useShareLink(hostId);
+  const { url: shareUrl, share } = useShareLink(feast?.code);
 
-  // QR 이미지 (의존성 없이 외부 API 사용)
-  const qrPng = useMemo(
-    () =>
-      `https://api.qrserver.com/v1/create-qr-code/?size=480x480&data=${encodeURIComponent(
-        shareUrl
-      )}`,
-    [shareUrl]
-  );
+  // QR 이미지 (code 준비 전이면 빈 문자열 → img는 안 그려짐)
+  const qrPng = useMemo(() => {
+    if (!shareUrl) return "";
+    return `https://api.qrserver.com/v1/create-qr-code/?size=480x480&data=${encodeURIComponent(
+      shareUrl
+    )}`;
+  }, [shareUrl]);
 
   const onShare = async () => {
     try {
-      await share(); // navigator.share 있으면 공유, 없으면 클립보드 복사
+      await share(); // navigator.share 지원 시 시스템 공유, 미지원 시 클립보드 복사
     } catch {
-      // 사용자가 취소했거나 오류 — 무시
+      // 사용자가 취소했거나 오류 → 무시
     }
   };
 
   const onDownload = () => {
-    const a = document.createElement('a');
+    if (!qrPng) return;
+    const a = document.createElement("a");
     a.href = qrPng;
-    a.download = 'my-birthday-qr.png';
+    a.download = "my-birthday-qr.png";
     document.body.appendChild(a);
     a.click();
     a.remove();
   };
+
+  const disabled = loading;
 
   return (
     <AppLayout
@@ -66,29 +59,47 @@ export default function MyFeastQRPage() {
       <section className="mt-15 mx-auto rounded-[5px] bg-white shadow-[0px_0px_4px_0px_rgba(0,0,0,0.25)] p-4">
         {/* QR 박스 */}
         <div className="w-fit p-7 mx-auto rounded-md bg-white border border-[#A0A0A0]">
-          {/* 고해상도 QR을 240~300px로 노출하면 선명 */}
-          <img src={qrPng} alt="내 생일상 QR" className="block w-[240px] h-[240px]" />
+          {/* code 준비 전이면 이미지 렌더 안 함 */}
+          {qrPng ? (
+            <img
+              src={qrPng}
+              alt="내 생일상 QR"
+              className="block w-[240px] h-[240px]"
+            />
+          ) : (
+            <div className="w-[240px] h-[240px] flex items-center justify-center text-xs text-gray-400">
+              링크 준비 중…
+            </div>
+          )}
         </div>
 
         {/* 공유 URL 미리보기 */}
-        <p className="mt-4 text-center text-xs text-gray-500 break-all">{shareUrl}</p>
+        <p className="mt-4 text-center text-xs text-gray-500 break-all">
+          {shareUrl || "링크 준비 중…"}
+        </p>
 
         {/* 액션 버튼들 */}
         <div className="mt-5 flex items-center justify-center gap-4">
           <button
             onClick={onShare}
-            className="w-14 h-14 rounded-full bg-[#FF8B8B] text-white shadow-md active:scale-95 transition flex items-center justify-center"
+            disabled={disabled}
+            className={`w-14 h-14 rounded-full bg-[#FF8B8B] text-white shadow-md active:scale-95 transition flex items-center justify-center ${
+              disabled ? "opacity-50 cursor-not-allowed active:scale-100" : ""
+            }`}
             aria-label="공유"
-            title="공유"
+            title={disabled ? "링크 준비 중" : "공유"}
           >
             {shareIcon}
           </button>
 
           <button
             onClick={onDownload}
-            className="w-14 h-14 rounded-full bg-[#FF8B8B] text-white shadow-md active:scale-95 transition flex items-center justify-center"
+            disabled={disabled}
+            className={`w-14 h-14 rounded-full bg-[#FF8B8B] text-white shadow-md active:scale-95 transition flex items-center justify-center ${
+              disabled ? "opacity-50 cursor-not-allowed active:scale-100" : ""
+            }`}
             aria-label="다운로드"
-            title="다운로드"
+            title={disabled ? "링크 준비 중" : "다운로드"}
           >
             {downloadIcon}
           </button>

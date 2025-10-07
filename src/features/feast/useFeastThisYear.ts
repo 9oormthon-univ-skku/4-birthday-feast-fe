@@ -1,9 +1,15 @@
-// src/features/feast/useFeastThisYear.ts
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createBirthday, getThisYearBirthday, getAllBirthdays } from "@/apis/birthday";
 
 const LS_LAST_BID = "bh.lastBirthdayId";
 const LS_LAST_CODE = "bh.lastBirthdayCode";
+
+export type FeastData = {
+  userId?: number | string;
+  birthdayId?: number | string;
+  code?: string;
+  birthdayCards?: any[];
+};
 
 export type FindThisYearResult = {
   exists: boolean;
@@ -15,11 +21,18 @@ export function useFeastThisYear() {
   const [creating, setCreating] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // 중복 호출 방지용
+  // localStorage의 값을 즉시 반영 (초기 깜빡임 방지)
+  const [data, setData] = useState<FeastData | null>(() => {
+    const bid = localStorage.getItem(LS_LAST_BID) || undefined;
+    const code = localStorage.getItem(LS_LAST_CODE) || undefined;
+    if (bid || code) return { birthdayId: bid, code };
+    return null;
+  });
+
   const createOnceRef = useRef(false);
   const prefetchOnceRef = useRef(false);
+  const bootOnceRef = useRef(false);
 
-  /** 내부 유틸: 가장 최근의 birthdayId 를 가져오거나 목록에서 하나 고르기 */
   async function pickAnyBirthdayIdFromCacheOrList(): Promise<string | undefined> {
     let bid = localStorage.getItem(LS_LAST_BID) || undefined;
     if (bid) return bid;
@@ -30,11 +43,17 @@ export function useFeastThisYear() {
       bid = String(picked.birthdayId);
       localStorage.setItem(LS_LAST_BID, bid);
       if (picked.code) localStorage.setItem(LS_LAST_CODE, picked.code);
+      setData((prev) => ({
+        ...(prev || {}),
+        userId: picked.userId,
+        birthdayId: picked.birthdayId,
+        code: picked.code ?? (prev?.code as any),
+        birthdayCards: picked.birthdayCards ?? prev?.birthdayCards ?? [],
+      }));
     }
     return bid;
   }
 
-  /** 올해 생일상 존재 여부 + 캐시 업데이트 */
   async function findExistingThisYear(): Promise<FindThisYearResult> {
     const bid = await pickAnyBirthdayIdFromCacheOrList();
     if (!bid) return { exists: false };
@@ -43,44 +62,42 @@ export function useFeastThisYear() {
       const thisYear = await getThisYearBirthday(bid);
       localStorage.setItem(LS_LAST_BID, String(thisYear.birthdayId));
       if (thisYear.code) localStorage.setItem(LS_LAST_CODE, thisYear.code);
+      setData({
+        userId: thisYear.userId,
+        birthdayId: thisYear.birthdayId,
+        code: thisYear.code,
+        birthdayCards: thisYear.birthdayCards ?? [],
+      });
       return { exists: true, pickedId: String(thisYear.birthdayId), code: thisYear.code };
     } catch {
-      // 404/빈 응답 → 올해 없음
       return { exists: false, pickedId: bid };
     }
   }
 
-  /**
-   * 생일 입력 직후 호출:
-   * - 이미 올해 생일상이 있으면 생성 생략하고 true 반환
-   * - 없으면 1회만 생성 시도 후 false→true 흐름으로 이어질 수 있게
-   */
   async function ensureThisYearCreated(): Promise<{ alreadyExists: boolean }> {
     setCreating(true);
     try {
       const check = await findExistingThisYear();
       if (check.exists) return { alreadyExists: true };
 
-      if (createOnceRef.current) {
-        // 이미 다른 곳에서 생성 시도 중이었다면 중복 생성 방지
-        return { alreadyExists: false };
-      }
+      if (createOnceRef.current) return { alreadyExists: false };
       createOnceRef.current = true;
 
-      const data = await createBirthday();
-      localStorage.setItem(LS_LAST_BID, String(data.birthdayId));
-      if (data.code) localStorage.setItem(LS_LAST_CODE, data.code);
-
+      const created = await createBirthday();
+      localStorage.setItem(LS_LAST_BID, String(created.birthdayId));
+      if (created.code) localStorage.setItem(LS_LAST_CODE, created.code);
+      setData({
+        userId: created.userId,
+        birthdayId: created.birthdayId,
+        code: created.code,
+        birthdayCards: created.birthdayCards ?? [],
+      });
       return { alreadyExists: false };
     } finally {
       setCreating(false);
     }
   }
 
-  /**
-   * 환영 모달 닫힐 때 등, 가볍게 올해 데이터 프리페치
-   * 실패해도 throw 하지 않고 조용히 끝냄
-   */
   async function preloadThisYearQuietly(): Promise<void> {
     if (prefetchOnceRef.current) return;
     prefetchOnceRef.current = true;
@@ -93,8 +110,39 @@ export function useFeastThisYear() {
       const thisYear = await getThisYearBirthday(bid);
       localStorage.setItem(LS_LAST_BID, String(thisYear.birthdayId));
       if (thisYear.code) localStorage.setItem(LS_LAST_CODE, thisYear.code);
+
+      setData({
+        userId: thisYear.userId,
+        birthdayId: thisYear.birthdayId,
+        code: thisYear.code,
+        birthdayCards: thisYear.birthdayCards ?? [],
+      });
     } catch {
-      // 무시하고 끝
+      // 조용히 무시
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // 마운트 시 자동 부팅: 캐시값으로 초기 렌더 → 서버로 최신화
+  useEffect(() => {
+    if (bootOnceRef.current) return;
+    bootOnceRef.current = true;
+    (async () => {
+      setLoading(true);
+      try {
+        await findExistingThisYear();
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  // 외부에서 강제 재조회가 필요할 때 사용
+  async function reload() {
+    setLoading(true);
+    try {
+      await findExistingThisYear();
     } finally {
       setLoading(false);
     }
@@ -102,12 +150,14 @@ export function useFeastThisYear() {
 
   return {
     // 상태
-    creating,        // 생성 중 로딩
-    loading,         // 프리페치 로딩
+    creating,
+    loading,
+    data, // code 포함
 
     // 동작
     findExistingThisYear,
     ensureThisYearCreated,
     preloadThisYearQuietly,
+    reload, // 강제 갱신
   };
 }

@@ -20,7 +20,7 @@ import PlayQuizPage from './pages/subpages/PlayQuizPage';
 import ThemeSettingsPage from './pages/subpages/ThemeSettingsPage';
 import OnboardingGate from './features/onboarding/OnboardingGate';
 import CreateQuizPage from './pages/CreateQuizPage';
-import FeastSharePage from './pages/FeastSharePage';
+// import FeastSharePage from './pages/FeastSharePage';
 import AuthKakaoCallback from './pages/AuthKakaoCallback';
 
 // 라우트용 래퍼: 쿼리 파싱 + 더미 데이터 매핑
@@ -82,7 +82,7 @@ export default function App() {
 
         <Route path="/main" element={<MainHome />} />
         {/* 공유 링크용: hostId가 들어오면 MainHome이 게스트 보기로 동작 */}
-        <Route path="/feast/:hostId" element={<MainHome />} />
+        {/* <Route path="/feast/:hostId" element={<MainHome />} /> */}
 
         <Route path="/theme" element={<ThemeSettingsPage />} />
         <Route path="/about-team" element={<TeamAboutPage />} />
