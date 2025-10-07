@@ -6,7 +6,7 @@ import QuizPromptModal from "./QuizPromptModal";
 import { useBirthdayOnboarding } from "./useBirthdayOnboarding";
 import { useAuth } from "@/features/auth/useAuth";
 import WelcomeModal from "@/features/home/WelcomeModal";
-import { createBirthday } from "@/apis/birthday"; // API 직접 호출
+import { createBirthday, getThisYearBirthday, getAllBirthdays } from "@/apis/birthday"; // API 직접 호출
 
 // 호스트용 환영 모달 노출 기록(방문자와 분리)
 const LS_HOST_WELCOME_SHOWN = "bh.host.welcomeShownDate";
@@ -33,6 +33,9 @@ export default function OnboardingGate(): React.ReactElement | null {
   // 생성 로딩 & 중복호출 방지
   const [creatingFeast, setCreatingFeast] = useState(false);
   const createOnceRef = useRef(false);
+
+  const [loadingThisYear, setLoadingThisYear] = useState(false);
+  const fetchedThisYearRef = useRef(false);
 
   if (!isAuthenticated || !isOnMain) return null;
 
@@ -96,13 +99,53 @@ export default function OnboardingGate(): React.ReactElement | null {
     }
   };
 
-  const handleWelcomeClose = () => {
+  const handleWelcomeClose = async () => {
     try {
       localStorage.setItem(LS_HOST_WELCOME_SHOWN, today);
-    } catch {}
+    } catch { }
+
+    // 중복 호출 방지
+    if (!fetchedThisYearRef.current) {
+      fetchedThisYearRef.current = true;
+      setLoadingThisYear(true);
+
+      try {
+        // 1) 저장된 ID 우선
+        let bid = localStorage.getItem("bh.lastBirthdayId");
+
+        // 2) 그래도 없으면 전체 조회해서 하나 선택
+        if (!bid) {
+          const list = await getAllBirthdays();
+          const picked = Array.isArray(list) && list.length > 0 ? list[0] : null;
+          if (picked) {
+            bid = String(picked.birthdayId);
+            localStorage.setItem("bh.lastBirthdayId", bid);
+            if (picked.code) localStorage.setItem("bh.lastBirthdayCode", picked.code);
+          }
+        }
+
+        // 3) 이번년도 생일상 상세(또는 요약) 조회
+        if (bid) {
+          const thisYear = await getThisYearBirthday(bid);
+          // 필요하면 전역/컨텍스트에 반영하고,
+          // 최소한 최근값을 캐시해 둠
+          localStorage.setItem("bh.lastBirthdayId", String(thisYear.birthdayId));
+          if (thisYear.code) localStorage.setItem("bh.lastBirthdayCode", thisYear.code);
+        } else {
+          console.warn("올해 생일상을 조회할 birthdayId가 없습니다.");
+        }
+      } catch (e) {
+        console.warn("이번년도 생일상 조회 실패:", e);
+        // 실패해도 플로우 계속 진행
+      } finally {
+        setLoadingThisYear(false);
+      }
+    }
+
     setShowWelcome(false);
     if (birthdayISO && !hasSeenQuizPrompt) setShowQuiz(true);
   };
+
 
   const handleQuizMake = () => {
     setHasSeenQuizPrompt(true);
@@ -123,8 +166,8 @@ export default function OnboardingGate(): React.ReactElement | null {
         open={showBirthday}
         onSubmit={handleBirthdaySubmit}
         onClose={() => setShowBirthday(false)}
-        // Modal 컴포넌트가 지원하면 로딩 전달해서 버튼 비활성화
-        // submitting={creatingFeast}
+      // Modal 컴포넌트가 지원하면 로딩 전달해서 버튼 비활성화
+      // submitting={creatingFeast}
       />
 
       <WelcomeModal
@@ -132,6 +175,7 @@ export default function OnboardingGate(): React.ReactElement | null {
         isHost={true}
         nickname=""
         onClose={handleWelcomeClose}
+        // submitting={loadingThisYear} // 모달이 지원하면 사용
       />
 
       <QuizPromptModal open={showQuiz} onMake={handleQuizMake} onLater={handleQuizLater} />
