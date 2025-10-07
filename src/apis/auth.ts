@@ -20,7 +20,7 @@ export async function kakaoLogin(code: string): Promise<KakaoLoginResponse> {
   return res.data as KakaoLoginResponse;
 }
 
-/** 카카오 소셜 로그인 API */
+/** 로그아웃 API */
 // Refresh Token(HttpOnly 쿠키) 만료 처리
 export async function postLogout() {
   const res = await apiClient.post(`/api/auth-user/logout`, null);
