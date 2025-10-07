@@ -2,18 +2,29 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/layouts/AppLayout';
+import { useLogout } from '@/features/auth/useLogout'; // ⬅️ 추가
 
 export default function AccountSettingsPage() {
   const navigate = useNavigate();
-  const [publicAll, setPublicAll] = useState(true); // 내게 온 메시지 모두에게 공개
+  const [publicAll, setPublicAll] = useState(true);
+  const { logout } = useLogout();               // ⬅️ 추가
+  const [loggingOut, setLoggingOut] = useState(false); // ⬅️ 로딩 상태
 
-  const handleLogout = () => {
-    // TODO: 실제 로그아웃 로직 연결
-    alert('로그아웃 되었습니다.');
+  const handleLogout = async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await logout(); // 서버 로그아웃 + 토큰 삭제 + /login 이동
+      // 참고: useLogout 안에서 네비게이션까지 처리하므로 여기서 alert 불필요
+    } catch (e) {
+      // useLogout 내부에서 실패해도 최종적으로 이동은 처리됨. 필요시 사용자 피드백만 추가
+      console.error(e);
+    } finally {
+      setLoggingOut(false);
+    }
   };
 
   const handleWithdraw = () => {
-    // TODO: 실제 회원탈퇴 로직 연결
     if (confirm('정말 탈퇴하시겠어요?')) {
       alert('탈퇴 처리되었습니다.');
     }
@@ -33,7 +44,6 @@ export default function AccountSettingsPage() {
       footerButtonLabel="확인"
       onFooterButtonClick={() => navigate(-1)}
     >
-
       {/* 프로필 섹션 */}
       <section className="pt-9 pb-5 px-1 border-b border-[#D9D9D9]">
         <div className="flex items-center justify-between">
@@ -50,8 +60,6 @@ export default function AccountSettingsPage() {
         {/* 공개 스위치 */}
         <div className="flex items-center justify-between">
           <span className="text-base text-[#A0A0A0] font-semibold">내게 온 메시지 모두에게 공개</span>
-
-          {/* 토글 */}
           <button
             type="button"
             aria-pressed={publicAll}
@@ -82,9 +90,10 @@ export default function AccountSettingsPage() {
         <button
           type="button"
           onClick={handleLogout}
-          className="w-full text-left text-base text-[#A0A0A0] font-semibold hover:text-[#FF8B8B] transition"
+          disabled={loggingOut}
+          className="w-full text-left text-base text-[#A0A0A0] font-semibold hover:text-[#FF8B8B] transition disabled:opacity-60"
         >
-          로그아웃
+          {loggingOut ? '로그아웃 중…' : '로그아웃'}
         </button>
 
         {/* 회원탈퇴 */}
