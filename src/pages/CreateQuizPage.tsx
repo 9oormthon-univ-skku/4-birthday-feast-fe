@@ -1,7 +1,7 @@
-// src/pages/subpages/QuizEditPage.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import AppLayout from "@/layouts/AppLayout";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { createQuiz } from "@/apis/quiz"; // API 연결
 
 type QuizQuestion = {
   questionId: string;
@@ -18,6 +18,7 @@ type QuizDraft = {
 };
 
 const DRAFT_KEY = "bh.quiz.ox.draft";
+const LS_BIRTHDAY_ID = "bh.lastBirthdayId";
 const MAX_LEN = 100;
 const MIN_QUESTIONS = 1;
 
@@ -40,7 +41,13 @@ function loadDraft(): QuizDraft | null {
 function saveDraft(d: QuizDraft) {
   try {
     localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
-  } catch { }
+  } catch {}
+}
+
+function clearDraft() {
+  try {
+    localStorage.removeItem(DRAFT_KEY);
+  } catch {}
 }
 
 function normalizeSequence(list: QuizQuestion[]): QuizQuestion[] {
@@ -49,37 +56,59 @@ function normalizeSequence(list: QuizQuestion[]): QuizQuestion[] {
     .sort((a, b) => a.sequence - b.sequence);
 }
 
+function readLastBirthdayId(): string | number | undefined {
+  try {
+    const raw = localStorage.getItem(LS_BIRTHDAY_ID);
+    if (!raw) return undefined;
+    // 숫자로 저장된 경우와 문자열 모두 지원
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : (raw as string);
+  } catch {
+    return undefined;
+  }
+}
+
 export default function CreateQuizPage() {
   const nav = useNavigate();
+  const [sp] = useSearchParams();
 
   const [title, setTitle] = useState<string>("");
   const [questions, setQuestions] = useState<QuizQuestion[]>([
     { questionId: makeId(), content: "", answer: true, sequence: 1 },
   ]);
+  const [birthdayId, setBirthdayId] = useState<string | number | undefined>(undefined);
+  const [submitting, setSubmitting] = useState(false);
 
-  // 초안 로드
+  // 초안 로드 & birthdayId 결정 (query -> draft -> undefined)
   useEffect(() => {
     const d = loadDraft();
+    const qBirthday = sp.get("birthdayId") || undefined;
+    const lsBirthday = readLastBirthdayId();
+
+    setBirthdayId(qBirthday ?? d?.birthdayId ?? lsBirthday ?? undefined);
+
     if (d) {
       setQuestions(normalizeSequence(d.questions));
-      // 제목이 필요하면 아래 주석 해제 (draft에 title 필드 추가해서 함께 저장)
-      // setTitle(d.title ?? "");
+      // setTitle(d.title ?? ""); // 제목 쓰면 사용
     }
-  }, []);
+  }, [sp]);
 
   // 자동 임시저장
   useEffect(() => {
     const draft: QuizDraft = {
       quizId: "local-quiz",
+      birthdayId,
       questions: normalizeSequence(questions),
       updatedAt: new Date().toISOString(),
     };
     saveDraft(draft);
-  }, [questions]);
+  }, [questions, birthdayId]);
 
   const allValid = useMemo(() => {
     if (questions.length < MIN_QUESTIONS) return false;
-    return questions.every((q) => q.content.trim().length > 0 && q.content.length <= MAX_LEN);
+    return questions.every(
+      (q) => q.content.trim().length > 0 && q.content.length <= MAX_LEN
+    );
   }, [questions]);
 
   const addQuestion = () => {
@@ -122,23 +151,41 @@ export default function CreateQuizPage() {
     setQuestions((prev) => prev.map((q) => (q.questionId === id ? { ...q, answer: value } : q)));
   };
 
-  const handleSave = () => {
-    // 실제 API 연동 시 여기에서 POST/PUT 호출
-    const payload: QuizDraft = {
-      quizId: "local-quiz",
-      // birthdayId: ... // 필요 시 채우기
-      questions: normalizeSequence(questions),
-      updatedAt: new Date().toISOString(),
-    };
-    saveDraft(payload);
-    alert("퀴즈가 저장되었습니다.");
-    nav("/main");
+  // ✅ 실제 API 호출
+  const handleSave = async () => {
+    if (!birthdayId) {
+      alert("생일상 ID를 찾을 수 없어요. URL에 ?birthdayId= 를 포함하거나 온보딩을 완료해주세요.");
+      return;
+    }
+    if (!allValid) return;
+
+    setSubmitting(true);
+    try {
+      const payload = {
+        birthdayId,
+        questions: normalizeSequence(questions).map((q) => ({
+          // 서버 스키마: sequence/content/answer 만 전송
+          sequence: q.sequence,
+          content: q.content.trim(),
+          answer: q.answer,
+        })),
+      };
+
+      const created = await createQuiz(payload); // <-- POST /api-user/quiz/create
+      clearDraft();
+      alert("퀴즈가 저장되었습니다.");
+      // 필요에 맞게 이동 경로 조정
+      nav(`/main?quizId=${created.quizId}`);
+    } catch (e: any) {
+      console.error(e);
+      alert("퀴즈 저장에 실패했어요. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const rightExtra = (
-    <div className="text-sm text-[#A0A0A0]">
-      퀴즈 개수 : {questions.length}
-    </div>
+    <div className="text-sm text-[#A0A0A0]">퀴즈 개수 : {questions.length}</div>
   );
 
   return (
@@ -154,14 +201,14 @@ export default function CreateQuizPage() {
       showMenu={false}
       showBrush={false}
       rightExtra={rightExtra}
-      footerButtonLabel="저장하기"
+      footerButtonLabel={submitting ? "저장 중..." : "저장하기"}
       onFooterButtonClick={handleSave}
-      footerButtonDisabled={!allValid}
+      footerButtonDisabled={!allValid || submitting}
     >
-
       {/* 설명 */}
       <p className="text-sm text-[#A0A0A0] mb-4">
-        각 문항은 <span className="text-[#FF8B8B] font-bold">O / X</span> 중 하나의 정답을 선택해 주세요.<br />(최대 {MAX_LEN}자)
+        각 문항은 <span className="text-[#FF8B8B] font-bold">O / X</span> 중 하나의 정답을 선택해 주세요.<br />
+        (최대 {MAX_LEN}자)
       </p>
 
       {/* 문항 리스트 */}
@@ -175,7 +222,7 @@ export default function CreateQuizPage() {
                   type="button"
                   onClick={() => moveUp(idx)}
                   className="rounded-md border-2 p-1 text-xs font-bold text-[#A0A0A0] hover:bg-gray-50"
-                  disabled={idx === 0}
+                  disabled={idx === 0 || submitting}
                   aria-label="위로 이동"
                 >
                   ↑
@@ -184,7 +231,7 @@ export default function CreateQuizPage() {
                   type="button"
                   onClick={() => moveDown(idx)}
                   className="rounded-md border-2 p-1 text-xs font-bold text-[#A0A0A0] hover:bg-gray-50"
-                  disabled={idx === questions.length - 1}
+                  disabled={idx === questions.length - 1 || submitting}
                   aria-label="아래로 이동"
                 >
                   ↓
@@ -193,6 +240,7 @@ export default function CreateQuizPage() {
                   type="button"
                   onClick={() => removeQuestion(q.questionId)}
                   className="rounded-md border-2 px-2 py-1 font-semibold text-xs text-[#FF8B8B]"
+                  disabled={submitting}
                   aria-label="삭제"
                 >
                   삭제
@@ -205,6 +253,7 @@ export default function CreateQuizPage() {
               onChange={(e) => updateContent(q.questionId, e.target.value)}
               placeholder="퀴즈 내용을 입력하세요"
               className=" w-full rounded-[5px] border border-gray-200 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#FF8B8B] mb-3"
+              disabled={submitting}
             />
 
             <div className="flex justify-between">
@@ -228,6 +277,7 @@ export default function CreateQuizPage() {
           type="button"
           onClick={addQuestion}
           className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+          disabled={submitting}
         >
           + 퀴즈 추가
         </button>

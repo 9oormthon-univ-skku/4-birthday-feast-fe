@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/ui/Header';
 import Modal from '@/ui/Modal';
+import { deleteQuizQuestion, getQuiz } from '@/apis/quiz'; // 조회 API
 
 // ---------- 타입 ----------
 type QuizQuestion = {
@@ -21,6 +22,19 @@ type QuizData = {
 
 // ---------- 로컬 스토리지 ----------
 const STORAGE_KEY = 'bh.quiz.ox.draft';
+const LS_LAST_QUIZ_ID = 'bh.lastQuizId';
+
+function readLastQuizId(): string | number | undefined {
+  try {
+    const raw = localStorage.getItem(LS_LAST_QUIZ_ID);
+    if (!raw) return undefined;
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : (raw as string);
+  } catch {
+    return undefined;
+  }
+}
+
 
 // 안전 로드
 function loadFromStorage(): QuizData | null {
@@ -52,52 +66,73 @@ function normalize(questions: QuizQuestion[]): QuizQuestion[] {
 export default function QuizPage() {
   const navigate = useNavigate();
 
+  // 로딩/에러
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   // 삭제 확인 모달 상태
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingIndex, setPendingIndex] = useState<number | null>(null);
 
-  // 삭제 버튼 클릭 시 모달 오픈
-  const askRemoveQuestion = (index: number) => {
-    setPendingIndex(index);
-    setConfirmOpen(true);
-  };
-
-  // 모달에서 "예" 선택 시 실제 삭제
-  const confirmRemove = () => {
-    if (pendingIndex !== null) {
-      removeQuestion(pendingIndex);
-    }
-    setConfirmOpen(false);
-    setPendingIndex(null);
-  };
-
-  // 모달 닫기/취소
-  const closeConfirm = () => {
-    setConfirmOpen(false);
-    setPendingIndex(null);
-  };
-
   const [editMode, setEditMode] = useState(false);
 
-  // 처음 로드: 로컬 스토리지에서 가져오기 (없으면 빈 배열)
-  const initial = useMemo<QuizData>(() => {
-    const stored = loadFromStorage();
-    if (stored) {
-      return {
-        ...stored,
-        questions: normalize(stored.questions),
-      };
-    }
-    return {
-      quizId: 'local-quiz',
-      birthdayId: undefined,
-      questions: [],
-      updatedAt: new Date().toISOString(),
-    };
-  }, []);
+  // 초기값(빈 상태)
+  const [meta, setMeta] = useState<{ quizId: number | string | null; birthdayId?: number | string }>({
+    quizId: null,
+    birthdayId: undefined,
+  });
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+  const [answers, setAnswers] = useState<boolean[]>([]);
 
-  const [questions, setQuestions] = useState<QuizQuestion[]>(initial.questions);
-  const [answers, setAnswers] = useState<boolean[]>(initial.questions.map((q) => q.answer));
+  // ----- 데이터 로딩: 우선순위 = LS bh.lastQuizId → 로컬 초안 -----
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      setError(null);
+
+      const lastId = readLastQuizId();
+
+      try {
+        if (lastId) {
+          // ✅ 서버에서 퀴즈 조회
+          const q = await getQuiz(lastId);
+          const normalized = normalize(q.questions || []);
+          setMeta({ quizId: q.quizId, birthdayId: q.birthdayId });
+          setQuestions(normalized);
+          setAnswers(normalized.map((it) => it.answer));
+
+          // 로컬에도 캐싱 및 마지막 사용 ID 저장
+          saveToStorage({
+            quizId: q.quizId,
+            birthdayId: q.birthdayId,
+            questions: normalized,
+            updatedAt: new Date().toISOString(),
+          });
+          try {
+            localStorage.setItem(LS_LAST_QUIZ_ID, String(q.quizId));
+          } catch {}
+        } else {
+          // 로컬 초안 사용 (없으면 빈 목록)
+          const stored = loadFromStorage();
+          if (stored) {
+            const normalized = normalize(stored.questions);
+            setMeta({ quizId: stored.quizId, birthdayId: stored.birthdayId });
+            setQuestions(normalized);
+            setAnswers(normalized.map((it) => it.answer));
+          } else {
+            setMeta({ quizId: 'local-quiz' });
+            setQuestions([]);
+            setAnswers([]);
+          }
+        }
+      } catch (e: any) {
+        console.error(e);
+        setError('퀴즈를 불러오지 못했어요.');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   // 로컬 스토리지 변경(다른 탭) 대응
   useEffect(() => {
@@ -106,6 +141,7 @@ export default function QuizPage() {
         const next = loadFromStorage();
         if (next?.questions) {
           const normalized = normalize(next.questions);
+          setMeta({ quizId: next.quizId, birthdayId: next.birthdayId });
           setQuestions(normalized);
           setAnswers(normalized.map((q) => q.answer));
         }
@@ -114,6 +150,22 @@ export default function QuizPage() {
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
   }, []);
+
+  // 삭제 버튼 클릭 시 모달 오픈
+  const askRemoveQuestion = (index: number) => {
+    setPendingIndex(index);
+    setConfirmOpen(true);
+  };
+  // 모달에서 "예" 선택 시 실제 삭제
+  const confirmRemove = () => {
+    if (pendingIndex !== null) removeQuestion(pendingIndex);
+    setConfirmOpen(false);
+    setPendingIndex(null);
+  };
+  const closeConfirm = () => {
+    setConfirmOpen(false);
+    setPendingIndex(null);
+  };
 
   const toggleAnswer = (index: number) => {
     setAnswers((prev) => {
@@ -128,10 +180,40 @@ export default function QuizPage() {
     });
   };
 
-  const removeQuestion = (index: number) => {
-    setQuestions((prev) => normalize(prev.filter((_, i) => i !== index)));
-    setAnswers((prev) => prev.filter((_, i) => i !== index));
+ // 기존 removeQuestion 함수 교체
+const removeQuestion = async (index: number) => {
+  const target = questions[index];
+  if (!target) return;
+
+  // 1️⃣ 서버 삭제 (quizId가 숫자일 때만 시도)
+  try {
+    if (typeof target.questionId === 'number' || /^[0-9]+$/.test(String(target.questionId))) {
+      await deleteQuizQuestion(target.questionId);
+      console.log(`[QuizPage] Deleted questionId=${target.questionId} from server`);
+    } else {
+      console.log(`[QuizPage] Skipped server delete for local questionId=${target.questionId}`);
+    }
+  } catch (err) {
+    console.error('❌ 서버 문항 삭제 실패', err);
+    alert('문항 삭제 중 오류가 발생했어요.');
+    return; // 서버 삭제 실패 시 로컬 반영도 막음
+  }
+
+  // 2️⃣ 로컬 상태에서 제거 및 시퀀스 정리
+  setQuestions((prev) => normalize(prev.filter((_, i) => i !== index)));
+  setAnswers((prev) => prev.filter((_, i) => i !== index));
+
+  // 3️⃣ 로컬 스토리지 갱신
+  const payload: QuizData = {
+    quizId: meta.quizId ?? 'local-quiz',
+    birthdayId: meta.birthdayId,
+    questions: normalize(
+      questions.filter((_, i) => i !== index)
+    ),
+    updatedAt: new Date().toISOString(),
   };
+  saveToStorage(payload);
+};
 
   // 문항 텍스트 수정
   const changeContent = (index: number, value: string) => {
@@ -142,12 +224,12 @@ export default function QuizPage() {
     });
   };
 
-  // 편집 완료 시 저장 (→ 이 자리에 저장 API 연결 가능)
+  // 편집 완료 시 로컬 저장(서버 저장은 별도 플로우)
   const handleToggleEditMode = () => {
     if (editMode) {
       const payload: QuizData = {
-        quizId: initial.quizId ?? 'local-quiz',
-        birthdayId: initial.birthdayId,
+        quizId: meta.quizId ?? 'local-quiz',
+        birthdayId: meta.birthdayId,
         questions: normalize(questions),
         updatedAt: new Date().toISOString(),
       };
@@ -156,6 +238,31 @@ export default function QuizPage() {
     }
     setEditMode((v) => !v);
   };
+
+  // ----- 렌더 -----
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Header showBack showMenu={false} showBrush={false} title={<span className="text-[#FF8B8B]">생일 퀴즈</span>} />
+        <main className="px-4 pb-6">
+          <div className="mb-4 h-[1px] bg-[#EFD9C6]" />
+          <div className="py-12 text-center text-[#6b6b6b]">불러오는 중…</div>
+        </main>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Header showBack showMenu={false} showBrush={false} title={<span className="text-[#FF8B8B]">생일 퀴즈</span>} />
+        <main className="px-4 pb-6">
+          <div className="mb-4 h-[1px] bg-[#EFD9C6]" />
+          <div className="py-12 text-center text-red-500">{error}</div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -179,20 +286,13 @@ export default function QuizPage() {
         <div className="mb-4 h-[1px] bg-[#EFD9C6]" />
 
         {questions.length === 0 ? (
-          <div className="py-12 text-center text-[#6b6b6b]">
-            퀴즈가 없습니다.
-            {/* 편집 모드에서 시작하고 싶다면 아래 버튼으로 문항 추가하는 로직을 붙일 수 있습니다. */}
-          </div>
+          <div className="py-12 text-center text-[#6b6b6b]">퀴즈가 없습니다.</div>
         ) : (
           <ul className="space-y-4">
             {questions.map((q, i) => (
               <li key={q.questionId} className="flex items-stretch gap-3">
-                {/* 왼쪽 포인트 바 */}
                 <span className="w-1.5 rounded-full bg-[#FF8B8B]" />
-
-                {/* 내용 카드 */}
                 <div className="flex flex-1 items-center justify-between rounded-sm bg-[#F5F5F5] px-4 py-3 text-base text-[#3E3E3E]">
-                  {/* 보기/편집 모드에 따른 렌더 */}
                   {!editMode ? (
                     <span>
                       <b className="mr-2 text-[#FF8B8B]">{q.sequence}.</b>
@@ -212,8 +312,6 @@ export default function QuizPage() {
                       </div>
                     </label>
                   )}
-
-                  {/* 보기 모드에선 정답 뱃지 */}
                   {!editMode && (
                     <span
                       className={`ml-3 inline-flex h-8 w-8 items-center justify-center rounded-full ${
@@ -227,10 +325,8 @@ export default function QuizPage() {
                   )}
                 </div>
 
-                {/* 편집 모드 툴들 */}
                 {editMode && (
                   <div className="ml-3 flex items-center gap-2">
-                    {/* O/X 토글 */}
                     <button
                       aria-label={answers[i] ? '정답(O)로 설정' : '정답(X)로 설정'}
                       onClick={() => toggleAnswer(i)}
@@ -241,8 +337,6 @@ export default function QuizPage() {
                     >
                       {answers[i] ? '○' : '✕'}
                     </button>
-
-                    {/* 삭제 */}
                     <button
                       aria-label="삭제"
                       className="flex h-8 w-8 items-center justify-center rounded-full text-[#6b6b6b] hover:bg-black/5"
@@ -259,7 +353,6 @@ export default function QuizPage() {
         )}
       </main>
 
-      {/* 삭제 확인 모달 */}
       <Modal
         open={confirmOpen}
         type="confirm"
