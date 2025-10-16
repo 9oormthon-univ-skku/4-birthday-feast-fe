@@ -5,12 +5,15 @@ import AppLayout from '@/layouts/AppLayout';
 import { useLogout } from '@/features/auth/useLogout';
 import { updateNickname } from '@/apis/user';
 import NicknameModal from '@/features/auth/NicknameModal';
+import { useMe } from '@/features/user/useMe';
 
 export default function AccountSettingsPage() {
   const navigate = useNavigate();
   const [publicAll, setPublicAll] = useState(true);
   const { logout } = useLogout();
   const [loggingOut, setLoggingOut] = useState(false);
+
+  const { me, loading: loadingMe, refresh } = useMe();
 
   const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -55,6 +58,9 @@ export default function AccountSettingsPage() {
     //   }
   };
 
+  const displayName = loadingMe ? '…' : me?.name ?? '사용자님';
+  const profileUrl = me?.profileImageUrl;
+
   return (
     <AppLayout
       showBack
@@ -73,10 +79,19 @@ export default function AccountSettingsPage() {
       <section className="pt-9 pb-5 px-3">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-xl font-extrabold text-[#FF8B8B]">사용자님</div>
+            <div className="text-xl font-extrabold text-[#FF8B8B]">{displayName}</div>
             <div className="text-base text-[#A0A0A0] mt-0.5 font-medium">카카오로 로그인 중</div>
           </div>
-          <div className="w-16 h-16 rounded-full bg-[#D9D9D9]" />
+          {/* 프로필 이미지 (없으면 placeholder) */}
+          {profileUrl ? (
+            <img
+              src={profileUrl}
+              alt="프로필 이미지"
+              className="w-16 h-16 rounded-full object-cover border border-[#E5E5E5]"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-[#D9D9D9]" />
+          )}
         </div>
       </section>
 
@@ -147,6 +162,7 @@ export default function AccountSettingsPage() {
       {/* 닉네임 변경 모달 */}
       <NicknameModal
         open={nicknameModalOpen}
+        defaultValue={me?.name ?? displayName}
         onSubmit={handleSubmitNickname}
         onClose={() => setNicknameModalOpen(false)}
       />

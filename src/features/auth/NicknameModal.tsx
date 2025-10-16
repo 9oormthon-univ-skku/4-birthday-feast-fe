@@ -20,12 +20,11 @@ export default function NicknameModal({
       type="prompt"
       message="사용하실 닉네임을 등록해주세요."
       confirmText="확인"
-      placeholder="닉네임"
       defaultValue={defaultValue}
       validate={(v) => v.trim().length > 0}
       onConfirm={(v) => {
         const nickname = (v ?? "").trim();
-        if (!nickname) return; 
+        if (!nickname) return;
         onSubmit(nickname);
       }}
       closeOnBackdrop={true}
