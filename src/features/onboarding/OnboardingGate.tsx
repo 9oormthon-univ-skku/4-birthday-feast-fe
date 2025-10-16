@@ -7,6 +7,8 @@ import { useBirthdayOnboarding } from "./useBirthdayOnboarding";
 import { useAuth } from "@/features/auth/useAuth";
 import WelcomeModal from "@/features/home/WelcomeModal";
 import { useFeastThisYear } from "@/features/feast/useFeastThisYear";
+import { getUserMe } from "@/apis/user";
+import { useMe } from "../user/useMe";
 
 // 호스트용 환영 모달 노출 기록(방문자와 분리)
 const LS_HOST_WELCOME_SHOWN = "bh.host.welcomeShownDate";
@@ -30,6 +32,7 @@ export default function OnboardingGate(): React.ReactElement | null {
   const [showWelcome, setShowWelcome] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
 
+  const { me, loading: loadingUser } = useMe();
   const { creating, loading, ensureThisYearCreated, preloadThisYearQuietly } = useFeastThisYear();
 
   if (!isAuthenticated || !isOnMain) return null;
@@ -85,7 +88,7 @@ export default function OnboardingGate(): React.ReactElement | null {
   const handleWelcomeClose = async () => {
     try {
       localStorage.setItem(LS_HOST_WELCOME_SHOWN, today);
-    } catch {}
+    } catch { }
 
     // 조용한 프리페치 (실패 무시)
     await preloadThisYearQuietly();
@@ -113,15 +116,15 @@ export default function OnboardingGate(): React.ReactElement | null {
         open={showBirthday}
         onSubmit={handleBirthdaySubmit}
         onClose={() => setShowBirthday(false)}
-        // submitting={creating} // Modal이 지원하면 주석 해제
+      // submitting={creating} // Modal이 지원하면 주석 해제
       />
 
       <WelcomeModal
         open={showWelcome}
         isHost={true}
-        nickname=""
+        nickname={loadingUser ? "..." : me?.name ?? ""}
         onClose={handleWelcomeClose}
-        // submitting={loading} // Modal이 지원하면 주석 해제
+      // submitting={loading} // Modal이 지원하면 주석 해제
       />
 
       <QuizPromptModal open={showQuiz} onMake={handleQuizMake} onLater={handleQuizLater} />
