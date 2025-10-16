@@ -2,13 +2,18 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/layouts/AppLayout';
-import { useLogout } from '@/features/auth/useLogout'; // ⬅️ 추가
+import { useLogout } from '@/features/auth/useLogout';
+import { updateNickname } from '@/apis/user';
+import NicknameModal from '@/features/auth/NicknameModal';
 
 export default function AccountSettingsPage() {
   const navigate = useNavigate();
   const [publicAll, setPublicAll] = useState(true);
-  const { logout } = useLogout();               // ⬅️ 추가
-  const [loggingOut, setLoggingOut] = useState(false); // ⬅️ 로딩 상태
+  const { logout } = useLogout();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
   const handleLogout = async () => {
     if (loggingOut) return;
@@ -24,10 +29,30 @@ export default function AccountSettingsPage() {
     }
   };
 
-  const handleWithdraw = () => {
-    if (confirm('정말 탈퇴하시겠어요?')) {
-      alert('탈퇴 처리되었습니다.');
+  // 닉네임 변경 버튼 클릭 -> 모달 열기 
+  const handleChangeNickname = () => {
+    setNicknameModalOpen(true);
+  };
+
+  const handleSubmitNickname = async (nickname: string) => {
+    if (updating) return;
+    setUpdating(true);
+    try {
+      await updateNickname(nickname);
+      alert("닉네임이 변경되었습니다!");
+      setNicknameModalOpen(false);
+    } catch (e) {
+      console.error(e);
+      alert("닉네임 변경 중 오류가 발생했습니다.");
+    } finally {
+      setUpdating(false);
     }
+  };
+
+  const handleWithdraw = () => {
+    //   if (confirm('정말 탈퇴하시겠어요?')) {
+    //     alert('탈퇴 처리되었습니다.');
+    //   }
   };
 
   return (
@@ -45,7 +70,7 @@ export default function AccountSettingsPage() {
       onFooterButtonClick={() => navigate(-1)}
     >
       {/* 프로필 섹션 */}
-      <section className="pt-9 pb-5 px-1 border-b border-[#D9D9D9]">
+      <section className="pt-9 pb-5 px-3">
         <div className="flex items-center justify-between">
           <div>
             <div className="text-xl font-extrabold text-[#FF8B8B]">사용자님</div>
@@ -55,10 +80,12 @@ export default function AccountSettingsPage() {
         </div>
       </section>
 
+      <section className="border-b border-[#D9D9D9]"></section>
+
       {/* 공개 설정 + 기타 항목 */}
-      <section className="pt-9 px-3 space-y-6">
+      <section className="pt-9 space-y-6">
         {/* 공개 스위치 */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between px-3">
           <span className="text-base text-[#A0A0A0] font-semibold">내게 온 메시지 모두에게 공개</span>
           <button
             type="button"
@@ -86,12 +113,23 @@ export default function AccountSettingsPage() {
           </button>
         </div>
 
+        {/* 생일한상 닉네임 변경 */}
+        <button
+          type="button"
+          onClick={handleChangeNickname}
+          className="w-full px-3 text-left text-base text-[#A0A0A0] font-semibold hover:text-[#FF8B8B] transition"
+        >
+          닉네임 변경
+        </button>
+
+        <section className="border-b border-[#D9D9D9]"></section>
+
         {/* 로그아웃 */}
         <button
           type="button"
           onClick={handleLogout}
           disabled={loggingOut}
-          className="w-full text-left text-base text-[#A0A0A0] font-semibold hover:text-[#FF8B8B] transition disabled:opacity-60"
+          className="w-full px-3 text-left text-base text-[#A0A0A0] font-semibold hover:text-[#FF8B8B] transition disabled:opacity-60"
         >
           {loggingOut ? '로그아웃 중…' : '로그아웃'}
         </button>
@@ -100,11 +138,18 @@ export default function AccountSettingsPage() {
         <button
           type="button"
           onClick={handleWithdraw}
-          className="w-full text-left text-base text-[#A0A0A0] font-semibold hover:text-[#FF8B8B] transition"
+          className="w-full px-3 text-left text-base text-[#A0A0A0] font-semibold hover:text-[#FF8B8B] transition"
         >
           회원탈퇴
         </button>
       </section>
+
+      {/* 닉네임 변경 모달 */}
+      <NicknameModal
+        open={nicknameModalOpen}
+        onSubmit={handleSubmitNickname}
+        onClose={() => setNicknameModalOpen(false)}
+      />
     </AppLayout>
   );
 }
