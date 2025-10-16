@@ -1,15 +1,17 @@
 // src/pages/subpages/AccountSettingsPage.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/layouts/AppLayout';
 import { useLogout } from '@/features/auth/useLogout';
 import { updateNickname } from '@/apis/user';
 import NicknameModal from '@/features/auth/NicknameModal';
 import { useMe } from '@/features/user/useMe';
+import { updateBirthdayVisible, getBirthdayPeriod } from "@/apis/birthday";
+
+const LOCAL_KEY = "bh.lastBirthdayId";
 
 export default function AccountSettingsPage() {
   const navigate = useNavigate();
-  const [publicAll, setPublicAll] = useState(true);
   const { logout } = useLogout();
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -17,6 +19,61 @@ export default function AccountSettingsPage() {
 
   const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
+
+  // 공개 여부 (생일상 공개 여부)
+  const [publicAll, setPublicAll] = useState<boolean>(true);
+  const [loadingVisible, setLoadingVisible] = useState<boolean>(false);
+
+  // --- 초기 공개여부 불러오기 ---
+  useEffect(() => {
+    const idRaw = localStorage.getItem(LOCAL_KEY);
+    if (!idRaw) return;
+
+    const birthdayId = /^\d+$/.test(idRaw) ? Number(idRaw) : idRaw;
+
+    // 서버에서 현재 공개여부 조회용
+    (async () => {
+      try {
+        setLoadingVisible(true);
+        const data = await getBirthdayPeriod(birthdayId);
+        // API가 별도의 공개여부 필드를 주지 않는 경우 기본값 유지
+        // (추가되면 data.isVisible 사용)
+        if ((data as any)?.isVisible !== undefined) {
+          setPublicAll(Boolean((data as any).isVisible));
+        }
+      } catch (err) {
+        console.warn("공개여부 조회 실패:", err);
+      } finally {
+        setLoadingVisible(false);
+      }
+    })();
+  }, []);
+
+  // --- 공개여부 토글 ---
+  const handleToggleVisible = async () => {
+    const next = !publicAll;
+    setPublicAll(next);
+
+    const idRaw = localStorage.getItem(LOCAL_KEY);
+    if (!idRaw) {
+      alert("생일상 ID를 찾을 수 없습니다.");
+      return;
+    }
+
+    const birthdayId = /^\d+$/.test(idRaw) ? Number(idRaw) : idRaw;
+
+    try {
+      setLoadingVisible(true);
+      await updateBirthdayVisible(birthdayId, next);
+    } catch (e) {
+      console.error(e);
+      alert("공개여부 변경 중 오류가 발생했습니다.");
+      // 실패 시 UI 롤백
+      setPublicAll(!next);
+    } finally {
+      setLoadingVisible(false);
+    }
+  };
 
   const handleLogout = async () => {
     if (loggingOut) return;
@@ -105,7 +162,8 @@ export default function AccountSettingsPage() {
           <button
             type="button"
             aria-pressed={publicAll}
-            onClick={() => setPublicAll((v) => !v)}
+            onClick={handleToggleVisible}
+            disabled={loadingVisible}
             className={[
               'relative inline-flex items-center h-6 w-12 rounded-full transition-colors',
               publicAll ? 'bg-[#FF8B8B]' : 'bg-[#E5E5E5]',

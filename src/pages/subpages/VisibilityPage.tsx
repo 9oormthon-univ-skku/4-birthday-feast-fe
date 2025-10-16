@@ -1,9 +1,21 @@
 // src/pages/subpages/VisibilityPage.tsx
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import AppLayout from '@/layouts/AppLayout';
+import { getBirthdayPeriod, type BirthdayPeriod } from "@/apis/birthday";
+import { useNavigate } from 'react-router-dom';
 
-// 요일(월요일 시작)
 const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일'];
+const LOCAL_KEY = "bh.lastBirthdayId";
+
+// ---- 폴백 기간 설정: 로컬스토리지 키가 없거나 API가 실패하면 오늘-14일 ~ 오늘로 자동 표시
+const FALLBACK_DAYS_BEFORE = 14;
+function buildFallbackPeriod() {
+  const today = new Date();
+  const end = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const start = new Date(end);
+  start.setDate(start.getDate() - FALLBACK_DAYS_BEFORE);
+  return { start, end };
+}
 
 type YMD = { y: number; m: number }; // m: 0~11
 
@@ -14,12 +26,16 @@ function sameDay(a: Date | null, b: Date) {
   return !!a && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 function isBetween(target: Date, start: Date, end: Date) {
-  const t = target.setHours(0, 0, 0, 0);
-  const s = start.setHours(0, 0, 0, 0);
-  const e = end.setHours(0, 0, 0, 0);
+  const t = new Date(target.getFullYear(), target.getMonth(), target.getDate()).getTime();
+  const s = new Date(start.getFullYear(), start.getMonth(), start.getDate()).getTime();
+  const e = new Date(end.getFullYear(), end.getMonth(), end.getDate()).getTime();
   return t > Math.min(s, e) && t < Math.max(s, e);
 }
-
+/** "YYYY-MM-DD"를 타임존 밀림 없이 파싱 */
+function parseLocalYMD(ymd: string): Date {
+  const [y, m, d] = ymd.split("-").map(Number);
+  return new Date(y, (m ?? 1) - 1, d ?? 1);
+}
 /** 해당 월(월요일 시작) 달력 그리드(6행x7열) 생성 */
 function buildCalendarGrid({ y, m }: YMD) {
   const firstDay = new Date(y, m, 1).getDay(); // 0=일
@@ -28,22 +44,15 @@ function buildCalendarGrid({ y, m }: YMD) {
   const prevCount = daysInMonth(y, m - 1);
 
   const cells: { date: Date; inMonth: boolean }[] = [];
-
-  // 앞쪽: 이전 달 날짜
   for (let i = offsetMon; i > 0; i--) {
     const d = new Date(y, m - 1, prevCount - i + 1);
     cells.push({ date: d, inMonth: false });
   }
-  // 이번 달
-  for (let d = 1; d <= thisCount; d++) {
-    cells.push({ date: new Date(y, m, d), inMonth: true });
-  }
-  // 다음 달
+  for (let d = 1; d <= thisCount; d++) cells.push({ date: new Date(y, m, d), inMonth: true });
   while (cells.length % 7 !== 0) {
     const idx = cells.length - (offsetMon + thisCount);
     cells.push({ date: new Date(y, m + 1, idx + 1), inMonth: false });
   }
-  // 5행 맞추기
   while (cells.length < 35) {
     const last = cells[cells.length - 1].date;
     cells.push({ date: new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1), inMonth: false });
@@ -52,41 +61,65 @@ function buildCalendarGrid({ y, m }: YMD) {
 }
 
 export default function VisibilityPage() {
-  // 초기 월을 "현재 월"로
-  const today = new Date();
-  const [view, setView] = useState<YMD>({ y: today.getFullYear(), m: today.getMonth() });
-
-  // 범위 선택(시작/끝)
+  const navigate = useNavigate();
   const [start, setStart] = useState<Date | null>(null);
   const [end, setEnd] = useState<Date | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+
+  // 초기 월(나중에 시작일의 월로 이동)
+  const [view, setView] = useState<YMD>(() => {
+    const t = new Date();
+    return { y: t.getFullYear(), m: t.getMonth() };
+  });
+
+  useEffect(() => {
+    const idRaw = localStorage.getItem(LOCAL_KEY);
+
+    // 로컬스토리지 미존재 → 폴백 세팅
+    if (!idRaw) {
+      const fb = buildFallbackPeriod();
+      setStart(fb.start);
+      setEnd(fb.end);
+      setView({ y: fb.start.getFullYear(), m: fb.start.getMonth() });
+      setErr("저장된 birthdayId가 없어 폴백 기간을 표시합니다.");
+      setLoading(false);
+      return;
+    }
+
+    const birthdayId = /^\d+$/.test(idRaw) ? Number(idRaw) : idRaw;
+    const ac = new AbortController();
+
+    (async () => {
+      try {
+        setLoading(true);
+        setErr(null);
+        const data: BirthdayPeriod = await getBirthdayPeriod(birthdayId, { signal: ac.signal });
+        const s = parseLocalYMD(data.startTime);
+        const e = parseLocalYMD(data.endTime);
+        setStart(s);
+        setEnd(e);
+        setView({ y: s.getFullYear(), m: s.getMonth() }); // 시작일의 월로 이동
+      } catch (e: any) {
+        // API 실패 → 폴백 세팅
+        const fb = buildFallbackPeriod();
+        setStart(fb.start);
+        setEnd(fb.end);
+        setView({ y: fb.start.getFullYear(), m: fb.start.getMonth() });
+        setErr(e?.message ?? "공개기간 조회 실패: 폴백 기간을 표시합니다.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+
+    return () => ac.abort();
+  }, []);
 
   const grid = useMemo(() => buildCalendarGrid(view), [view]);
 
   const goMonth = (delta: number) => {
     const next = new Date(view.y, view.m + delta, 1);
     setView({ y: next.getFullYear(), m: next.getMonth() });
-  };
-
-  const onPick = (d: Date) => {
-    if (!start || (start && end)) {
-      setStart(d);
-      setEnd(null);
-      return;
-    }
-    if (start && !end) {
-      if (sameDay(start, d)) {
-        setEnd(d);
-        return;
-      }
-      setEnd(d);
-    }
-  };
-
-  const confirm = () => {
-    if (!start || !end) return alert('시작과 종료 날짜를 선택해 주세요.');
-    const a = start < end ? start : end;
-    const b = start < end ? end : start;
-    alert(`공개 범위: ${a.getFullYear()}.${a.getMonth() + 1}.${a.getDate()} ~ ${b.getFullYear()}.${b.getMonth() + 1}.${b.getDate()}`);
   };
 
   return (
@@ -101,41 +134,26 @@ export default function VisibilityPage() {
         </>
       }
       footerButtonLabel="확인"
-      onFooterButtonClick={confirm}
+      onFooterButtonClick={() => navigate(-1)}
     >
-
       {/* 캘린더 카드 */}
       <section className=" bg-white overflow-hidden py-3">
         {/* 월 네비게이션 */}
         <div className="flex items-center justify-between px-3 py-3">
-          <button
-            aria-label="이전 달"
-            onClick={() => goMonth(-1)}
-          >
-            {prevMonth}
-          </button>
+          <button aria-label="이전 달" onClick={() => goMonth(-1)}>{prevMonth}</button>
           <div className="text-center">
             <div className="text-xl text-black font-normal font-['Inter']">{view.m + 1}월</div>
             <div className="text-xs text-black font-normal font-['Inter']">{view.y}</div>
           </div>
-          <button
-            aria-label="다음 달"
-            onClick={() => goMonth(1)}
-          >
-            {nextMonth}
-          </button>
+          <button aria-label="다음 달" onClick={() => goMonth(1)}>{nextMonth}</button>
         </div>
 
         {/* 요일 헤더 */}
         <div className="grid grid-cols-7 text-center text-sm text-[#707070] font-['Inter'] font-semibold">
-          {WEEKDAYS.map((d) => (
-            <div key={d} className="py-2">
-              {d}
-            </div>
-          ))}
+          {WEEKDAYS.map((d) => <div key={d} className="py-2">{d}</div>)}
         </div>
 
-        {/* 날짜 그리드 */}
+        {/* 날짜 그리드 (읽기 전용) */}
         <div className="grid grid-cols-7">
           {grid.map(({ date, inMonth }, idx) => {
             const inRange = start && end && isBetween(date, start, end);
@@ -147,26 +165,22 @@ export default function VisibilityPage() {
             const hover = 'hover:bg-black/5 active:scale-[0.98]';
             const selectedBg = inRange ? 'bg-[#FF8B8B]/50' : '';
             const boundary = isStart || isEnd ? 'bg-[#FF8B8B]/50' : '';
-
             const roundLeft = isStart && !isEnd ? 'rounded-l-lg' : '';
             const roundRight = isEnd && !isStart ? 'rounded-r-lg' : '';
-
             const endRing = isEnd ? 'border-2 border-[#FF8B8B]' : '';
 
-            const className = [base, dim, hover, selectedBg, boundary, roundLeft, roundRight, endRing].join(' ');
+            const className = [base, dim, hover, selectedBg, boundary, roundLeft, roundRight, endRing, "cursor-default"].join(' ');
 
-            return (
-              <button key={idx} onClick={() => onPick(date)} className={className}>
-                {date.getDate()}
-              </button>
-            );
+            return <div key={idx} className={className}>{date.getDate()}</div>;
           })}
         </div>
       </section>
 
-      <div className='h-[1px] bg-[#D9D9D9] my-8'/>
+      {loading && <div className="px-4 py-3 text-sm text-[#707070]">공개기간을 불러오는 중…</div>}
+      {err && <div className="px-4 py-3 text-sm text-red-500">{err}</div>}
 
-      {/* 안내문 */}
+      <div className='h-[1px] bg-[#D9D9D9] my-8' />
+
       <p className="text-base leading-6 text-[#BFBFBF] break-keep">
         생일 메시지는 14일 전부터 등록할 수 있으며 생일 당일에 공개됩니다.
       </p>
