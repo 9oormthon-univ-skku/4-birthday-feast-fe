@@ -3,7 +3,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/ui/Header';
 import Modal from '@/ui/Modal';
-import { deleteQuizQuestion, getQuiz } from '@/apis/quiz'; // 조회 API
+import { deleteQuizQuestion } from '@/apis/quiz'; // getQuiz 제거
+import { useQuizById } from '@/features/quiz/useQuizById';
+
+// 여기서 퀴즈 불러오는 api는 host 전용 !!! (이미 구현 완료)
 
 // ---------- 타입 ----------
 type QuizQuestion = {
@@ -35,7 +38,6 @@ function readLastQuizId(): string | number | undefined {
   }
 }
 
-
 // 안전 로드
 function loadFromStorage(): QuizData | null {
   try {
@@ -53,7 +55,7 @@ function loadFromStorage(): QuizData | null {
 function saveToStorage(data: QuizData) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch {}
+  } catch { }
 }
 
 // 시퀀스 정렬/보정
@@ -84,35 +86,30 @@ export default function QuizPage() {
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [answers, setAnswers] = useState<boolean[]>([]);
 
+  // 마지막 퀴즈 ID를 먼저 가져옴
+  const lastId = useMemo(() => readLastQuizId(), []);
+  // 서버 퀴즈 훅: lastId가 있을 때만 서버 조회
+  const quizQuery = useQuizById(lastId, { enabled: Boolean(lastId) });
+
   // ----- 데이터 로딩: 우선순위 = LS bh.lastQuizId → 로컬 초안 -----
   useEffect(() => {
     (async () => {
       setLoading(true);
       setError(null);
 
-      const lastId = readLastQuizId();
-
       try {
         if (lastId) {
-          // ✅ 서버에서 퀴즈 조회
-          const q = await getQuiz(lastId);
-          const normalized = normalize(q.questions || []);
-          setMeta({ quizId: q.quizId, birthdayId: q.birthdayId });
-          setQuestions(normalized);
-          setAnswers(normalized.map((it) => it.answer));
-
-          // 로컬에도 캐싱 및 마지막 사용 ID 저장
-          saveToStorage({
-            quizId: q.quizId,
-            birthdayId: q.birthdayId,
-            questions: normalized,
-            updatedAt: new Date().toISOString(),
-          });
-          try {
-            localStorage.setItem(LS_LAST_QUIZ_ID, String(q.quizId));
-          } catch {}
+          // 서버에서 불러오는 중
+          if (quizQuery.isError) {
+            setError('퀴즈를 불러오지 못했어요.');
+          } else if (quizQuery.data) {
+            const packed = quizQuery.data; // useQuizById가 normalize/캐시 완료
+            setMeta({ quizId: packed.quizId, birthdayId: packed.birthdayId });
+            setQuestions(packed.questions);
+            setAnswers(packed.questions.map((it) => it.answer));
+          }
         } else {
-          // 로컬 초안 사용 (없으면 빈 목록)
+          // 로컬 초안
           const stored = loadFromStorage();
           if (stored) {
             const normalized = normalize(stored.questions);
@@ -129,10 +126,12 @@ export default function QuizPage() {
         console.error(e);
         setError('퀴즈를 불러오지 못했어요.');
       } finally {
-        setLoading(false);
+        // 로딩 기준: (lastId가 있으면) quizQuery.isFetching/Loading, 없으면 false
+        setLoading(lastId ? (quizQuery.isFetching || quizQuery.isLoading) : false);
       }
     })();
-  }, []);
+    // lastId가 고정이므로, 데이터 변화에 반응하도록 quizQuery 상태를 의존성에 포함
+  }, [lastId, quizQuery.data, quizQuery.isError, quizQuery.isFetching, quizQuery.isLoading]);
 
   // 로컬 스토리지 변경(다른 탭) 대응
   useEffect(() => {
@@ -180,40 +179,37 @@ export default function QuizPage() {
     });
   };
 
- // 기존 removeQuestion 함수 교체
-const removeQuestion = async (index: number) => {
-  const target = questions[index];
-  if (!target) return;
+  // 기존 removeQuestion 함수 교체 (서버 삭제 + 로컬 반영)
+  const removeQuestion = async (index: number) => {
+    const target = questions[index];
+    if (!target) return;
 
-  // 1️⃣ 서버 삭제 (quizId가 숫자일 때만 시도)
-  try {
-    if (typeof target.questionId === 'number' || /^[0-9]+$/.test(String(target.questionId))) {
-      await deleteQuizQuestion(target.questionId);
-      console.log(`[QuizPage] Deleted questionId=${target.questionId} from server`);
-    } else {
-      console.log(`[QuizPage] Skipped server delete for local questionId=${target.questionId}`);
+    try {
+      if (typeof target.questionId === 'number' || /^[0-9]+$/.test(String(target.questionId))) {
+        await deleteQuizQuestion(target.questionId);
+        console.log(`[QuizPage] Deleted questionId=${target.questionId} from server`);
+      } else {
+        console.log(`[QuizPage] Skipped server delete for local questionId=${target.questionId}`);
+      }
+    } catch (err) {
+      console.error('❌ 서버 문항 삭제 실패', err);
+      alert('문항 삭제 중 오류가 발생했어요.');
+      return; // 서버 삭제 실패 시 로컬 반영도 막음
     }
-  } catch (err) {
-    console.error('❌ 서버 문항 삭제 실패', err);
-    alert('문항 삭제 중 오류가 발생했어요.');
-    return; // 서버 삭제 실패 시 로컬 반영도 막음
-  }
 
-  // 2️⃣ 로컬 상태에서 제거 및 시퀀스 정리
-  setQuestions((prev) => normalize(prev.filter((_, i) => i !== index)));
-  setAnswers((prev) => prev.filter((_, i) => i !== index));
+    setQuestions((prev) => normalize(prev.filter((_, i) => i !== index)));
+    setAnswers((prev) => prev.filter((_, i) => i !== index));
 
-  // 3️⃣ 로컬 스토리지 갱신
-  const payload: QuizData = {
-    quizId: meta.quizId ?? 'local-quiz',
-    birthdayId: meta.birthdayId,
-    questions: normalize(
-      questions.filter((_, i) => i !== index)
-    ),
-    updatedAt: new Date().toISOString(),
+    const payload: QuizData = {
+      quizId: meta.quizId ?? 'local-quiz',
+      birthdayId: meta.birthdayId,
+      questions: normalize(
+        questions.filter((_, i) => i !== index)
+      ),
+      updatedAt: new Date().toISOString(),
+    };
+    saveToStorage(payload);
   };
-  saveToStorage(payload);
-};
 
   // 문항 텍스트 수정
   const changeContent = (index: number, value: string) => {
@@ -252,13 +248,13 @@ const removeQuestion = async (index: number) => {
     );
   }
 
-  if (error) {
+  if (error || quizQuery.isError) {
     return (
       <div className="min-h-screen bg-white">
         <Header showBack showMenu={false} showBrush={false} title={<span className="text-[#FF8B8B]">생일 퀴즈</span>} />
         <main className="px-4 pb-6">
           <div className="mb-4 h-[1px] bg-[#EFD9C6]" />
-          <div className="py-12 text-center text-red-500">{error}</div>
+          <div className="py-12 text-center text-red-500">{error ?? '퀴즈를 불러오지 못했어요.'}</div>
         </main>
       </div>
     );
@@ -314,9 +310,8 @@ const removeQuestion = async (index: number) => {
                   )}
                   {!editMode && (
                     <span
-                      className={`ml-3 inline-flex h-8 w-8 items-center justify-center rounded-full ${
-                        q.answer ? 'bg-[#FF8B8B] text-white' : 'border border-[#FF8B8B] text-[#FF8B8B]'
-                      }`}
+                      className={`ml-3 inline-flex h-8 w-8 items-center justify-center rounded-full ${q.answer ? 'bg-[#FF8B8B] text-white' : 'border border-[#FF8B8B] text-[#FF8B8B]'
+                        }`}
                       aria-label={q.answer ? '정답 O' : '정답 X'}
                       title={q.answer ? '정답 O' : '정답 X'}
                     >
@@ -330,9 +325,8 @@ const removeQuestion = async (index: number) => {
                     <button
                       aria-label={answers[i] ? '정답(O)로 설정' : '정답(X)로 설정'}
                       onClick={() => toggleAnswer(i)}
-                      className={`flex h-8 w-8 items-center justify-center rounded-full ${
-                        answers[i] ? 'bg-[#FF8B8B] text-white' : 'border border-[#FF8B8B] text-[#FF8B8B]'
-                      }`}
+                      className={`flex h-8 w-8 items-center justify-center rounded-full ${answers[i] ? 'bg-[#FF8B8B] text-white' : 'border border-[#FF8B8B] text-[#FF8B8B]'
+                        }`}
                       title={answers[i] ? '정답 O' : '정답 X'}
                     >
                       {answers[i] ? '○' : '✕'}

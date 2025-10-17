@@ -6,6 +6,9 @@ import QuizResultList from '@/features/quiz/QuizResultList';
 import QuizRankList from '@/features/quiz/QuizRankList';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+// 여기서 퀴즈 불러오는 api는 guest 전용 !!!!
+// guest만 접근 가능하도록 하는 로직 추가 필요 !!!!
+
 /* ---------- 타입 ---------- */
 type QuizQuestion = {
   questionId: number | string;
@@ -132,7 +135,7 @@ export default function PlayQuizPage() {
         <section className="py-20 text-center">
           <h3 className="text-xl text-[#FF8B8B] font-['KoreanSWGIG3']">등록된 퀴즈가 없어요</h3>
           <p className="mt-2 text-sm text-[#A0A0A0]">
-            편집 화면에서 문항을 추가하고 저장하면 여기에서 풀 수 있어요.
+            생일자가 퀴즈를 등록하면 여기에서 풀 수 있어요.
           </p>
         </section>
       ) : !finished ? (
