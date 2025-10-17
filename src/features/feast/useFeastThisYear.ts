@@ -1,5 +1,6 @@
 // src/features/feast/useFeastThisYear.ts
-import { useEffect, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createBirthday, getThisYearBirthday } from "@/apis/birthday";
 
 const LS_LAST_BID = "bh.lastBirthdayId";
@@ -18,123 +19,159 @@ export type FindThisYearResult = {
   code?: string;
 };
 
-export function useFeastThisYear() {
-  const [creating, setCreating] = useState(false);
-  const [loading, setLoading] = useState(false);
+function readLS(key: string): string | undefined {
+  try {
+    return localStorage.getItem(key) || undefined;
+  } catch {
+    return undefined;
+  }
+}
+function writeLS(key: string, value?: string) {
+  try {
+    if (value == null) localStorage.removeItem(key);
+    else localStorage.setItem(key, value);
+  } catch { }
+}
 
-  // localStorage의 값을 즉시 반영 (초기 깜빡임 방지)
-  const [data, setData] = useState<FeastData | null>(() => {
-    const bid = localStorage.getItem(LS_LAST_BID) || undefined;
-    const code = localStorage.getItem(LS_LAST_CODE) || undefined;
-    if (bid || code) return { birthdayId: bid, code };
-    return null;
+const qk = {
+  thisYear: (bid: string | undefined) => ["feast", "thisYear", bid] as const,
+} as const;
+
+export function useFeastThisYear() {
+  const queryClient = useQueryClient();
+  const prefetchOnceRef = useRef(false);
+
+  // 로컬스토리지 캐시값(초기 깜빡임 방지용)
+  const cachedBid = readLS(LS_LAST_BID);
+  const cachedCode = readLS(LS_LAST_CODE);
+
+  // 올해 생일상 조회 쿼리 (bid가 있어야 동작)
+  const thisYearQuery = useQuery({
+    queryKey: qk.thisYear(cachedBid),
+    enabled: !!cachedBid, // 캐시 없으면 조회 스킵(기존 동작과 동일)
+    queryFn: async () => {
+      // bid는 enabled 조건상 존재
+      const res = await getThisYearBirthday(cachedBid as string);
+      // 성공 시 로컬스토리지 동기화
+      writeLS(LS_LAST_BID, String(res.birthdayId));
+      if (res.code) writeLS(LS_LAST_CODE, res.code);
+      return res;
+    },
+    // 초기 화면 깜빡임 방지: 캐시된 bid/code만큼 초기데이터 설정
+    initialData: () =>
+      cachedBid || cachedCode
+        ? ({
+          birthdayId: cachedBid,
+          code: cachedCode,
+          birthdayCards: [],
+        } as any)
+        : undefined,
   });
 
-  const createOnceRef = useRef(false);
-  const prefetchOnceRef = useRef(false);
-  const bootOnceRef = useRef(false);
+  // createBirthday 뮤테이션
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      const created = await createBirthday();
+      // 로컬스토리지 반영
+      writeLS(LS_LAST_BID, String(created.birthdayId));
+      if (created.code) writeLS(LS_LAST_CODE, created.code);
+      // 쿼리 캐시 갱신
+      queryClient.setQueryData(qk.thisYear(String(created.birthdayId)), created);
+      // 기존 bid 키에도 넣어서 바로 소비 가능하도록(초기엔 cachedBid 기준 키가 잡혀 있을 수 있음)
+      if (cachedBid && cachedBid !== String(created.birthdayId)) {
+        queryClient.setQueryData(qk.thisYear(cachedBid), created);
+      }
+      return created;
+    },
+  });
 
-  /** 캐시에서 birthdayId만 가져옴 (목록 조회 제거) */
-  function getBirthdayIdFromCache(): string | undefined {
-    const bid = localStorage.getItem(LS_LAST_BID) || undefined;
-    return bid;
-  }
-
+  /** 기존 시그니처 유지: 올해 데이터 존재 유무 체크 */
   async function findExistingThisYear(): Promise<FindThisYearResult> {
-    const bid = getBirthdayIdFromCache();
+    const bid = readLS(LS_LAST_BID);
     if (!bid) return { exists: false };
 
     try {
-      const thisYear = await getThisYearBirthday(bid);
-      localStorage.setItem(LS_LAST_BID, String(thisYear.birthdayId));
-      if (thisYear.code) localStorage.setItem(LS_LAST_CODE, thisYear.code);
-      setData({
-        userId: thisYear.userId,
-        birthdayId: thisYear.birthdayId,
-        code: thisYear.code,
-        birthdayCards: thisYear.birthdayCards ?? [],
+      // 네트워크 최신화 (캐시에 있어도 fetchQuery로 재검증)
+      const thisYear = await queryClient.fetchQuery({
+        queryKey: qk.thisYear(bid),
+        queryFn: async () => {
+          const res = await getThisYearBirthday(bid);
+          writeLS(LS_LAST_BID, String(res.birthdayId));
+          if (res.code) writeLS(LS_LAST_CODE, res.code);
+          return res;
+        },
       });
-      return { exists: true, pickedId: String(thisYear.birthdayId), code: thisYear.code };
+      return {
+        exists: true,
+        pickedId: String(thisYear.birthdayId),
+        code: thisYear.code,
+      };
     } catch {
+      // 404 등: 올해 데이터 없음
       return { exists: false, pickedId: bid };
     }
   }
 
+  /** 기존 시그니처 유지: 없으면 생성, 있으면 alreadyExists:true */
   async function ensureThisYearCreated(): Promise<{ alreadyExists: boolean }> {
-    setCreating(true);
-    try {
-      const check = await findExistingThisYear();
-      if (check.exists) return { alreadyExists: true };
+    // 1) 존재 확인
+    const check = await findExistingThisYear();
+    if (check.exists) return { alreadyExists: true };
 
-      if (createOnceRef.current) return { alreadyExists: false };
-      createOnceRef.current = true;
-
-      const created = await createBirthday();
-      localStorage.setItem(LS_LAST_BID, String(created.birthdayId));
-      if (created.code) localStorage.setItem(LS_LAST_CODE, created.code);
-      setData({
-        userId: created.userId,
-        birthdayId: created.birthdayId,
-        code: created.code,
-        birthdayCards: created.birthdayCards ?? [],
-      });
-      return { alreadyExists: false };
-    } finally {
-      setCreating(false);
-    }
+    // 2) 생성
+    await createMutation.mutateAsync();
+    return { alreadyExists: false };
   }
 
+  /** 조용한 프리페치(최초 1회) */
   async function preloadThisYearQuietly(): Promise<void> {
     if (prefetchOnceRef.current) return;
     prefetchOnceRef.current = true;
 
-    setLoading(true);
+    const bid = readLS(LS_LAST_BID);
+    if (!bid) return;
+
     try {
-      const bid = getBirthdayIdFromCache();
-      if (!bid) return;
-
-      const thisYear = await getThisYearBirthday(bid);
-      localStorage.setItem(LS_LAST_BID, String(thisYear.birthdayId));
-      if (thisYear.code) localStorage.setItem(LS_LAST_CODE, thisYear.code);
-
-      setData({
-        userId: thisYear.userId,
-        birthdayId: thisYear.birthdayId,
-        code: thisYear.code,
-        birthdayCards: thisYear.birthdayCards ?? [],
+      await queryClient.prefetchQuery({
+        queryKey: qk.thisYear(bid),
+        queryFn: async () => {
+          const res = await getThisYearBirthday(bid);
+          writeLS(LS_LAST_BID, String(res.birthdayId));
+          if (res.code) writeLS(LS_LAST_CODE, res.code);
+          return res;
+        },
       });
     } catch {
       // 조용히 무시
-    } finally {
-      setLoading(false);
     }
   }
 
-  // 마운트 시 자동 부팅: 캐시값으로 초기 렌더 → 서버로 최신화 (캐시 없으면 스킵)
-  useEffect(() => {
-    if (bootOnceRef.current) return;
-    bootOnceRef.current = true;
-    (async () => {
-      const cached = getBirthdayIdFromCache();
-      if (!cached) return; // 캐시 없을 땐 조회 시도 안 함
-      setLoading(true);
-      try {
-        await findExistingThisYear();
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
-
-  // 외부에서 강제 재조회가 필요할 때 사용
+  /** 강제 갱신 */
   async function reload() {
-    setLoading(true);
-    try {
-      await findExistingThisYear();
-    } finally {
-      setLoading(false);
-    }
+    const bid = readLS(LS_LAST_BID);
+    if (!bid) return;
+    await queryClient.invalidateQueries({ queryKey: qk.thisYear(bid) });
+    await queryClient.refetchQueries({ queryKey: qk.thisYear(bid) });
   }
+
+  // 기존 인터페이스에 맞춰 매핑
+  const data: FeastData | null = useMemo(() => {
+    const r = thisYearQuery.data as any;
+    if (!r) {
+      // 초기 로컬캐시만 있는 경우
+      if (cachedBid || cachedCode) return { birthdayId: cachedBid, code: cachedCode };
+      return null;
+    }
+    return {
+      userId: r.userId,
+      birthdayId: r.birthdayId,
+      code: r.code,
+      birthdayCards: r.birthdayCards ?? [],
+    };
+  }, [thisYearQuery.data, cachedBid, cachedCode]);
+
+  const creating = createMutation.isPending;
+  const loading = thisYearQuery.isFetching || thisYearQuery.isPending;
 
   return {
     // 상태
@@ -146,6 +183,6 @@ export function useFeastThisYear() {
     findExistingThisYear,
     ensureThisYearCreated,
     preloadThisYearQuietly,
-    reload, // 강제 갱신
+    reload,
   };
 }

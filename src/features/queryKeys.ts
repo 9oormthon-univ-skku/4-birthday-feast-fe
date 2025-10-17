@@ -3,6 +3,7 @@
 export const qk = {
   auth: {
     me: ['auth', 'me'] as const, // [GET] /api-user/me 
+    token: ['auth', 'token'] as const // 로컬 토큰 동기화/관찰
   },
 
   // 생일/생일상(Host & Guest)
@@ -12,7 +13,7 @@ export const qk = {
       ['birthday', String(birthdayId)] as const,
     thisYearBy: (birthdayId: string | number) =>
       ['birthday', String(birthdayId), 'thisYear'] as const, // GET /api/birthday/{id}/this-year
-    thisYearAny: ['birthday', 'thisYear', 'any'] as const,   // 캐시/리스트에서 하나 골라 조회(앱 최초 부팅)
+    // thisYearAny: ['birthday', 'thisYear', 'any'] as const,   // 캐시/리스트에서 하나 골라 조회(앱 최초 부팅)
     guestByCode: (code: string) =>
       ['guest', 'birthday', code] as const,           // GET /api/guest/birthday?code=...
   },
