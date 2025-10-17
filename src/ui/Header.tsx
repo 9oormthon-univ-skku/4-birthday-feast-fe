@@ -1,7 +1,8 @@
 // src/components/ui/Header.tsx
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import DrawerMenu from './DrawerMenu';
+import { getStoredUserId } from '@/features/auth/authStorage';
 
 export type HeaderProps = {
   /** 문자열뿐 아니라 JSX도 허용 (색상 하이라이트 등) */
@@ -27,12 +28,18 @@ export default function Header({
   showMenu = true,
   showBrush = true,
   onBrushClick,
-  themePath = '/theme',
+  themePath = 'theme',
   rightExtra,
   onDrawerOpenChange,
 }: HeaderProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
+
+  // ⬇️ 유저 ID 확보: URL 파라미터 → 로컬 저장값 순으로
+  const { userId: userIdParam } = useParams();
+  const storedId = getStoredUserId();
+  const userId = userIdParam ?? storedId ?? null;
+  const userBase = userId ? `/u/${userId}` : null;
 
   const setDrawer = (open: boolean) => {
     setDrawerOpen(open);
@@ -40,7 +47,25 @@ export default function Header({
   };
 
   const handleBack = () => (onBack ? onBack() : navigate(-1));
-  const handleBrush = () => (onBrushClick ? onBrushClick() : navigate(themePath));
+  // ⬇️ 유저 컨텍스트 내 이동 헬퍼
+  const goUser = (pathWithinUser: string) => {
+    if (!userBase) {
+      // 유저 컨텍스트가 없으면 로그인으로 유도 (혹은 홈으로 변경 가능)
+      navigate('/login', { replace: true });
+      return;
+    }
+    // pathWithinUser 앞의 / 제거 후 결합
+    const p = pathWithinUser.replace(/^\/+/, '');
+    navigate(`${userBase}/${p}`);
+  };
+
+  // 브러시(테마) 이동
+  const handleBrush = () => {
+    if (onBrushClick) return onBrushClick();
+    // themePath가 절대경로라면 그대로, 상대경로라면 유저 베이스로
+    if (themePath.startsWith('/')) navigate(themePath);
+    else goUser(themePath); // 기본값 'theme' → /u/:userId/theme
+  };
 
   const titleCls = 'text-[24px] leading-none font-bold tracking-tight';
 
@@ -105,25 +130,25 @@ export default function Header({
                 onSelect={(key) => {
                   switch (key) {
                     case 'about':
-                      navigate('/about-team');
+                      navigate('/about-team'); // 전역 라우트
                       break;
                     case 'contact':
-                      navigate('/contact');
+                      navigate('/contact'); // 전역 라우트
                       break;
                     case 'quiz':
-                      navigate('/quiz');
+                      goUser('quiz');
                       break;
                     case 'qrcode':
-                      navigate('/my-feast-qr');
+                      goUser('my-feast-qr');
                       break;
                     case 'history':
-                      navigate('/history');
+                      goUser('history');
                       break;
                     case 'visibility':
-                      navigate('/visibility');
+                      goUser('visibility');
                       break;
                     case 'account':
-                      navigate('/account');
+                      goUser('account');
                       break;
                     default:
                       break;

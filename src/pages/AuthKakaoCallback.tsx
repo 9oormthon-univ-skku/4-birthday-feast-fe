@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { setAccessToken } from "@/lib/authToken";
 import { kakaoLogin } from "@/apis/auth";
+import { setAuthSessionUserId } from "@/features/auth/authStorage";
 
 export default function AuthKakaoCallback() {
   const nav = useNavigate();
@@ -34,12 +35,15 @@ export default function AuthKakaoCallback() {
     (async () => {
       try {
         const data = await kakaoLogin(code);
+
+        // ⬇️ 토큰 저장(기존 로직 유지)
         setAccessToken(data?.authToken?.accessToken || "");
 
-        const from =
-          (window.history.state && (window.history.state as any).usr?.from) ||
-          "/main";
-        nav(from, { replace: true });
+        // ⬇️ userId 저장(신규)
+        setAuthSessionUserId(data.userId);
+
+        // ⬇️ 이동 경로 변경: /u/:userId/main
+        nav(`/u/${data.userId}/main`, { replace: true });
       } catch (e) {
         if (axios.isAxiosError(e) && e.response) {
           const status = e.response.status;
