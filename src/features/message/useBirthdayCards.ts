@@ -1,15 +1,16 @@
 // src/features/message/useBirthdayCards.ts
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import type { BirthdayCard } from "@/types/birthday";
-import { getAllBirthdays, getThisYearBirthday } from "@/apis/birthday";
+import { useFeastThisYear } from "../feast/useFeastThisYear";
+// import { useFeastThisYear } from "@/features/feast/useFeastThisYear"; // ⬅️ 핵심: 올해 데이터 훅 사용
 
 // ---- 에셋 매핑 유틸 (food-*) -------------------------------------------------
 const assetModules = import.meta.glob("../../assets/images/food-*.{svg,png,jpg,jpeg}", {
   eager: true,
 });
 const FOOD_KEYS = Object.keys(assetModules)
-  .map((p) => p.split("/").pop()!)                // "food-1.svg"
-  .map((f) => f.replace(/\.(svg|png|jpe?g)$/, "")); // "food-1"
+  .map((p) => p.split("/").pop()!)
+  .map((f) => f.replace(/\.(svg|png|jpe?g)$/, ""));
 
 function resolveAssetUrl(key: string): string | undefined {
   const candidates = [
@@ -20,19 +21,30 @@ function resolveAssetUrl(key: string): string | undefined {
   ];
   for (const p of candidates) {
     const mod: any = (assetModules as any)[p];
-    if (mod) return mod.default ?? mod; // Vite: 에셋 URL
+    if (mod) return mod.default ?? mod;
   }
   return undefined;
 }
 
-// ---- 로컬스토리지 폴백 (이 부분 추후 삭제 고려)--------------------------------------------------------
-const STORAGE_KEY = "birthday_cards"; // 기존 키 유지
+function toImageUrl(candidate: string | null | undefined, indexSeed = 0): string {
+  if (candidate && /^food-\d+[a-zA-Z]*$/.test(candidate)) {
+    const u = resolveAssetUrl(candidate);
+    if (u) return u;
+  }
+  if (candidate && /^https?:\/\//.test(candidate)) return candidate;
+
+  const key = FOOD_KEYS[indexSeed % Math.max(FOOD_KEYS.length, 1)] ?? "food-1";
+  return resolveAssetUrl(key) ?? "";
+}
+
+// ---- 로컬스토리지 폴백 --------------------------------------------------------
+const STORAGE_KEY = "birthday_cards";
 
 type LocalCard = {
   birthdayCardId: string | number;
   message: string;
   nickname?: string;
-  imageUrl?: string; // 절대 URL 또는 "food-3" 같은 키
+  imageUrl?: string;
 };
 
 function readLocalCards(): LocalCard[] {
@@ -46,27 +58,12 @@ function readLocalCards(): LocalCard[] {
   }
 }
 
-// "food-3" 같은 키 또는 절대 URL을 최종 URL로 변환
-function toImageUrl(candidate: string | null | undefined, indexSeed = 0): string {
-  // 키 패턴이면 에셋으로
-  if (candidate && /^food-\d+[a-zA-Z]*$/.test(candidate)) {
-    const u = resolveAssetUrl(candidate);
-    if (u) return u;
-  }
-  // 절대 URL이면 그대로
-  if (candidate && /^https?:\/\//.test(candidate)) return candidate;
-
-  // 인덱스 기반 폴백
-  const key = FOOD_KEYS[indexSeed % Math.max(FOOD_KEYS.length, 1)] ?? "food-1";
-  return resolveAssetUrl(key) ?? "";
-}
-
 // ---- 서버 → BirthdayCard 어댑터 ----------------------------------------------
 type ServerBirthdayCard = {
   birthdayCardId: number | string;
   message: string;
   nickname?: string | null;
-  imageUrl?: string | null; // 절대 URL 또는 "food-3" 등 키일 수 있음
+  imageUrl?: string | null;
 };
 
 function adaptServerCards(list: ServerBirthdayCard[]): BirthdayCard[] {
@@ -87,91 +84,43 @@ function adaptLocalCards(list: LocalCard[]): BirthdayCard[] {
   }));
 }
 
-// ---- 올해 생일상 ID 선택 (캐시 → 목록) ---------------------------------------
-const LS_LAST_BID = "bh.lastBirthdayId";
-const LS_LAST_CODE = "bh.lastBirthdayCode";
-
-async function pickAnyBirthdayIdFromCacheOrList(): Promise<string | undefined> {
-  let bid = localStorage.getItem(LS_LAST_BID) || undefined;
-  if (bid) return bid;
-
-  const list = await getAllBirthdays().catch(() => []);
-  const picked = Array.isArray(list) && list.length > 0 ? list[0] : null;
-  if (picked) {
-    bid = String(picked.birthdayId);
-    localStorage.setItem(LS_LAST_BID, bid);
-    if (picked.code) localStorage.setItem(LS_LAST_CODE, picked.code);
-  }
-  return bid;
-}
-
 // ---- 메인 훅 ------------------------------------------------------------------
 export function useBirthdayCards() {
-  const [data, setData] = useState<BirthdayCard[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  // 올해 생일상 데이터(캐시 포함)를 즉시 사용
+  const { data: feast, loading, reload, preloadThisYearQuietly } = useFeastThisYear();
 
-  const load = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      // 1) 올해 생일상 ID 확보
-      const bid = await pickAnyBirthdayIdFromCacheOrList();
-      if (!bid) {
-        // 서버 데이터가 전혀 없으면 로컬 폴백
-
-        const local = readLocalCards();
-        setData(adaptLocalCards(local));
-
-        return;
-      }
-
-      // 2) 올해 생일상 상세 조회 (여기서 birthdayCards 포함됨)
-      const thisYear = await getThisYearBirthday(bid);
-      // 응답 구조 예시: { birthdayId, code, birthdayCards: ServerBirthdayCard[] }
-      const serverCards: ServerBirthdayCard[] = Array.isArray(thisYear?.birthdayCards)
-        ? thisYear.birthdayCards
-        : [];
-
-      // 3) 서버 카드 사용, 없는 경우 로컬 폴백
-      if (serverCards.length > 0) {
-        setData(adaptServerCards(serverCards));
-      } else {
-
-        const local = readLocalCards();
-        setData(adaptLocalCards(local));
-
-      }
-
-      // 캐시 최신화
-      if (thisYear?.birthdayId) localStorage.setItem(LS_LAST_BID, String(thisYear.birthdayId));
-      if (thisYear?.code) localStorage.setItem(LS_LAST_CODE, String(thisYear.code));
-    } catch (e) {
-      // 서버 실패 → 로컬 폴백
-      setError(e as Error);
-
-      const local = readLocalCards();
-      setData(adaptLocalCards(local));
-
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // 앱 진입 시 조용히 프리페치(최초 1회)
   useEffect(() => {
-    load();
+    preloadThisYearQuietly();
+  }, [preloadThisYearQuietly]);
 
-    // 다른 탭/창에서 localStorage 변경 시 실시간 반영
+  // 서버 카드 우선 사용, 없으면 로컬 폴백
+  const serverCards: ServerBirthdayCard[] = useMemo(() => {
+    return Array.isArray(feast?.birthdayCards) ? (feast!.birthdayCards as ServerBirthdayCard[]) : [];
+  }, [feast?.birthdayCards]);
+
+  const data: BirthdayCard[] = useMemo(() => {
+    if (serverCards.length > 0) return adaptServerCards(serverCards);
+    return adaptLocalCards(readLocalCards());
+  }, [serverCards]);
+
+  // 다른 탭/창에서 로컬 카드가 바뀌면 서버/캐시도 재확인
+  useEffect(() => {
     const onStorage = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY) load();
+      if (e.key === STORAGE_KEY) {
+        reload(); // 올해 데이터 쿼리 invalidate+refetch
+      }
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [reload]);
+
+  // 캐시가 있어 즉시 카드가 만들어지면 로딩 표시를 줄여 UX 개선
+  const isLoading = loading && serverCards.length === 0;
+  const error: Error | null = null; // 오류 처리는 useFeastThisYear 내부에서 관리 중
 
   const count = useMemo(() => data.length, [data]);
-  const refetch = () => void load();
+  const refetch = () => void reload();
 
   return { data, isLoading, error, count, refetch };
 }

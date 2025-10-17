@@ -6,7 +6,7 @@ import { useLogout } from '@/features/auth/useLogout';
 import { updateNickname } from '@/apis/user';
 import NicknameModal from '@/features/auth/NicknameModal';
 import { useMe } from '@/features/user/useMe';
-import { updateBirthdayVisible, getBirthdayPeriod } from "@/apis/birthday";
+import { updateBirthdayVisible } from "@/apis/birthday"; // getBirthdayPeriod 제거
 
 const LOCAL_KEY = "bh.lastBirthdayId";
 
@@ -15,7 +15,7 @@ export default function AccountSettingsPage() {
   const { logout } = useLogout();
   const [loggingOut, setLoggingOut] = useState(false);
 
-  const { me, loading: loadingMe, refresh } = useMe();
+  const { me, loading: loadingMe } = useMe();
 
   const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -24,30 +24,8 @@ export default function AccountSettingsPage() {
   const [publicAll, setPublicAll] = useState<boolean>(true);
   const [loadingVisible, setLoadingVisible] = useState<boolean>(false);
 
-  // --- 초기 공개여부 불러오기 ---
-  useEffect(() => {
-    const idRaw = localStorage.getItem(LOCAL_KEY);
-    if (!idRaw) return;
-
-    const birthdayId = /^\d+$/.test(idRaw) ? Number(idRaw) : idRaw;
-
-    // 서버에서 현재 공개여부 조회용
-    (async () => {
-      try {
-        setLoadingVisible(true);
-        const data = await getBirthdayPeriod(birthdayId);
-        // API가 별도의 공개여부 필드를 주지 않는 경우 기본값 유지
-        // (추가되면 data.isVisible 사용)
-        if ((data as any)?.isVisible !== undefined) {
-          setPublicAll(Boolean((data as any).isVisible));
-        }
-      } catch (err) {
-        console.warn("공개여부 조회 실패:", err);
-      } finally {
-        setLoadingVisible(false);
-      }
-    })();
-  }, []);
+  // 공개여부 초기화 useEffect 제거 (getBirthdayPeriod 사용 안 함)
+  //    기본값은 true로 유지
 
   // --- 공개여부 토글 ---
   const handleToggleVisible = async () => {
@@ -80,9 +58,7 @@ export default function AccountSettingsPage() {
     setLoggingOut(true);
     try {
       await logout(); // 서버 로그아웃 + 토큰 삭제 + /login 이동
-      // 참고: useLogout 안에서 네비게이션까지 처리하므로 여기서 alert 불필요
     } catch (e) {
-      // useLogout 내부에서 실패해도 최종적으로 이동은 처리됨. 필요시 사용자 피드백만 추가
       console.error(e);
     } finally {
       setLoggingOut(false);
@@ -110,9 +86,7 @@ export default function AccountSettingsPage() {
   };
 
   const handleWithdraw = () => {
-    //   if (confirm('정말 탈퇴하시겠어요?')) {
-    //     alert('탈퇴 처리되었습니다.');
-    //   }
+    // 추후 회원탈퇴 API 연동 예정
   };
 
   const displayName = loadingMe ? '…' : me?.name ?? '사용자님';
@@ -139,7 +113,6 @@ export default function AccountSettingsPage() {
             <div className="text-xl font-extrabold text-[#FF8B8B]">{displayName}</div>
             <div className="text-base text-[#A0A0A0] mt-0.5 font-medium">카카오로 로그인 중</div>
           </div>
-          {/* 프로필 이미지 (없으면 placeholder) */}
           {profileUrl ? (
             <img
               src={profileUrl}
@@ -152,7 +125,7 @@ export default function AccountSettingsPage() {
         </div>
       </section>
 
-      <section className="border-b border-[#D9D9D9]"></section>
+      <section className="border-b border-[#D9D9D9]" />
 
       {/* 공개 설정 + 기타 항목 */}
       <section className="pt-9 space-y-6">
@@ -186,7 +159,7 @@ export default function AccountSettingsPage() {
           </button>
         </div>
 
-        {/* 생일한상 닉네임 변경 */}
+        {/* 닉네임 변경 */}
         <button
           type="button"
           onClick={handleChangeNickname}
@@ -195,7 +168,7 @@ export default function AccountSettingsPage() {
           닉네임 변경
         </button>
 
-        <section className="border-b border-[#D9D9D9]"></section>
+        <section className="border-b border-[#D9D9D9]" />
 
         {/* 로그아웃 */}
         <button

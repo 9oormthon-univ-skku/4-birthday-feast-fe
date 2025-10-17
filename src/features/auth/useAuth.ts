@@ -54,7 +54,7 @@ export function useAuth(): AuthState {
       localStorage.setItem(TOKEN_KEY, next);
       setToken(next);
 
-      // ⬇️ Query 캐시 반영 + /me 재검증
+      // Query 캐시 반영 + /me 재검증
       queryClient.setQueryData(qk.auth.token, next);
       queryClient.invalidateQueries({ queryKey: qk.auth.me });
 
