@@ -1,5 +1,6 @@
+// src/features/feast/useFeastThisYear.ts
 import { useEffect, useRef, useState } from "react";
-import { createBirthday, getThisYearBirthday, getAllBirthdays } from "@/apis/birthday";
+import { createBirthday, getThisYearBirthday } from "@/apis/birthday";
 
 const LS_LAST_BID = "bh.lastBirthdayId";
 const LS_LAST_CODE = "bh.lastBirthdayCode";
@@ -33,29 +34,14 @@ export function useFeastThisYear() {
   const prefetchOnceRef = useRef(false);
   const bootOnceRef = useRef(false);
 
-  async function pickAnyBirthdayIdFromCacheOrList(): Promise<string | undefined> {
-    let bid = localStorage.getItem(LS_LAST_BID) || undefined;
-    if (bid) return bid;
-
-    const list = await getAllBirthdays().catch(() => []);
-    const picked = Array.isArray(list) && list.length > 0 ? list[0] : null;
-    if (picked) {
-      bid = String(picked.birthdayId);
-      localStorage.setItem(LS_LAST_BID, bid);
-      if (picked.code) localStorage.setItem(LS_LAST_CODE, picked.code);
-      setData((prev) => ({
-        ...(prev || {}),
-        userId: picked.userId,
-        birthdayId: picked.birthdayId,
-        code: picked.code ?? (prev?.code as any),
-        birthdayCards: picked.birthdayCards ?? prev?.birthdayCards ?? [],
-      }));
-    }
+  /** 캐시에서 birthdayId만 가져옴 (목록 조회 제거) */
+  function getBirthdayIdFromCache(): string | undefined {
+    const bid = localStorage.getItem(LS_LAST_BID) || undefined;
     return bid;
   }
 
   async function findExistingThisYear(): Promise<FindThisYearResult> {
-    const bid = await pickAnyBirthdayIdFromCacheOrList();
+    const bid = getBirthdayIdFromCache();
     if (!bid) return { exists: false };
 
     try {
@@ -104,7 +90,7 @@ export function useFeastThisYear() {
 
     setLoading(true);
     try {
-      const bid = await pickAnyBirthdayIdFromCacheOrList();
+      const bid = getBirthdayIdFromCache();
       if (!bid) return;
 
       const thisYear = await getThisYearBirthday(bid);
@@ -124,11 +110,13 @@ export function useFeastThisYear() {
     }
   }
 
-  // 마운트 시 자동 부팅: 캐시값으로 초기 렌더 → 서버로 최신화
+  // 마운트 시 자동 부팅: 캐시값으로 초기 렌더 → 서버로 최신화 (캐시 없으면 스킵)
   useEffect(() => {
     if (bootOnceRef.current) return;
     bootOnceRef.current = true;
     (async () => {
+      const cached = getBirthdayIdFromCache();
+      if (!cached) return; // 캐시 없을 땐 조회 시도 안 함
       setLoading(true);
       try {
         await findExistingThisYear();
