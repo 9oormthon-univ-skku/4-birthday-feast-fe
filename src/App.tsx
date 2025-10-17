@@ -67,14 +67,12 @@ const router = createBrowserRouter([
       { path: 'create-quiz', element: <CreateQuizPage /> },
       { path: 'write', element: <WriteMessagePage /> },
       { path: 'play', element: <PlayQuizPage /> },
+      { path: 'message', element: <BirthdayMessageRoute /> },
     ],
   },
 
   { path: '/about-team', element: <TeamAboutPage /> },
   { path: '/contact', element: <ContactPage /> },
-
-  // 공유 링크 (전역)
-  { path: '/message', element: <BirthdayMessageRoute /> },
 
   { path: '*', loader: () => redirect('/') },
 ]);
