@@ -1,5 +1,5 @@
 // src/features/onboarding/OnboardingGate.tsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import BirthdaySetupModal from "./BirthdaySetupModal";
 import QuizPromptModal from "./QuizPromptModal";
@@ -7,10 +7,8 @@ import { useBirthdayOnboarding } from "./useBirthdayOnboarding";
 import { useAuth } from "@/features/auth/useAuth";
 import WelcomeModal from "@/features/home/WelcomeModal";
 import { useFeastThisYear } from "@/features/feast/useFeastThisYear";
-import { getUserMe } from "@/apis/user";
 import { useMe } from "../user/useMe";
 
-// 호스트용 환영 모달 노출 기록(방문자와 분리)
 const LS_HOST_WELCOME_SHOWN = "bh.host.welcomeShownDate";
 
 export default function OnboardingGate(): React.ReactElement | null {
@@ -25,17 +23,19 @@ export default function OnboardingGate(): React.ReactElement | null {
     setHasSeenQuizPrompt,
   } = useBirthdayOnboarding();
 
-  const onMainRoutes = useMemo(() => ["/", "/feast", "/home", "/main"], []);
-  const isOnMain = onMainRoutes.includes(loc.pathname);
+  // B안: /u/:userId/main 에서만 온보딩 동작
+  const isOnMain = useMemo(
+    () => /^\/u\/[^/]+\/main$/.test((loc.pathname || "/").replace(/\/+$/, "") || "/"),
+    [loc.pathname]
+  );
 
+  // 훅은 항상 같은 순서/개수로 호출
   const [showBirthday, setShowBirthday] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
 
   const { me, loading: loadingUser } = useMe();
   const { creating, loading, ensureThisYearCreated, preloadThisYearQuietly } = useFeastThisYear();
-
-  if (!isAuthenticated || !isOnMain) return null;
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -77,7 +77,7 @@ export default function OnboardingGate(): React.ReactElement | null {
       const { alreadyExists } = await ensureThisYearCreated();
       // 이미 있든 새로 만들었든, 환영 모달로 이어짐
       setShowWelcome(true);
-      if (!isOnMain) nav("/main", { replace: true });
+      if (!isOnMain) nav("../main", { replace: true });
     } catch (e) {
       console.error("☁️ 생일상 생성/조회 단계 실패:", e);
       alert("☁️ 생일상 준비 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.");
@@ -89,10 +89,10 @@ export default function OnboardingGate(): React.ReactElement | null {
     try {
       localStorage.setItem(LS_HOST_WELCOME_SHOWN, today);
     } catch { }
-
     // 조용한 프리페치 (실패 무시)
-    await preloadThisYearQuietly();
-
+    try {
+      await preloadThisYearQuietly();
+    } catch { }
     setShowWelcome(false);
     if (birthdayISO && !hasSeenQuizPrompt) setShowQuiz(true);
   };
@@ -100,15 +100,18 @@ export default function OnboardingGate(): React.ReactElement | null {
   const handleQuizMake = () => {
     setHasSeenQuizPrompt(true);
     setShowQuiz(false);
-    nav("/create-quiz", { replace: false });
+    nav("create-quiz", { replace: false });
   };
 
   const handleQuizLater = () => {
     setHasSeenQuizPrompt(true);
     setShowQuiz(false);
     alert("우측 상단 메뉴의 '내 생일 퀴즈' 탭에서 언제든지 만들 수 있어요!");
-    if (!isOnMain) nav("/main", { replace: true });
+    if (!isOnMain) nav("../main", { replace: true });
   };
+
+  // ✅ 훅 호출이 끝난 뒤에 조건부로 렌더 차단 (안전)
+  if (!isAuthenticated || !isOnMain) return null;
 
   return (
     <>
@@ -116,7 +119,7 @@ export default function OnboardingGate(): React.ReactElement | null {
         open={showBirthday}
         onSubmit={handleBirthdaySubmit}
         onClose={() => setShowBirthday(false)}
-      // submitting={creating} // Modal이 지원하면 주석 해제
+      // submitting={creating}
       />
 
       <WelcomeModal
@@ -124,7 +127,7 @@ export default function OnboardingGate(): React.ReactElement | null {
         isHost={true}
         nickname={loadingUser ? "..." : me?.name ?? ""}
         onClose={handleWelcomeClose}
-      // submitting={loading} // Modal이 지원하면 주석 해제
+      // submitting={loading}
       />
 
       <QuizPromptModal open={showQuiz} onMake={handleQuizMake} onLater={handleQuizLater} />

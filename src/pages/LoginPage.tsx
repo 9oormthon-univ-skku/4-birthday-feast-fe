@@ -23,14 +23,6 @@ const Login = () => {
     kakaoAuthorize(["profile_nickname", "profile_image", "birthday", "birthyear"]);
   };
 
-
-  // --- 기존 더미 로그인 (테스트용)
-  // const handleLogin = () => {
-  //   const dummyToken = `token_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-  //   localStorage.setItem(TOKEN_KEY, dummyToken);
-  //   navigate("/main");
-  // };
-
   if (showSplash) return <Loading />;
 
   return (

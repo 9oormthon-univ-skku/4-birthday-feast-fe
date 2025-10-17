@@ -119,10 +119,10 @@ export function useBirthdayCards() {
       const bid = await pickAnyBirthdayIdFromCacheOrList();
       if (!bid) {
         // 서버 데이터가 전혀 없으면 로컬 폴백
-        /*
+
         const local = readLocalCards();
         setData(adaptLocalCards(local));
-        */
+
         return;
       }
 
@@ -137,10 +137,10 @@ export function useBirthdayCards() {
       if (serverCards.length > 0) {
         setData(adaptServerCards(serverCards));
       } else {
-        /*
+
         const local = readLocalCards();
         setData(adaptLocalCards(local));
-        */
+
       }
 
       // 캐시 최신화
@@ -149,10 +149,10 @@ export function useBirthdayCards() {
     } catch (e) {
       // 서버 실패 → 로컬 폴백
       setError(e as Error);
-      /*
+
       const local = readLocalCards();
       setData(adaptLocalCards(local));
-      */
+
     } finally {
       setIsLoading(false);
     }

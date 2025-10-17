@@ -1,10 +1,10 @@
-// src/pages/QuizPage.tsx
+// src/pages/PlayQuizPage.tsx
 import React, { useEffect, useMemo, useState } from 'react';
 import AppLayout from '@/layouts/AppLayout';
 // 필요 시 결과/랭크 컴포넌트 사용
 import QuizResultList from '@/features/quiz/QuizResultList';
 import QuizRankList from '@/features/quiz/QuizRankList';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 /* ---------- 타입 ---------- */
 type QuizQuestion = {
@@ -46,6 +46,8 @@ function normalize(questions: QuizQuestion[]): QuizQuestion[] {
 /* ---------- 페이지 ---------- */
 export default function PlayQuizPage() {
   const navigate = useNavigate();
+  const location = useLocation(); // 현재 쿼리 유지용
+
   // 최초 로드 시점에만 스토리지에서 불러오기
   const initial = useMemo<QuizData>(() => {
     const stored = loadFromStorage();
@@ -113,7 +115,8 @@ export default function PlayQuizPage() {
     setIndex(0);
     setUserAnswers(Array(total).fill(null));
     setFinished(false);
-    navigate('/main');
+    // ✅ /u/:userId/main 으로 이동 + ?code=... 유지
+    navigate({ pathname: '../main', search: location.search });
   };
 
   return (

@@ -22,17 +22,11 @@ type Props = {
   nicknameOverride?: string | null;
 };
 
-// ✅ 새 라우팅 대응: /u/:userId/main 인식
+// ✅ 레거시 경로 완전 제거: /u/:userId/main 만 메인으로 인식
 function useIsOnMain() {
   const loc = useLocation();
   const pathname = (loc.pathname || "/").replace(/\/+$/, "") || "/";
-  return useMemo(() => {
-    // 레거시 호환
-    if (pathname === "/" || pathname === "/home" || pathname === "/main") return true;
-    // B안: /u/:userId/main 정확 매칭
-    if (/^\/u\/[^/]+\/main$/.test(pathname)) return true;
-    return false;
-  }, [pathname]);
+  return useMemo(() => /^\/u\/[^/]+\/main$/.test(pathname), [pathname]);
 }
 
 const LS_NICK = "bh.visitor.nickname";

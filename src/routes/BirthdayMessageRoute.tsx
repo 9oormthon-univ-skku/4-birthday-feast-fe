@@ -2,8 +2,9 @@
 import { useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import MessagePage from '@/pages/MessagePage';
-import Loading from '@/pages/LoadingPage';
+// import Loading from '@/pages/LoadingPage';
 import { useBirthdayCards } from '@/features/message/useBirthdayCards';
+import { getStoredUserId } from '@/features/auth/authStorage'; // ⬅️ 추가
 
 export default function BirthdayMessageRoute() {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export default function BirthdayMessageRoute() {
 
   const safeInitialIndex = Math.max(0, Math.min(initialIndexRaw, Math.max(messages.length - 1, 0)));
 
-  if (isLoading) return <Loading />;
+  // if (isLoading) return <Loading />;
 
   if (error) {
     return (
@@ -43,12 +44,23 @@ export default function BirthdayMessageRoute() {
     );
   }
 
+  const handleHome = () => {
+    const userId = getStoredUserId();
+    if (userId) {
+      // 게스트 컨텍스트 유지(예: ?code=...)
+      navigate({ pathname: `/u/${userId}/main`, search: location.search });
+    } else {
+      // 라우터가 /u → 내 홈 또는 로그인으로 리다이렉트
+      navigate('/u');
+    }
+  };
+
   return (
     <MessagePage
       messages={messages}
       initialIndex={safeInitialIndex}
       onBack={() => navigate(-1)}
-      onHome={() => navigate('/main')}
+      onHome={handleHome}
     />
   );
 }
