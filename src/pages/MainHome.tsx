@@ -1,12 +1,12 @@
 // src/pages/MainHome.tsx
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import Header from '../ui/Header';
 import BottomSheet from '@/ui/BottomSheet';
 import FooterButton from '@/ui/FooterButton';
 
-import { BirthdayModeProvider, useBirthdayMode } from '@/features/home/ModeContext';
+import { useBirthdayMode } from '@/features/home/ModeContext';
 import ViewToggle from '@/features/home/ViewToggle';
 import FeatureButtons from '@/features/home/FeatureButtons';
 import EventBanner from '@/features/event/EventBanner';
@@ -16,14 +16,9 @@ import MainList from '@/features/message/MainList';
 import QuizRankList from '@/features/quiz/QuizRankList';
 
 import CapturePreview from '@/features/home/CapturePreview';
-
-import { useAuth } from '@/features/auth/useAuth';
-import OnboardingGate from '@/features/onboarding/OnboardingGate';
 import VisitorOnboardingGate from '@/features/visitorOnboarding/VisitorOnboardingGate';
 
-import FeastBootstrap from '@/features/feast/FeastBootstrap';
-
-const MainHomeBody: React.FC = () => {
+const MainHome: React.FC = () => {
   const navigate = useNavigate();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -51,6 +46,7 @@ const MainHomeBody: React.FC = () => {
 
   return (
     <div className="relative flex h-screen w-screen flex-col bg-[#FFF4DF]">
+      {/* Header는 UserLayout에서 모드/유저 컨텍스트가 제공되므로 그대로 사용 */}
       <Header onDrawerOpenChange={setDrawerOpen} showBrush={isHost} />
 
       {/* 상단 컨트롤 바 */}
@@ -96,49 +92,22 @@ const MainHomeBody: React.FC = () => {
           <div className="w-full max-w-[520px] px-8 py-4 pt-15 pb-[env(safe-area-inset-bottom)]">
             <FooterButton
               label="사용자님에게 생일 메시지 남기기"
-              onClick={() => navigate('/write')}
+              onClick={() =>
+                navigate(
+                  { pathname: '../write', search: location.search }, // ../ 로 한 단계 올라가서 /u/:userId/write 로
+                  { replace: false }
+                )
+              }
             />
           </div>
         </footer>
       )}
 
-      {/* 방문자 온보딩 게이트 */}
-      {isGuest && <VisitorOnboardingGate quizPlayPath="/play" />}
+      {/* 방문자 온보딩 게이트만 유지 (게스트 전용) */}
+      {isGuest && <VisitorOnboardingGate quizPlayPath="../play" />}
 
       <CapturePreview open={!!shotUrl} src={shotUrl} onClose={() => setShotUrl(null)} />
     </div>
-  );
-};
-
-const MainHome: React.FC = () => {
-  const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-  const { hostId } = useParams();
-
-  const isShareView = !!hostId;
-
-  // 비공유 뷰에서만 로그인 강제. 토큰은 로그인 성공 여부만 확인.
-  useEffect(() => {
-    if (!isShareView && !isAuthenticated) {
-      navigate('/login', { replace: true, state: { from: '/main' } });
-    }
-  }, [isShareView, isAuthenticated, navigate]);
-
-  // 모드 결정은 "공유 뷰" 여부로만
-  const initialMode: 'host' | 'guest' = isShareView ? 'guest' : 'host';
-
-  return (
-    <BirthdayModeProvider
-      defaultMode={initialMode}
-      sharedHostId={hostId ?? null}
-      key={`mode-${initialMode}-${hostId ?? 'self'}`}
-    >
-      {/* 공유 뷰에서는 온보딩 숨김 */}
-      {!isShareView && <OnboardingGate />}
-
-      {!isShareView && <FeastBootstrap enabled={isAuthenticated} />}
-      <MainHomeBody />
-    </BirthdayModeProvider>
   );
 };
 

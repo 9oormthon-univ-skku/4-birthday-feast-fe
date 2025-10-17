@@ -1,18 +1,22 @@
-// src/features/share/useShareLink.ts
 import { useCallback, useMemo } from "react";
+import { useParams } from "react-router-dom";
+import { getStoredUserId } from "@/features/auth/authStorage";
 
 /**
- * 공유용 링크 생성 훅 (code 기반)
- * - /main?code={uuid} 형태로 접근
- * - Web Share API 또는 클립보드 복사 지원
+ * 공유용 링크 생성 훅 (B안 라우팅)
+ * 항상 `/u/:userId/main?code=...` 형태의 링크를 생성합니다.
  */
 export function useShareLink(code: string | undefined | null) {
+  const { userId: userIdParam } = useParams();
+  const storedId = getStoredUserId();
+  const userId = userIdParam ?? storedId ?? null;
+
   const url = useMemo(() => {
-    if (!code) return "";
+    if (!code || !userId) return "";
     const origin = window.location.origin;
     const params = new URLSearchParams({ code });
-    return `${origin}/main?${params.toString()}`;
-  }, [code]);
+    return `${origin}/u/${userId}/main?${params.toString()}`;
+  }, [code, userId]);
 
   const share = useCallback(async () => {
     if (!url) return alert("공유 가능한 링크가 없습니다.");
@@ -28,7 +32,7 @@ export function useShareLink(code: string | undefined | null) {
         alert("링크를 클립보드에 복사했어요.");
       }
     } catch {
-      /* 사용자가 공유 취소 시 무시 */
+      // 사용자가 공유 취소 시 무시
     }
   }, [url]);
 
