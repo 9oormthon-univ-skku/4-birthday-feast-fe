@@ -60,7 +60,7 @@ export default function BirthdayMessageRoute() {
       messages={messages}
       initialIndex={safeInitialIndex}
       onBack={() => navigate(-1)}
-      onHome={handleHome}
+    // onHome={handleHome}
     />
   );
 }

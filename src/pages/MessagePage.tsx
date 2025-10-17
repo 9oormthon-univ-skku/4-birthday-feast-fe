@@ -2,6 +2,7 @@
 import React, { useMemo, useState } from 'react';
 import food6 from '@/assets/images/food-6.svg';
 import AppLayout from '@/layouts/AppLayout';
+import { useNavigate } from 'react-router-dom';
 
 export type Message = {
   id: string | number;
@@ -15,15 +16,17 @@ export default function MessagePage({
   messages,
   initialIndex = 0,
   onBack,
-  onHome,
+  // onHome,
   loop = true,
 }: {
   messages: Message[];
   initialIndex?: number;
   onBack?: () => void;
-  onHome?: () => void;
+  // onHome?: () => void;
   loop?: boolean;
 }) {
+  const navigate = useNavigate();
+
   const safeInitial = useMemo(
     () => Math.min(Math.max(initialIndex, 0), Math.max(messages.length - 1, 0)),
     [initialIndex, messages.length]
@@ -55,7 +58,7 @@ export default function MessagePage({
       showMenu={false}
       showBrush={false}
       footerButtonLabel="처음으로"
-      onFooterButtonClick={onHome}
+      onFooterButtonClick={() => navigate(-1)}
     >
       {!hasItems ? (
         <div className="text-center text-[#9CA3AF] py-16">표시할 메세지가 없어요.</div>

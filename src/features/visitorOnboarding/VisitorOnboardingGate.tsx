@@ -39,6 +39,8 @@ export default function VisitorOnboardingGate({
 }: Props) {
   const nav = useNavigate();
   const loc = useLocation();
+  const { search } = loc;
+
   const isOnMain = useIsOnMain();
   const today = new Date().toISOString().slice(0, 10);
 
@@ -176,7 +178,7 @@ export default function VisitorOnboardingGate({
     markPlayPromptSeen();
     setShowPlayPrompt(false);
     // 상대 경로 기본값("../play") → /u/:userId/play 로 이동
-    nav(quizPlayPath, { replace: false });
+    nav({ pathname: quizPlayPath, search }, { replace: false });
   };
 
   const handleSkip = () => {
