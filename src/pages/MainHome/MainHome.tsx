@@ -1,12 +1,10 @@
-// src/pages/MainHome.tsx
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import Header from '../../ui/Header';
-// import BottomSheet from '@/ui/BottomSheet';
 import FooterButton from '@/ui/FooterButton';
 
-import { useBirthdayMode } from '@/features/home/ModeContext';
+import { useBirthdayMode } from '@/layouts/ModeContext';
 import ViewToggle from '@/features/home/ViewToggle';
 import FeatureButtons from '@/features/home/FeatureButtons';
 import EventBanner from '@/features/event/EventBanner';
@@ -22,27 +20,12 @@ import BottomSheet from './BottomSheet';
 const MainHome: React.FC = () => {
   const navigate = useNavigate();
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [welcomeOpen, setWelcomeOpen] = useState(false);
-  const [isIconView, setIsIconView] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false); // 메뉴 오픈 상태 관리 
+  const [isIconView, setIsIconView] = useState(true); // 생일 메시지 아이콘 뷰(테이블에 올리기) 상태 관리 (아이콘 뷰 | 리스트 뷰)
 
-  const { isHost, isGuest } = useBirthdayMode();
+  const { isHost, isGuest } = useBirthdayMode(); // 생일자 | 게스트 상태 관리 
 
-  useEffect(() => {
-    const today = new Date().toISOString().slice(0, 10);
-    const lastShown = localStorage.getItem('welcome_shown_date');
-    const hasGuestNickname = !!localStorage.getItem('bh.visitor.nickname');
-
-    if (isGuest) {
-      if (hasGuestNickname && lastShown !== today) setWelcomeOpen(true);
-      else setWelcomeOpen(false);
-      return;
-    }
-
-    if (lastShown !== today) setWelcomeOpen(true);
-  }, [isGuest, isHost]);
-
-  const captureRef = useRef<HTMLDivElement | null>(null);
+  const captureRef = useRef<HTMLDivElement | null>(null); // 캡쳐 기능을 위한 ref
   const [shotUrl, setShotUrl] = useState<string | null>(null);
 
   return (

@@ -15,7 +15,7 @@ import WriteMessagePage from './pages/MenuPages/WriteMessagePage';
 import PlayQuizPage from './pages/MainHome/PlayQuizPage';
 import ThemeSettingsPage from './pages/MenuPages/ThemeSettingsPage';
 import BirthdayMessageRoute from './routes/BirthdayMessageRoute';
-import UserLayout from './routes/UserLayout';
+import UserLayout from './layouts/UserLayout';
 import { getStoredUserId } from '@/stores/authStorage';
 
 // /u, /main 진입 시 내 홈으로 돌리기
@@ -53,7 +53,7 @@ const router = createBrowserRouter([
   {
     path: '/u/:userId',
     loader: guardUserLayoutLoader,
-    element: <UserLayout />,
+    element: <UserLayout />, // 모든 하위 페이지 경로를 감싸 host | guest 관리
     children: [
       { index: true, loader: () => redirect('main') },
       { path: 'main', element: <MainHome /> },
