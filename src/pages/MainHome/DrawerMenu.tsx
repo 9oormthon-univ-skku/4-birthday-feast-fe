@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { Drawer } from './CustomDrawer';
-// import { Drawer } from '@/components/DrawerAnchor.tailwind';
+import { Drawer } from '../../ui/CustomDrawer';
 
 export type DrawerMenuProps = {
   open: boolean;

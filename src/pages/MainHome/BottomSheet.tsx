@@ -1,5 +1,6 @@
+import { Drawer } from '@/ui/CustomDrawer';
 import * as React from 'react';
-import { Drawer } from './CustomDrawer';
+// import { Drawer } from './CustomDrawer';
 // import { Drawer } from '@/components/DrawerAnchor.tailwind';
 
 export type BottomSheetProps = {
@@ -103,5 +104,5 @@ const arrowUp = <svg xmlns="http://www.w3.org/2000/svg" width="20" height="12" v
 </svg>
 
 const arrowDown = <svg xmlns="http://www.w3.org/2000/svg" width="20" height="12" viewBox="0 0 20 12" fill="none">
-  <path d="M2 2L10 10L18 2" stroke="#D9D9D9" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+  <path d="M2 2L10 10L18 2" stroke="#D9D9D9" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
 </svg>

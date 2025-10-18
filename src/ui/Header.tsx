@@ -1,7 +1,7 @@
 // src/components/ui/Header.tsx
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import DrawerMenu from './DrawerMenu';
+import DrawerMenu from '../pages/MainHome/DrawerMenu';
 import { getStoredUserId } from '@/stores/authStorage';
 
 export type HeaderProps = {

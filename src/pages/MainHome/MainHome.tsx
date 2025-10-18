@@ -2,8 +2,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import Header from '../ui/Header';
-import BottomSheet from '@/ui/BottomSheet';
+import Header from '../../ui/Header';
+// import BottomSheet from '@/ui/BottomSheet';
 import FooterButton from '@/ui/FooterButton';
 
 import { useBirthdayMode } from '@/features/home/ModeContext';
@@ -17,6 +17,7 @@ import QuizRankList from '@/features/quiz/QuizRankList';
 
 import CapturePreview from '@/features/home/CapturePreview';
 import VisitorOnboardingGate from '@/features/visitorOnboarding/VisitorOnboardingGate';
+import BottomSheet from './BottomSheet';
 
 const MainHome: React.FC = () => {
   const navigate = useNavigate();

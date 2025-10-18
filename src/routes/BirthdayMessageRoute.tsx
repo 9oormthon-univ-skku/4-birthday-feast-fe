@@ -1,7 +1,7 @@
 // src/routes/BirthdayMessageRoute.tsx
 import { useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import MessagePage from '@/pages/MessagePage';
+import MessagePage from '@/pages/MainHome/MessagePage';
 import { getStoredUserId } from '@/stores/authStorage'; // ⬅️ 추가
 import { useBirthdayCards } from '@/hooks/useBirthdayCards';
 
