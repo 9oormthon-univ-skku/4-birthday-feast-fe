@@ -6,7 +6,7 @@ import MainHome from './pages/MainHome/MainHome';
 import TeamAboutPage from './pages/MenuPages/TeamAboutPage';
 import ContactPage from './pages/MenuPages/ContactPage';
 import QuizPage from './pages/MenuPages/QuizPage';
-import CreateQuizPage from './pages/CreateQuizPage';
+import CreateQuizPage from './pages/MenuPages/CreateQuizPage';
 import MyFeastQRPage from './pages/MenuPages/MyFeastQRPage';
 import HistoryPage from './pages/MenuPages/HistoryPage';
 import VisibilityPage from './pages/MenuPages/VisibilityPage';
