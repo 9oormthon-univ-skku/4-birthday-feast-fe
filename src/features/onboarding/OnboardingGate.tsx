@@ -6,7 +6,10 @@ import { useBirthdayOnboarding } from "../../hooks/useBirthdayOnboarding";
 import { useAuth } from "@/hooks/useAuth";
 import WelcomeModal from "@/features/home/WelcomeModal";
 import { useFeastThisYear } from "@/hooks/useFeastThisYear";
-import { useMe } from "../../hooks/useMe";
+// import { useMe } from "../../hooks/useMe";
+import { qk } from "@/lib/queryKeys";
+import type { UserMeResponse } from "@/apis/user";
+import { useQueryClient } from "@tanstack/react-query";
 
 const LS_HOST_WELCOME_SHOWN = "bh.host.welcomeShownDate";
 
@@ -26,7 +29,8 @@ export default function OnboardingGate(): React.ReactElement | null {
   const [showWelcome, setShowWelcome] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
 
-  const { me, loading: loadingUser } = useMe();
+  const qc = useQueryClient();
+  const me = (isAuthenticated ? qc.getQueryData<UserMeResponse>(qk.auth.me) : null) ?? null;
   const { preloadThisYearQuietly } = useFeastThisYear();
 
   const today = new Date().toISOString().slice(0, 10);
@@ -99,7 +103,7 @@ export default function OnboardingGate(): React.ReactElement | null {
       <WelcomeModal
         open={showWelcome}
         isHost={true}
-        nickname={loadingUser ? "..." : me?.name ?? ""}
+        nickname={me?.name ?? ""}
         onClose={handleWelcomeClose}
       />
 

@@ -76,14 +76,14 @@ export default function Header({
             </button>
           )}
 
-          {title ? (
-            <h1 className="text-2xl font-normal leading-none">{title}</h1>
-          ) : (
+          {/* {title ? ( */}
+          <h1 className="text-2xl font-normal leading-none">{title}</h1>
+          {/* ) : (
             <h1 className="text-2xl font-normal leading-none">
               <span className="text-[#FF8B8B]">사용자</span>
               <span className="text-[#A0A0A0]">님의 생일한상</span>
             </h1>
-          )}
+          )} */}
         </div>
 
         {/* Right */}

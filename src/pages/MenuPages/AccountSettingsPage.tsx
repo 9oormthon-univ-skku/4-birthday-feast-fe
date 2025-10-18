@@ -4,19 +4,21 @@ import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/ui/AppLayout';
 import { updateNickname } from '@/apis/user';
 import NicknameModal from '@/features/auth/NicknameModal';
-import { useMe } from '@/hooks/useMe';
+// import { useMe } from '@/hooks/useMe';
 import { updateBirthdayVisible } from "@/apis/birthday"; // getBirthdayPeriod 제거
 import { useLogout } from '@/hooks/useLogout';
+import { qk } from '@/lib/queryKeys';
+import type { UserMeResponse } from '@/apis/user';
+import { useQueryClient } from '@tanstack/react-query';
 
 const LOCAL_KEY = "bh.lastBirthdayId";
 
 export default function AccountSettingsPage() {
   const navigate = useNavigate();
   const { logout } = useLogout();
+  const queryClient = useQueryClient();
+
   const [loggingOut, setLoggingOut] = useState(false);
-
-  const { me, loading: loadingMe } = useMe();
-
   const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
 
@@ -24,8 +26,7 @@ export default function AccountSettingsPage() {
   const [publicAll, setPublicAll] = useState<boolean>(true);
   const [loadingVisible, setLoadingVisible] = useState<boolean>(false);
 
-  // 공개여부 초기화 useEffect 제거 (getBirthdayPeriod 사용 안 함)
-  //    기본값은 true로 유지
+  const me = queryClient.getQueryData<UserMeResponse>(qk.auth.me) ?? null;
 
   // --- 공개여부 토글 ---
   const handleToggleVisible = async () => {
@@ -76,6 +77,10 @@ export default function AccountSettingsPage() {
     try {
       await updateNickname(nickname);
       alert("닉네임이 변경되었습니다!");
+      // 쿼리 케시 업데이트 
+      queryClient.setQueryData<UserMeResponse>(qk.auth.me, (old) =>
+        old ? { ...old, name: nickname } : { name: nickname } as UserMeResponse
+      );
       setNicknameModalOpen(false);
     } catch (e) {
       console.error(e);
@@ -89,7 +94,7 @@ export default function AccountSettingsPage() {
     // 추후 회원탈퇴 API 연동 예정
   };
 
-  const displayName = loadingMe ? '…' : me?.name ?? '사용자님';
+  const displayName = me?.name ?? '사용자님';
   const profileUrl = me?.profileImageUrl;
 
   return (

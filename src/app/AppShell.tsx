@@ -5,6 +5,7 @@ import { getStoredUserId } from '@/stores/authStorage';
 import { BirthdayModeProvider } from '@/app/ModeContext';
 import FeastBootstrap from '@/features/feast/FeastBootstrap';
 import OnboardingGate from '@/features/onboarding/OnboardingGate';
+import { useMe } from '@/hooks/useMe';
 
 /*
 UserLayout
@@ -20,6 +21,9 @@ UserLayout
  * ?code=xxxx 쿼리가 있으면 게스트 공유 링크로 접근한 경우로 판단 
  */
 export default function AppShell() {
+  // 전역 캐시 관리 데이터 
+  const { me, loading, error } = useMe();
+
   const { userId } = useParams();
   const [qs] = useSearchParams();
   const code = qs.get('code'); // 게스트 초대 코드 가져옴

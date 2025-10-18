@@ -41,9 +41,6 @@ async function guardUserLayoutLoader({ request, params }: { request: Request; pa
 const router = createBrowserRouter([
   { path: '/', loader: () => redirect('/u') },
 
-  // 레거시 경로 호환
-  // { path: '/main', loader: redirectToMyHome },
-
   // 인증
   { path: '/login', element: <Login /> },
   { path: '/auth/kakao/callback', element: <AuthKakaoCallback /> },
