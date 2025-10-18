@@ -2,7 +2,8 @@ export type BirthdayCard = {
   birthdayCardId: string | number;
   message: string;
   nickname: string;
-  imageUrl: string;
+  // imageUrl: string;
+  imageUrl?: string;
 };
 
 export type BirthdayUser = {

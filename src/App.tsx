@@ -16,7 +16,7 @@ import PlayQuizPage from './pages/PlayQuizPage';
 import ThemeSettingsPage from './pages/subpages/ThemeSettingsPage';
 import BirthdayMessageRoute from './routes/BirthdayMessageRoute';
 import UserLayout from './routes/UserLayout';
-import { getStoredUserId } from '@/features/auth/authStorage';
+import { getStoredUserId } from '@/stores/authStorage';
 
 // /u, /main 진입 시 내 홈으로 돌리기
 async function redirectToMyHome() {

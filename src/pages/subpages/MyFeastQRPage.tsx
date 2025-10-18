@@ -3,8 +3,8 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/layouts/AppLayout";
-import { useShareLink } from "@/features/share/useShareLink";
-import { useFeastThisYear } from "@/features/feast/useFeastThisYear";
+import { useShareLink } from "@/hooks/useShareLink";
+import { useFeastThisYear } from "@/hooks/useFeastThisYear";
 
 export default function MyFeastQRPage() {
   const navigate = useNavigate();
@@ -83,9 +83,8 @@ export default function MyFeastQRPage() {
           <button
             onClick={onShare}
             disabled={disabled}
-            className={`w-14 h-14 rounded-full bg-[#FF8B8B] text-white shadow-md active:scale-95 transition flex items-center justify-center ${
-              disabled ? "opacity-50 cursor-not-allowed active:scale-100" : ""
-            }`}
+            className={`w-14 h-14 rounded-full bg-[#FF8B8B] text-white shadow-md active:scale-95 transition flex items-center justify-center ${disabled ? "opacity-50 cursor-not-allowed active:scale-100" : ""
+              }`}
             aria-label="공유"
             title={disabled ? "링크 준비 중" : "공유"}
           >
@@ -95,9 +94,8 @@ export default function MyFeastQRPage() {
           <button
             onClick={onDownload}
             disabled={disabled}
-            className={`w-14 h-14 rounded-full bg-[#FF8B8B] text-white shadow-md active:scale-95 transition flex items-center justify-center ${
-              disabled ? "opacity-50 cursor-not-allowed active:scale-100" : ""
-            }`}
+            className={`w-14 h-14 rounded-full bg-[#FF8B8B] text-white shadow-md active:scale-95 transition flex items-center justify-center ${disabled ? "opacity-50 cursor-not-allowed active:scale-100" : ""
+              }`}
             aria-label="다운로드"
             title={disabled ? "링크 준비 중" : "다운로드"}
           >

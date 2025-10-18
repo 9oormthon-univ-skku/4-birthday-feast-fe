@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { setAccessToken } from "@/lib/authToken";
 import { kakaoLogin } from "@/apis/auth";
-import { setAuthSessionUserId } from "@/features/auth/authStorage";
+import { setAuthSessionUserId } from "@/stores/authStorage";
 
 export default function AuthKakaoCallback() {
   const nav = useNavigate();

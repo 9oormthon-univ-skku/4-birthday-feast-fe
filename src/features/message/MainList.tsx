@@ -1,9 +1,9 @@
 // src/features/home/MainList.tsx
 import React from 'react';
 import clsx from 'clsx';
-import { useBirthdayCards } from '@/features/message/useBirthdayCards';
 import type { BirthdayCard } from '@/types/birthday';
 import { useNavigate, useLocation, useParams } from 'react-router-dom'; // ✅ Params 추가
+import { useBirthdayCards } from '@/hooks/useBirthdayCards';
 
 type MainListProps = {
   columns?: 2 | 3 | 4;

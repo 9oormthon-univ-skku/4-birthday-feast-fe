@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { getStoredUserId } from "@/features/auth/authStorage";
+import { getStoredUserId } from "@/stores/authStorage";
 
 const LS_LAST_QUIZ_ID = "bh.lastQuizId";
 

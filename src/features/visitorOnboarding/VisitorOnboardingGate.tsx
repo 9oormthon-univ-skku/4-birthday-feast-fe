@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import VisitorQuizPromptModal from "./VisitorQuizPropmptModal";
 import VisitorSkipInfoModal from "./VisitorSkipInfoModal";
-import { useVisitorOnboarding } from "./useVisitorOnboarding";
+import { useVisitorOnboarding } from "../../hooks/useVisitorOnboarding";
 import NicknameModal from "@/features/auth/NicknameModal";
 import WelcomeModal from "../home/WelcomeModal";
 

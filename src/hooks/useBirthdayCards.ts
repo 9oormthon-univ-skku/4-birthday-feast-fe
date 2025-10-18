@@ -1,43 +1,56 @@
 // src/features/message/useBirthdayCards.ts
 import { useEffect, useMemo } from "react";
 import type { BirthdayCard } from "@/types/birthday";
-import { useFeastThisYear } from "../feast/useFeastThisYear";
-// import { useFeastThisYear } from "@/features/feast/useFeastThisYear"; // ⬅️ 핵심: 올해 데이터 훅 사용
+import { useFeastThisYear } from "@/hooks/useFeastThisYear";
 
-// ---- 에셋 매핑 유틸 (food-*) -------------------------------------------------
-const assetModules = import.meta.glob("../../assets/images/food-*.{svg,png,jpg,jpeg}", {
-  eager: true,
-});
-const FOOD_KEYS = Object.keys(assetModules)
-  .map((p) => p.split("/").pop()!)
-  .map((f) => f.replace(/\.(svg|png|jpe?g)$/, ""));
+/* -----------------------------------------------------------------------------
+ * 이미지 에셋 매핑 (food-*)
+ * - import.meta.glob 로드 후 basename -> url 맵으로 정규화
+ * - 매핑 실패 시 절대 ""(빈 문자열) 반환하지 않음 (React 경고 방지)
+ * ---------------------------------------------------------------------------*/
+const assetModules = import.meta.glob(
+  "@/assets/images/food-*.{svg,png,jpg,jpeg}",
+  { eager: true }
+);
+
+const ASSET_MAP: Record<string, string> = Object.entries(assetModules).reduce(
+  (acc, [path, mod]: any) => {
+    const file = path.split("/").pop() as string;        // e.g. food-1.svg
+    const name = file.replace(/\.(svg|png|jpe?g)$/i, ""); // e.g. food-1
+    const url = mod?.default ?? mod;
+    if (url) acc[name] = url;
+    return acc;
+  },
+  {} as Record<string, string>
+);
+
+const FOOD_KEYS = Object.keys(ASSET_MAP);
 
 function resolveAssetUrl(key: string): string | undefined {
-  const candidates = [
-    `../../assets/images/${key}.svg`,
-    `../../assets/images/${key}.png`,
-    `../../assets/images/${key}.jpg`,
-    `../../assets/images/${key}.jpeg`,
-  ];
-  for (const p of candidates) {
-    const mod: any = (assetModules as any)[p];
-    if (mod) return mod.default ?? mod;
-  }
-  return undefined;
+  return ASSET_MAP[key];
 }
 
-function toImageUrl(candidate: string | null | undefined, indexSeed = 0): string {
+/** 후보값을 url로 변환. 매칭 실패 시 undefined를 반환(빈 문자열 금지). */
+function toImageUrl(
+  candidate: string | null | undefined,
+  indexSeed = 0
+): string | undefined {
+  // 파일명 키 패턴 (food-12, food-3a 등)
   if (candidate && /^food-\d+[a-zA-Z]*$/.test(candidate)) {
     const u = resolveAssetUrl(candidate);
     if (u) return u;
   }
+  // 외부 URL
   if (candidate && /^https?:\/\//.test(candidate)) return candidate;
 
+  // 랜덤/순번 기반 기본 이미지 키
   const key = FOOD_KEYS[indexSeed % Math.max(FOOD_KEYS.length, 1)] ?? "food-1";
-  return resolveAssetUrl(key) ?? "";
+  return resolveAssetUrl(key);
 }
 
-// ---- 로컬스토리지 폴백 --------------------------------------------------------
+/* -----------------------------------------------------------------------------
+ * 로컬스토리지 폴백
+ * ---------------------------------------------------------------------------*/
 const STORAGE_KEY = "birthday_cards";
 
 type LocalCard = {
@@ -58,7 +71,9 @@ function readLocalCards(): LocalCard[] {
   }
 }
 
-// ---- 서버 → BirthdayCard 어댑터 ----------------------------------------------
+/* -----------------------------------------------------------------------------
+ * 서버 → BirthdayCard 어댑터
+ * ---------------------------------------------------------------------------*/
 type ServerBirthdayCard = {
   birthdayCardId: number | string;
   message: string;
@@ -84,7 +99,9 @@ function adaptLocalCards(list: LocalCard[]): BirthdayCard[] {
   }));
 }
 
-// ---- 메인 훅 ------------------------------------------------------------------
+/* -----------------------------------------------------------------------------
+ * 메인 훅
+ * ---------------------------------------------------------------------------*/
 export function useBirthdayCards() {
   // 올해 생일상 데이터(캐시 포함)를 즉시 사용
   const { data: feast, loading, reload, preloadThisYearQuietly } = useFeastThisYear();
@@ -96,7 +113,9 @@ export function useBirthdayCards() {
 
   // 서버 카드 우선 사용, 없으면 로컬 폴백
   const serverCards: ServerBirthdayCard[] = useMemo(() => {
-    return Array.isArray(feast?.birthdayCards) ? (feast!.birthdayCards as ServerBirthdayCard[]) : [];
+    return Array.isArray(feast?.birthdayCards)
+      ? (feast!.birthdayCards as ServerBirthdayCard[])
+      : [];
   }, [feast?.birthdayCards]);
 
   const data: BirthdayCard[] = useMemo(() => {

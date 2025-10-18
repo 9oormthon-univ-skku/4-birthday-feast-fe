@@ -2,11 +2,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/layouts/AppLayout';
-import { useLogout } from '@/features/auth/useLogout';
 import { updateNickname } from '@/apis/user';
 import NicknameModal from '@/features/auth/NicknameModal';
-import { useMe } from '@/features/user/useMe';
+import { useMe } from '@/hooks/useMe';
 import { updateBirthdayVisible } from "@/apis/birthday"; // getBirthdayPeriod 제거
+import { useLogout } from '@/hooks/useLogout';
 
 const LOCAL_KEY = "bh.lastBirthdayId";
 

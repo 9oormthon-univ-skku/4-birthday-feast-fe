@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { postLogout } from "@/apis/auth";
 import { clearAccessToken } from "@/lib/authToken";
-import { clearAuthUserId } from "@/features/auth/authStorage";
-import { qk } from "../queryKeys";
+import { clearAuthUserId } from "@/stores/authStorage";
+import { qk } from "@/lib/queryKeys";
 
 export function useLogout() {
   const nav = useNavigate();

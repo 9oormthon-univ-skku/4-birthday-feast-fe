@@ -2,9 +2,8 @@
 import { useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import MessagePage from '@/pages/MessagePage';
-// import Loading from '@/pages/LoadingPage';
-import { useBirthdayCards } from '@/features/message/useBirthdayCards';
-import { getStoredUserId } from '@/features/auth/authStorage'; // ⬅️ 추가
+import { getStoredUserId } from '@/stores/authStorage'; // ⬅️ 추가
+import { useBirthdayCards } from '@/hooks/useBirthdayCards';
 
 export default function BirthdayMessageRoute() {
   const navigate = useNavigate();

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { getUserMe, type UserMeResponse } from '@/apis/user';
-import { useAuth } from '@/features/auth/useAuth';
-import { qk } from '@/features/queryKeys';
+import { useAuth } from '@/hooks/useAuth';
+import { qk } from '@/lib/queryKeys';
 
 export function useMe() {
   const { isAuthenticated } = useAuth();

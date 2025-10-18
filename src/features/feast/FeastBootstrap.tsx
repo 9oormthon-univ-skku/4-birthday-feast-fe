@@ -1,6 +1,6 @@
 // src/features/feast/FeastBootstrap.tsx
 import { useEffect } from "react";
-import { useFeastThisYear } from "@/features/feast/useFeastThisYear";
+import { useFeastThisYear } from "@/hooks/useFeastThisYear";
 
 /**
  * 화면 진입 시 올해 생일상 데이터를 조용히 프리페치.

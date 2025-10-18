@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DrawerMenu from './DrawerMenu';
-import { getStoredUserId } from '@/features/auth/authStorage';
+import { getStoredUserId } from '@/stores/authStorage';
 
 export type HeaderProps = {
   /** 문자열뿐 아니라 JSX도 허용 (색상 하이라이트 등) */

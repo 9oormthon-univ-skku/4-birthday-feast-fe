@@ -1,9 +1,9 @@
 // src/features/home/FeatureButtons.tsx
 import React from "react";
 import { toPng } from "html-to-image";
-import { useShareLink } from "@/features/share/useShareLink";
-import { useAuth } from "@/features/auth/useAuth";
-import { useFeastThisYear } from "../feast/useFeastThisYear";
+import { useShareLink } from "@/hooks/useShareLink";
+import { useAuth } from "@/hooks/useAuth";
+import { useFeastThisYear } from "@/hooks/useFeastThisYear";
 
 type TargetRef =
   | React.RefObject<HTMLElement>

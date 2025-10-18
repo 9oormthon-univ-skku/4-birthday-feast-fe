@@ -2,11 +2,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import QuizPromptModal from "./QuizPromptModal";
-import { useBirthdayOnboarding } from "./useBirthdayOnboarding";
-import { useAuth } from "@/features/auth/useAuth";
+import { useBirthdayOnboarding } from "../../hooks/useBirthdayOnboarding";
+import { useAuth } from "@/hooks/useAuth";
 import WelcomeModal from "@/features/home/WelcomeModal";
-import { useFeastThisYear } from "@/features/feast/useFeastThisYear";
-import { useMe } from "../user/useMe";
+import { useFeastThisYear } from "@/hooks/useFeastThisYear";
+import { useMe } from "../../hooks/useMe";
 
 const LS_HOST_WELCOME_SHOWN = "bh.host.welcomeShownDate";
 
