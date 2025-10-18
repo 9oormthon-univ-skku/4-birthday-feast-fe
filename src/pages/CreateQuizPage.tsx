@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import AppLayout from "@/layouts/AppLayout";
+import AppLayout from "@/ui/AppLayout";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { createQuiz } from "@/apis/quiz"; // API 연결
 
@@ -41,13 +41,13 @@ function loadDraft(): QuizDraft | null {
 function saveDraft(d: QuizDraft) {
   try {
     localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
-  } catch {}
+  } catch { }
 }
 
 function clearDraft() {
   try {
     localStorage.removeItem(DRAFT_KEY);
-  } catch {}
+  } catch { }
 }
 
 function normalizeSequence(list: QuizQuestion[]): QuizQuestion[] {

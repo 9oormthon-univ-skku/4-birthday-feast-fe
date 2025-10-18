@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../ui/Header';
 import FooterButton from '@/ui/FooterButton';
 
-import { useBirthdayMode } from '@/layouts/ModeContext';
+import { useBirthdayMode } from '@/app/ModeContext';
 import ViewToggle from '@/features/home/ViewToggle';
 import FeatureButtons from '@/features/home/FeatureButtons';
 import EventBanner from '@/features/event/EventBanner';

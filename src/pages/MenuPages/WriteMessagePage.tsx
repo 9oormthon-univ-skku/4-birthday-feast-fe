@@ -1,6 +1,6 @@
 // src/pages/MessageComposePage.tsx
 import React, { useMemo, useState } from 'react';
-import AppLayout from '@/layouts/AppLayout';
+import AppLayout from '@/ui/AppLayout';
 import Modal from '@/ui/Modal';
 import { useNavigate } from 'react-router-dom';
 

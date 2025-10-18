@@ -1,6 +1,6 @@
 // src/pages/ThemeSettingsPage.tsx
 import React, { useMemo, useState } from 'react';
-import AppLayout from '@/layouts/AppLayout';
+import AppLayout from '@/ui/AppLayout';
 
 // ✅ 이미지들을 모아 import (원하는 파일명/경로로 교체하세요)
 import Character1 from '@/assets/theme/character-1.svg';

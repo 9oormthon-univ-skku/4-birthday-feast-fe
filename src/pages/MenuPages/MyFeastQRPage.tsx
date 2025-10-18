@@ -2,7 +2,7 @@
 // src/pages/subpages/MyFeastQRPage.tsx
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import AppLayout from "@/layouts/AppLayout";
+import AppLayout from "@/ui/AppLayout";
 import { useShareLink } from "@/hooks/useShareLink";
 import { useFeastThisYear } from "@/hooks/useFeastThisYear";
 

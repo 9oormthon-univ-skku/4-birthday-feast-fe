@@ -1,6 +1,6 @@
 // src/pages/PlayQuizPage.tsx
 import React, { useEffect, useMemo, useState } from 'react';
-import AppLayout from '@/layouts/AppLayout';
+import AppLayout from '@/ui/AppLayout';
 // 필요 시 결과/랭크 컴포넌트 사용
 import QuizResultList from '@/features/quiz/QuizResultList';
 import QuizRankList from '@/features/quiz/QuizRankList';

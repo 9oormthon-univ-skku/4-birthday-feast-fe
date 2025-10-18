@@ -1,7 +1,7 @@
 // src/layouts/AppLayout.tsx
 import React from 'react';
-import Header, { HeaderProps } from '../ui/Header';
-import FooterButton from '@/ui/FooterButton'; 
+import Header, { HeaderProps } from './Header';
+import FooterButton from '@/ui/FooterButton';
 
 type AppLayoutProps = HeaderProps & {
   children: React.ReactNode;

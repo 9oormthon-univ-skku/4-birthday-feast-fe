@@ -1,6 +1,6 @@
 // src/pages/subpages/TeamAboutPage.tsx
 import React from 'react';
-import AppLayout from '../../layouts/AppLayout';
+import AppLayout from '../../ui/AppLayout';
 import { useNavigate } from 'react-router-dom';
 
 type Member = { name: string; school: string; email: string };

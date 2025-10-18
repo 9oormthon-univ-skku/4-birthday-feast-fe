@@ -1,7 +1,7 @@
 // src/pages/BirthdayMessagePage.tsx
 import React, { useMemo, useState } from 'react';
 import food6 from '@/assets/images/food-6.svg';
-import AppLayout from '@/layouts/AppLayout';
+import AppLayout from '@/ui/AppLayout';
 import { useNavigate } from 'react-router-dom';
 
 export type Message = {

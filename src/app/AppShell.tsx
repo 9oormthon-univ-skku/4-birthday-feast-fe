@@ -2,7 +2,7 @@
 // 모드 감지 후 모드에 따라 분기 (host -> onboarding gate | guest -> 게스트 플로우 따르기)
 import { Outlet, useParams, useSearchParams } from 'react-router-dom';
 import { getStoredUserId } from '@/stores/authStorage';
-import { BirthdayModeProvider } from '@/layouts/ModeContext';
+import { BirthdayModeProvider } from '@/app/ModeContext';
 import FeastBootstrap from '@/features/feast/FeastBootstrap';
 import OnboardingGate from '@/features/onboarding/OnboardingGate';
 
@@ -19,7 +19,7 @@ UserLayout
  * userId는 페이지 소유자(host)의 id, 
  * ?code=xxxx 쿼리가 있으면 게스트 공유 링크로 접근한 경우로 판단 
  */
-export default function UserLayout() {
+export default function AppShell() {
   const { userId } = useParams();
   const [qs] = useSearchParams();
   const code = qs.get('code'); // 게스트 초대 코드 가져옴

@@ -1,7 +1,7 @@
 // src/pages/subpages/ContactPage.tsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import AppLayout from '../../layouts/AppLayout';
+import AppLayout from '../../ui/AppLayout';
 
 export default function ContactPage() {
   const navigate = useNavigate();

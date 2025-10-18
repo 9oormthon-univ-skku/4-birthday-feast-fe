@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import AppLayout from '@/layouts/AppLayout';
+import AppLayout from '@/ui/AppLayout';
 
 type PastItem = {
   id: number;

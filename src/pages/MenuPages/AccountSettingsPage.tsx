@@ -1,7 +1,7 @@
 // src/pages/subpages/AccountSettingsPage.tsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AppLayout from '@/layouts/AppLayout';
+import AppLayout from '@/ui/AppLayout';
 import { updateNickname } from '@/apis/user';
 import NicknameModal from '@/features/auth/NicknameModal';
 import { useMe } from '@/hooks/useMe';

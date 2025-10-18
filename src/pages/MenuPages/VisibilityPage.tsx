@@ -1,6 +1,6 @@
 // src/pages/subpages/VisibilityPage.tsx
 import React, { useEffect, useMemo, useState } from 'react';
-import AppLayout from '@/layouts/AppLayout';
+import AppLayout from '@/ui/AppLayout';
 import { getBirthdayPeriod, type BirthdayPeriod } from "@/apis/birthday";
 import { useNavigate } from 'react-router-dom';
 
