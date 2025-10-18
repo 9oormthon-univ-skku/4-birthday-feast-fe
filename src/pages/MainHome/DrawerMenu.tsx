@@ -1,5 +1,9 @@
+// src/features/.../DrawerMenu.tsx
 import * as React from 'react';
 import { Drawer } from '../../ui/CustomDrawer';
+import { useQueryClient } from '@tanstack/react-query';
+import { qk } from '@/lib/queryKeys';
+import type { UserMeResponse } from '@/apis/user';
 
 export type DrawerMenuProps = {
   open: boolean;
@@ -10,7 +14,7 @@ export type DrawerMenuProps = {
   width?: number | string;
   /** 메뉴 선택 시 호출 (예: 'account', 'visibility' ...) */
   onSelect?: (key: string) => void;
-  /** 상단 표시 이름 (기본: '사용자님') */
+  /** 상단 표시 이름 (기본: '사용자님') — me 캐시 없을 때 사용 */
   userName?: string;
   /** 필요하면 하단에 추가 섹션을 넣고 싶을 때 사용 */
   children?: React.ReactNode;
@@ -29,6 +33,12 @@ const secondary = [
   { key: 'contact', label: '문의하기' },
 ];
 
+function getInitial(name?: string) {
+  const n = (name ?? '').trim();
+  if (!n) return '사'; // 기본 한글 이니셜
+  return Array.from(n)[0]; // 간단 그라페메 추정(이모지/한글 첫 글자 대응)
+}
+
 export default function DrawerMenu({
   open,
   onOpen,
@@ -39,6 +49,17 @@ export default function DrawerMenu({
   onSelect,
   children,
 }: DrawerMenuProps) {
+  const qc = useQueryClient();
+  const me = qc.getQueryData<UserMeResponse>(qk.auth.me) ?? null;
+  const displayName = me?.name?.trim() || userName;
+  const avatarUrl = me?.profileImageUrl || '';
+
+  const [imgError, setImgError] = React.useState(false);
+  React.useEffect(() => {
+    // 드로어 열릴 때마다 이미지 에러 상태 리셋
+    if (open) setImgError(false);
+  }, [open]);
+
   const handleClick = (key: string) => {
     onSelect?.(key);
     onClose();
@@ -62,12 +83,26 @@ export default function DrawerMenu({
       <div className="w-[80%] mx-auto flex h-full max-h-full flex-col bg-white">
         {/* 상단 사용자 영역 */}
         <div className="flex items-center gap-4 py-6 border-b border-[#D9D9D9]">
-          <div className="grid h-10 w-10 place-items-center rounded-full bg-[#D9D9D9] text-zinc-500 font-bold text-">사</div>
-          <div className="text-xl font-bold text-[#FF8B8B]">{userName}</div>
+          {/* 아바타: 이미지 → 실패 시 이니셜 */}
+          {avatarUrl && !imgError ? (
+            <img
+              src={avatarUrl}
+              alt={`${displayName} 프로필 이미지`}
+              className="h-10 w-10 rounded-full object-cover border border-[#E5E5E5]"
+              onError={() => setImgError(true)}
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="grid h-10 w-10 place-items-center rounded-full bg-[#D9D9D9] text-zinc-600 font-bold text-sm select-none">
+              {getInitial(displayName)}
+            </div>
+          )}
+
+          <div className="text-xl font-bold text-[#FF8B8B] truncate">{displayName}</div>
         </div>
 
         {/* 1차 메뉴 */}
-        <nav className='py-4'>
+        <nav className="py-4">
           <ul className="divide-y divide-neutral-50 rounded-xl bg-white">
             {primary.map((item) => (
               <li key={item.key}>
@@ -76,9 +111,7 @@ export default function DrawerMenu({
                   className="flex w-full items-center justify-between px-4 py-2 text-left hover:bg-neutral-50"
                 >
                   <span className="text-base font-semibold tracking-[0.02em] text-[#A0A0A0]">{item.label}</span>
-                  <span aria-hidden className='pr-3'>
-                    {rightArrow}
-                  </span>
+                  <span aria-hidden className="pr-3">{rightArrow}</span>
                 </button>
               </li>
             ))}
@@ -97,9 +130,7 @@ export default function DrawerMenu({
                   className="flex w-full items-center justify-between px-4 py-2 text-left hover:bg-neutral-50"
                 >
                   <span className="text-base font-semibold tracking-[0.02em] text-[#A0A0A0]">{item.label}</span>
-                  <span aria-hidden className='pr-3'>
-                    {rightArrow}
-                  </span>
+                  <span aria-hidden className="pr-3">{rightArrow}</span>
                 </button>
               </li>
             ))}
@@ -118,6 +149,8 @@ export default function DrawerMenu({
   );
 }
 
-const rightArrow = <svg xmlns="http://www.w3.org/2000/svg" width="7" height="12" viewBox="0 0 7 12" fill="none">
-  <path d="M1 11L6 6L1 0.999998" stroke="#A0A0A0" strokeLinecap="round" strokeLinejoin="round" />
-</svg>
+const rightArrow = (
+  <svg xmlns="http://www.w3.org/2000/svg" width="7" height="12" viewBox="0 0 7 12" fill="none">
+    <path d="M1 11L6 6L1 0.999998" stroke="#A0A0A0" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
