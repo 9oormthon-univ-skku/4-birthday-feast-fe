@@ -37,11 +37,21 @@ export type GuestCardCreateReq = {
   imageUrl?: string | null; // 선택값처럼 보이므로 optional
 };
 
+/* ---------- 공통 유틸 ---------- */
 function getGuestAT() {
   return localStorage.getItem(LS_GUEST_AT) || "";
 }
 
-// Guest Auth |게스트 사용자가 생일상에 접근하기 위한 임시 토큰 발급 API 
+function guestAuthHeaders() {
+  const at = getGuestAT();
+  return {
+    _guest: true as const, // 재발급/보호 로직 우회 플래그 (request 인터셉터용)
+    headers: { Authorization: `Bearer ${at}` },
+  };
+}
+
+/* ---------- 게스트 인증 ---------- */
+// Guest Auth |게스트 사용자가 생일상에 접근하기 위한 임시 토큰 발급 API
 /** POST 게스트 생일상 접속 */
 export async function guestLogin(body: GuestAuthReq): Promise<GuestAuthRes> {
   const { data } = await apiClient.post<GuestAuthRes>("/api/auth-guest", body, {
@@ -52,32 +62,97 @@ export async function guestLogin(body: GuestAuthReq): Promise<GuestAuthRes> {
   return data;
 }
 
-// 게스트가 초대 받은 생일상을 조회할 수 있는 API (게스트 토큰을 직접 넣고, 재발급 우회)
+/* ---------- 게스트 생일상/이미지/카드 ---------- */
 /** GET 게스트 생일상 조회 */
 export async function getGuestBirthday(): Promise<GuestBirthdayRes> {
-  const at = localStorage.getItem(LS_GUEST_AT) || "";
-  const { data } = await apiClient.get<GuestBirthdayRes>("/api-guest/birthday", {
-    _guest: true,
-    headers: { Authorization: `Bearer ${at}` },
-  });
+  const { data } = await apiClient.get<GuestBirthdayRes>(
+    "/api-guest/birthday",
+    guestAuthHeaders()
+  );
   return data;
 }
 
 /** GET 생일편지 등록용 이미지 전체 조회 */
 export async function getGuestImages(): Promise<GuestImage[]> {
-  const at = getGuestAT();
-  const { data } = await apiClient.get<GuestImage[]>("/api-guest/image", {
-    _guest: true,
-    headers: { Authorization: `Bearer ${at}` },
-  });
+  const { data } = await apiClient.get<GuestImage[]>(
+    "/api-guest/image",
+    guestAuthHeaders()
+  );
   return data;
 }
 
 /** POST 게스트 축하카드 등록 */
 export async function createGuestCard(body: GuestCardCreateReq): Promise<void> {
-  const at = getGuestAT();
-  await apiClient.post("/api-guest/card", body, {
-    _guest: true,
-    headers: { Authorization: `Bearer ${at}` },
-  });
+  await apiClient.post("/api-guest/card", body, guestAuthHeaders());
+}
+
+/* ---------- 게스트 OX 퀴즈 ---------- */
+// - GET  /api-guest/quiz/get/{quizId}        : 퀴즈 문항 조회
+// - GET  /api-guest/quiz/get/ranking/{quizId}: 퀴즈 랭킹 조회
+// - POST /api-guest/quiz/submit/{quizId}     : 퀴즈 제출
+
+export type GuestQuizQuestion = {
+  questionId: number | string;
+  content: string;
+  answer: boolean; // true: O, false: X (정답)
+  sequence: number;
+};
+
+export type GuestQuizGetRes = {
+  quizId: number | string;
+  birthdayId: number | string;
+  questions: GuestQuizQuestion[];
+  updatedAt?: string | null;
+};
+
+export type GuestQuizRankingItem = {
+  rank: number;
+  guestQuizId: number | string;
+  nickName: string;
+  correctCount: number;
+  totalCount: number;
+};
+
+export type GuestQuizSubmitReq = {
+  questionId: number | string;
+  answer: boolean; // 사용자가 고른 값 (O: true, X: false)
+};
+
+export type GuestQuizSubmitRes = {
+  guestQuizId: number | string;
+  score: number;
+  ranking: GuestQuizRankingItem[];
+};
+
+/** GET 게스트 퀴즈 문항 조회 */
+export async function getGuestQuiz(quizId: number | string): Promise<GuestQuizGetRes> {
+  const { data } = await apiClient.get<GuestQuizGetRes>(
+    `/api-guest/quiz/get/${quizId}`,
+    guestAuthHeaders()
+  );
+  return data;
+}
+
+/** GET 게스트 퀴즈 랭킹 조회 */
+export async function getGuestQuizRanking(
+  quizId: number | string
+): Promise<GuestQuizRankingItem[]> {
+  const { data } = await apiClient.get<GuestQuizRankingItem[]>(
+    `/api-guest/quiz/get/ranking/${quizId}`,
+    guestAuthHeaders()
+  );
+  return data;
+}
+
+/** POST 게스트 퀴즈 제출 */
+export async function submitGuestQuiz(
+  quizId: number | string,
+  body: GuestQuizSubmitReq
+): Promise<GuestQuizSubmitRes> {
+  const { data } = await apiClient.post<GuestQuizSubmitRes>(
+    `/api-guest/quiz/submit/${quizId}`,
+    body,
+    guestAuthHeaders()
+  );
+  return data;
 }
