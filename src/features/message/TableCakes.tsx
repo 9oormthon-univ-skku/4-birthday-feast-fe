@@ -1,6 +1,6 @@
 // src/features/message/TableCakes.tsx
 import React, { MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import type { CakeItem } from "@/types/birthday";
 
@@ -35,6 +35,8 @@ export default function TableCakes({
   buttonClassName?: string;
 }) {
   const navigate = useNavigate();
+  const location = useLocation(); // 현재 쿼리 보존 용도            
+  const { userId } = useParams();
 
   // ===== 캐러셀 상태 =====
   const PAGE_SIZE = 6;
@@ -104,11 +106,17 @@ export default function TableCakes({
     };
   }, [pageCount, canNext, canPrev]);
 
+  // 현재 쿼리스트링에 i만 덮어쓰기
+  const buildSearchWithIndex = (i: number) => {
+    const sp = new URLSearchParams(location.search);
+    sp.set('i', String(i));
+    const q = sp.toString();
+    return q ? `?${q}` : '';
+  };
+
   return (
     <>
-      {/* 스와이프 영역 래퍼 (테이블 이미지와 같은 relative 컨테이너 안에서 절대 위치) */}
       <div ref={swipeRef} className="absolute inset-0 z-100 pointer-events-none">
-        {/* 케이크 6개 배치 */}
         {pageItems.map((cake, i) => {
           const slot = SLOTS[i];
           if (!slot) return null;
@@ -119,14 +127,18 @@ export default function TableCakes({
             bottom: slot.bottom,
             width: uniformWidth ?? slot.width,
             transform: slot.anchorCenter ? 'translateX(-50%)' : undefined,
-            // zIndex,
           };
 
           const globalIndex = page * PAGE_SIZE + i;
 
           const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
             onSelect?.(cake, globalIndex, e);
-            navigate(`/message?i=${globalIndex}`, { state: { cakeId: cake.id } });
+
+            const dest = userId
+              ? { pathname: `/u/${userId}/message`, search: buildSearchWithIndex(globalIndex) }
+              : { pathname: '/message', search: buildSearchWithIndex(globalIndex) }; // 폴백
+
+            navigate(dest, { state: { cakeId: cake.id } });
           };
 
           return (
@@ -140,7 +152,7 @@ export default function TableCakes({
               className={[
                 'absolute block bg-transparent p-0 m-0 border-0 outline-none',
                 'cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2',
-                'rounded-xl pointer-events-auto', // ← 클릭 가능
+                'rounded-xl pointer-events-auto',
                 buttonClassName ?? '',
               ].join(' ')}
             >
@@ -155,7 +167,6 @@ export default function TableCakes({
           );
         })}
 
-        {/* 좌/우 화살표 (페이지가 2개 이상일 때만) */}
         {pageCount > 1 && (
           <>
             <button

@@ -1,27 +1,28 @@
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>생일한상</title>
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="theme-color" content="#ffffff" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>생일한상</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
-    <!-- Kakao JavaScript SDK 추가 -->
-    <script
-      src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
-      crossorigin="anonymous"
-    ></script>
-    <script type="module">
-      // Vite 환경변수에서 JS 키 읽기
-      window.Kakao?.init(import.meta.env.VITE_KAKAO_JS_KEY);
-      console.log("☁️ Kakao SDK initialized:", window.Kakao?.isInitialized());
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#ffffff" />
+
+  <!-- Kakao JavaScript SDK 추가 -->
+  <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" crossorigin="anonymous"></script>
+  <script type="module">
+    // Vite 환경변수에서 JS 키 읽기
+    window.Kakao?.init(import.meta.env.VITE_KAKAO_JS_KEY);
+    console.log("☁️ Kakao SDK initialized:", window.Kakao?.isInitialized());
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>

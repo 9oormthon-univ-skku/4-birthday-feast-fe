@@ -1,115 +1,79 @@
-// App.tsx
-import { useMemo } from 'react';
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import MainHome from './pages/MainHome';
-import TeamAboutPage from './pages/subpages/TeamAboutPage';
-import ContactPage from './pages/subpages/ContactPage';
-import QuizPage from './pages/QuizPage';
-import MyFeastQRPage from './pages/subpages/MyFeastQRPage';
-import HistoryPage from './pages/subpages/HistoryPage';
-import VisibilityPage from './pages/subpages/VisibilityPage';
-import AccountSettingsPage from './pages/subpages/AccountSettingsPage';
-import MessagePage from './pages/MessagePage';
-import Loading from './pages/LoadingPage';
+// src/App.tsx
+import { createBrowserRouter, RouterProvider, redirect } from 'react-router-dom';
 import Login from './pages/LoginPage';
-
-// 더미데이터 훅(React Query 미사용 버전)
-import { useBirthdayCards } from '@/features/message/useBirthdayCards';
-import WriteMessagePage from './pages/subpages/WriteMessagePage';
-import PlayQuizPage from './pages/subpages/PlayQuizPage';
-import ThemeSettingsPage from './pages/subpages/ThemeSettingsPage';
-import OnboardingGate from './features/onboarding/OnboardingGate';
-import CreateQuizPage from './pages/CreateQuizPage';
-import FeastSharePage from './pages/FeastSharePage';
 import AuthKakaoCallback from './pages/AuthKakaoCallback';
+import MainHome from './pages/MainHome/MainHome';
+import TeamAboutPage from './pages/MenuPages/TeamAboutPage';
+import ContactPage from './pages/MenuPages/ContactPage';
+import QuizPage from './pages/MenuPages/QuizPage';
+import CreateQuizPage from './pages/MenuPages/CreateQuizPage';
+import MyFeastQRPage from './pages/MenuPages/MyFeastQRPage';
+import HistoryPage from './pages/MenuPages/HistoryPage';
+import VisibilityPage from './pages/MenuPages/VisibilityPage';
+import AccountSettingsPage from './pages/MenuPages/AccountSettingsPage';
+import WriteMessagePage from './pages/MenuPages/WriteMessagePage';
+import PlayQuizPage from './pages/MainHome/PlayQuizPage';
+import ThemeSettingsPage from './pages/MenuPages/ThemeSettingsPage';
+import BirthdayMessageRoute from './routes/BirthdayMessageRoute';
+import AppShell from './app/AppShell';
+import { getStoredUserId } from '@/stores/authStorage';
 
-// 라우트용 래퍼: 쿼리 파싱 + 더미 데이터 매핑
-function BirthdayMessageRoute() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const qs = new URLSearchParams(location.search);
-
-  const indexFromQuery = Number(qs.get('i') ?? 0);
-  const initialIndexRaw = Number.isFinite(indexFromQuery) ? indexFromQuery : 0;
-
-  // 1) 더미 데이터 로딩
-  const { data: cards = [], isLoading, error } = useBirthdayCards();
-
-  // 2) BirthdayMessagePage가 기대하는 형태로 매핑
-  //    id: 카드ID, title: nickname, body: message, imgSrc: imageUrl
-  const messages = useMemo(
-    () =>
-      cards.map((c) => ({
-        id: c.birthdayCardId,
-        title: c.nickname,
-        body: c.message,
-        imgSrc: c.imageUrl,
-      })),
-    [cards]
-  );
-
-  // 데이터 길이에 맞춰 안전하게 보정
-  const safeInitialIndex = Math.max(0, Math.min(initialIndexRaw, Math.max(messages.length - 1, 0)));
-
-  if (isLoading) return <Loading />;
-  if (error) {
-    return (
-      <div className="p-6 text-red-600">
-        메시지를 불러오지 못했어요.
-        <button className="ml-3 underline" onClick={() => navigate(-1)}>뒤로</button>
-      </div>
-    );
-  }
-
-  return (
-    <MessagePage
-      messages={messages}
-      initialIndex={safeInitialIndex}
-      onBack={() => navigate(-1)}
-      onHome={() => navigate('/main')}
-    />
-  );
+// /u, /main 진입 시 내 홈으로 돌리기
+async function redirectToMyHome() {
+  const id = getStoredUserId();
+  return redirect(id ? `/u/${id}/main` : '/login');
 }
 
+// /u/:userId 보호 (게스트 공유 뷰는 허용)
+async function guardUserLayoutLoader({ request, params }: { request: Request; params: any }) {
+  const url = new URL(request.url);
+  const code = url.searchParams.get('code');
+  if (code) return null;
+
+  const selfId = getStoredUserId();
+  if (!selfId) return redirect('/login');
+  if (String(params.userId) !== String(selfId)) {
+    return redirect(`/u/${selfId}/main`);
+  }
+  return null;
+}
+
+const router = createBrowserRouter([
+  { path: '/', loader: () => redirect('/u') },
+
+  // 인증
+  { path: '/login', element: <Login /> },
+  { path: '/auth/kakao/callback', element: <AuthKakaoCallback /> },
+
+  // 새 사용자 레이아웃
+  { path: '/u', loader: redirectToMyHome },
+  {
+    path: '/u/:userId',
+    loader: guardUserLayoutLoader,
+    element: <AppShell />, // 모든 하위 페이지 경로를 감싸 host | guest 관리
+    children: [
+      { index: true, loader: () => redirect('main') },
+      { path: 'main', element: <MainHome /> },
+      { path: 'history', element: <HistoryPage /> },
+      { path: 'visibility', element: <VisibilityPage /> },
+      { path: 'account', element: <AccountSettingsPage /> },
+      { path: 'my-feast-qr', element: <MyFeastQRPage /> },
+      { path: 'theme', element: <ThemeSettingsPage /> },
+      { path: 'quiz', element: <QuizPage /> },
+      { path: 'quiz/edit', element: <QuizPage /> },
+      { path: 'create-quiz', element: <CreateQuizPage /> },
+      { path: 'write', element: <WriteMessagePage /> },
+      { path: 'play', element: <PlayQuizPage /> },
+      { path: 'message', element: <BirthdayMessageRoute /> },
+    ],
+  },
+
+  { path: '/about-team', element: <TeamAboutPage /> },
+  { path: '/contact', element: <ContactPage /> },
+
+  { path: '*', loader: () => redirect('/') },
+]);
+
 export default function App() {
-  return (
-    <>
-      <Routes>
-        <Route path="/" element={<Navigate to="/main" replace />} />
-
-        <Route path="/login" element={<Login />} />
-        <Route path="/auth/kakao/callback" element={<AuthKakaoCallback />} />
-
-        <Route path="/main" element={<MainHome />} />
-        {/* 공유 링크용: hostId가 들어오면 MainHome이 게스트 보기로 동작 */}
-        <Route path="/feast/:hostId" element={<MainHome />} />
-
-        <Route path="/theme" element={<ThemeSettingsPage />} />
-        <Route path="/about-team" element={<TeamAboutPage />} />
-
-        <Route path="/contact" element={<ContactPage />} />
-
-        <Route path="/create-quiz" element={<CreateQuizPage />} />
-
-        {/* 편집/작성용 퀴즈 페이지 (온보딩에서 이동) */}
-        <Route path="/quiz" element={<QuizPage />} />
-        {/* 호환 라우트: 캔버스 코드가 /quiz로 이동하지만, 혹시 모를 링크 대비 */}
-        <Route path="/quiz/edit" element={<QuizPage />} />
-
-        <Route path="/my-feast-qr" element={<MyFeastQRPage />} />
-        <Route path="/history" element={<HistoryPage />} />
-        <Route path="/visibility" element={<VisibilityPage />} />
-        <Route path="/account" element={<AccountSettingsPage />} />
-
-        {/* 생일 메시지 라우트 */}
-        <Route path="/message" element={<BirthdayMessageRoute />} />
-
-        <Route path="/write" element={<WriteMessagePage />} />
-        <Route path="/play" element={<PlayQuizPage />} />
-
-        {/* 그 외 경로는 홈으로 */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </>
-  );
+  return <RouterProvider router={router} />;
 }

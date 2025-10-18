@@ -1,0 +1,167 @@
+// src/features/.../DrawerMenu.tsx
+import * as React from 'react';
+import { Drawer } from '../../ui/CustomDrawer';
+import { useQueryClient } from '@tanstack/react-query';
+import { qk } from '@/lib/queryKeys';
+import type { UserMeResponse } from '@/apis/user';
+import { useBirthdayMode } from '@/app/ModeContext';
+
+export type DrawerMenuProps = {
+  open: boolean;
+  onOpen?: () => void;
+  onClose: () => void;
+  anchor?: 'left' | 'right' | 'top' | 'bottom';
+  /** 좌/우 드로어 폭 */
+  width?: number | string;
+  /** 메뉴 선택 시 호출 (예: 'account', 'visibility' ...) */
+  onSelect?: (key: string) => void;
+  /** 상단 표시 이름 (기본: '사용자님') — me 캐시 없을 때 사용 */
+  userName?: string;
+  /** 필요하면 하단에 추가 섹션을 넣고 싶을 때 사용 */
+  children?: React.ReactNode;
+};
+
+const primary = [
+  { key: 'account', label: '계정 설정' },
+  { key: 'visibility', label: '생일상 공개 날짜' },
+  { key: 'history', label: '지난 생일상 모아보기' },
+  { key: 'qrcode', label: '내 생일상 큐알코드' },
+  { key: 'quiz', label: '내 생일 퀴즈' },
+];
+
+const secondary = [
+  { key: 'about', label: '생일한상 팀 소개' },
+  { key: 'contact', label: '문의하기' },
+];
+
+function getInitial(name?: string) {
+  const n = (name ?? '').trim();
+  if (!n) return '사';
+  return Array.from(n)[0];
+}
+
+export default function DrawerMenu({
+  open,
+  onOpen,
+  onClose,
+  anchor = 'right',
+  width = '80vw',
+  userName = '사용자님',
+  onSelect,
+  children,
+}: DrawerMenuProps) {
+  const { isHost, isGuest } = useBirthdayMode();
+  const qc = useQueryClient();
+
+  // host 모드에서만 me 캐시 접근
+  const me = isHost ? (qc.getQueryData<UserMeResponse>(qk.auth.me) ?? null) : null;
+  const displayName = isHost ? (me?.name?.trim() || userName) : '';
+  const avatarUrl = isHost ? (me?.profileImageUrl || '') : '';
+
+  const [imgError, setImgError] = React.useState(false);
+  React.useEffect(() => {
+    if (open) setImgError(false);
+  }, [open]);
+
+  const handleClick = (key: string) => {
+    onSelect?.(key);
+    onClose();
+  };
+
+  const prevOpen = React.useRef(open);
+  React.useEffect(() => {
+    if (!prevOpen.current && open) onOpen?.();
+    prevOpen.current = open;
+  }, [open, onOpen]);
+
+  const size = ((): string | number => {
+    if (anchor === 'left' || anchor === 'right')
+      return typeof width === 'number' ? `${width}px` : width;
+    return '56vh';
+  })();
+
+  return (
+    <Drawer anchor={anchor} open={open} onClose={onClose} size={size} ariaLabel={`${anchor} menu`}>
+      <div className="w-[80%] mx-auto flex h-full max-h-full flex-col bg-white">
+        {/* 상단 사용자 영역: host 모드에서만 */}
+        {isHost && (
+          <div className="flex items-center gap-4 py-6 border-b border-[#D9D9D9]">
+            {/* 아바타: 이미지 → 실패 시 이니셜 */}
+            {avatarUrl && !imgError ? (
+              <img
+                src={avatarUrl}
+                alt={`${displayName} 프로필 이미지`}
+                className="h-10 w-10 rounded-full object-cover border border-[#E5E5E5]"
+                onError={() => setImgError(true)}
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div className="grid h-10 w-10 place-items-center rounded-full bg-[#D9D9D9] text-zinc-600 font-bold text-sm select-none">
+                {getInitial(displayName)}
+              </div>
+            )}
+
+            <div className="text-xl font-bold text-[#FF8B8B] truncate">{displayName}</div>
+          </div>
+        )}
+        {isGuest && <div className="h-5" />}
+
+        {/* 1차 메뉴: host 모드에서만 */}
+        {isHost && (
+          <nav className="py-4">
+            <ul className="divide-y divide-neutral-50 rounded-xl bg-white">
+              {primary.map((item) => (
+                <li key={item.key}>
+                  <button
+                    onClick={() => handleClick(item.key)}
+                    className="flex w-full items-center justify-between px-4 py-2 text-left hover:bg-neutral-50"
+                  >
+                    <span className="text-base font-semibold tracking-[0.02em] text-[#A0A0A0]">
+                      {item.label}
+                    </span>
+                    <span aria-hidden className="pr-3">{rightArrow}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
+
+        {/* host일 때만 상·하 구분선 노출 */}
+        {isHost && <hr className="my-4 border-t border-[#D9D9D9]" />}
+
+        {/* 2차 메뉴: 항상 노출 */}
+        <nav className="py-4">
+          <ul className="divide-y divide-neutral-50 rounded-xl bg-white">
+            {secondary.map((item) => (
+              <li key={item.key}>
+                <button
+                  onClick={() => handleClick(item.key)}
+                  className="flex w-full items-center justify-between px-4 py-2 text-left hover:bg-neutral-50"
+                >
+                  <span className="text-base font-semibold tracking-[0.02em] text-[#A0A0A0]">
+                    {item.label}
+                  </span>
+                  <span aria-hidden className="pr-3">{rightArrow}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {children && (
+          <>
+            <hr className="my-4 border-t border-neutral-100" />
+            <div className="px-4 py-3">{children}</div>
+          </>
+        )}
+      </div>
+    </Drawer>
+  );
+}
+
+const rightArrow = (
+  <svg xmlns="http://www.w3.org/2000/svg" width="7" height="12" viewBox="0 0 7 12" fill="none">
+    <path d="M1 11L6 6L1 0.999998" stroke="#A0A0A0" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);

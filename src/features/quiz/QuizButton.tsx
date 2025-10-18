@@ -1,43 +1,44 @@
 // src/components/PlayQuizButton.tsx
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import clsx from 'clsx';
-
-// 이미지 변수 (원하는 경로로 조정)
 import quizFrame from '@/assets/theme/quiz-1.svg';
 
 type PlayQuizButtonProps = {
-  /** 이동 경로 (기본 /play) */
+  /** 이동 경로 (기본 ../play 로 변경) */
   to?: string;
-  /** 'fab' = 화면 우하단 플로팅, 'inline' = 인라인 버튼 */
   variant?: 'fab' | 'inline';
-  /** 접근성/툴팁용 라벨 (이미지 alt 포함) */
   ariaLabel?: string;
-  /** 커스텀 클래스 */
   className?: string;
-  /** 플로팅일 때 z-index */
   zIndex?: number;
-  /** 비활성화 */
   disabled?: boolean;
-  /** 이미지 교체가 필요하면 주입 (기본값: quizFrame) */
   imgSrc?: string;
-  /** 이미지 크기 (tailwind class) */
   imgSizeClassName?: string; // 예: "h-12 w-12"
 };
 
 export default function PlayQuizButton({
-  to = '/play',
+  to = '../play',                 // ✅ 기본값을 상대 경로로 변경
   variant = 'fab',
   ariaLabel = '퀴즈 플레이로 이동',
   className,
   zIndex = 200,
   disabled,
-  imgSrc = quizFrame,          // ← 이미지 변수명: quizFrame
+  imgSrc = quizFrame,
   imgSizeClassName = 'h-12 w-12',
 }: PlayQuizButtonProps) {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const handleClick = () => {
-    if (!disabled) navigate(to);
+    if (disabled) return;
+
+    // ✅ 현재 쿼리(특히 ?code=...) 유지.
+    // to에 이미 ?가 있으면 그대로 사용, 없으면 현재 search를 붙임.
+    if (location.search && !to.includes('?')) {
+      navigate({ pathname: to, search: location.search });
+    } else {
+      navigate(to);
+    }
   };
 
   if (variant === 'inline') {

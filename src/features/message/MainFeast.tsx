@@ -10,8 +10,8 @@ import mainCake from '@/assets/images/main-cake.svg';
 
 // 내부에서 TableCakes & 카드 데이터 훅 사용
 import TableCakes from '@/features/message/TableCakes';
-import { useBirthdayCards } from '@/features/message/useBirthdayCards';
 import PlayQuizButton from '../quiz/QuizButton';
+import { useBirthdayCards } from '@/hooks/useBirthdayCards';
 
 export type CakeItem = { id: number | string; src: string; alt?: string };
 

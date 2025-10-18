@@ -49,7 +49,6 @@ export default function Modal({
   highlightText,
   confirmText,
   cancelText,
-  placeholder = "닉네임",
   defaultValue = "",
   validate,
   onConfirm,
@@ -172,7 +171,7 @@ export default function Modal({
                   "placeholder:text-gray-400 outline-none",
                   "focus:ring-2 focus:ring-rose-200"
                 )}
-                placeholder={placeholder}
+                placeholder={defaultValue}
                 value={value}
                 onChange={(e) => {
                   setValue(e.target.value);

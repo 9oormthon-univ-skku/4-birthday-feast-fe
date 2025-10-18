@@ -1,9 +1,9 @@
 // src/features/home/MainList.tsx
 import React from 'react';
 import clsx from 'clsx';
-import { useBirthdayCards } from '@/features/message/useBirthdayCards';
 import type { BirthdayCard } from '@/types/birthday';
-import { useNavigate } from 'react-router-dom'; // ✅ 추가
+import { useNavigate, useLocation, useParams } from 'react-router-dom'; // ✅ Params 추가
+import { useBirthdayCards } from '@/hooks/useBirthdayCards';
 
 type MainListProps = {
   columns?: 2 | 3 | 4;
@@ -16,7 +16,9 @@ const colClass = (n: 2 | 3 | 4) =>
 
 const MainList: React.FC<MainListProps> = ({ columns = 4, onSelect, className }) => {
   const { data, isLoading, error } = useBirthdayCards();
-  const navigate = useNavigate(); // ✅ 추가
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { userId } = useParams(); // 현재 경로 파라미터 사용
 
   if (error) {
     return (
@@ -30,10 +32,34 @@ const MainList: React.FC<MainListProps> = ({ columns = 4, onSelect, className })
     return <SkeletonGrid columns={columns} className={className} />;
   }
 
+  // 기존 쿼리스트링 유지 + i 추가
+  const buildSearchWithIndex = (i: number) => {
+    const sp = new URLSearchParams(location.search);
+    sp.set('i', String(i));
+    const q = sp.toString();
+    return q ? `?${q}` : '';
+  };
+
   const handleClick = (c: BirthdayCard, index: number) => {
-    onSelect?.(c); // ✅ TableCakes와 동일: 콜백 먼저
+    onSelect?.(c);
+
     const id = (c as any).birthdayCardId ?? (c as any).id ?? '';
-    navigate(`/message?i=${index}`, { state: { cakeId: id } }); // ✅ 동일 동작
+
+    if (userId) {
+      navigate(
+        {
+          pathname: `/u/${userId}/message`,
+          search: buildSearchWithIndex(index),
+        },
+        { state: { cakeId: id } }
+      );
+    } else {
+      // fallback: 전역 메시지 경로
+      navigate(
+        { pathname: '/message', search: buildSearchWithIndex(index) },
+        { state: { cakeId: id } }
+      );
+    }
   };
 
   return (
@@ -52,7 +78,7 @@ const MainList: React.FC<MainListProps> = ({ columns = 4, onSelect, className })
             onClick={() => handleClick(c, idx)}
             className="group flex w-full flex-col items-center outline-none"
           >
-            {/* 원형 썸네일 (중첩 button → div로 교체) */}
+            {/* 원형 썸네일 */}
             <div className="flex h-15 w-15 items-center justify-center rounded-full bg-[#FFFDF9]">
               <img
                 src={c.imageUrl}
@@ -83,7 +109,7 @@ function SkeletonGrid({
   columns: 2 | 3 | 4;
   className?: string;
 }) {
-  const items = Array.from({ length: columns * 4 }); // 2~3행 정도 보여주기
+  const items = Array.from({ length: columns * 4 });
   return (
     <ul
       className={clsx(
