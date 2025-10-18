@@ -1,3 +1,55 @@
 /* index.css */
 @import "tailwindcss";
-@import "./styles/global.css";
+
+@font-face {
+  font-family: "Pretendard";
+  src: url("/fonts/PretendardVariable.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "KoreanSWGIG1";
+  src: url("/fonts/KoreanSWGIG1.otf") format("opentype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "KoreanSWGIG2";
+  src: url("/fonts/KoreanSWGIG2.otf") format("opentype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "KoreanSWGIG3";
+  src: url("/fonts/KoreanSWGIG3.otf") format("opentype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "KoreanSWGIG4";
+  src: url("/fonts/KoreanSWGIG4.otf") format("opentype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* base */
+@layer base {
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: "Pretendard", sans-serif;
+  }
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+}
