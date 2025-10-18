@@ -4,6 +4,7 @@ import { Drawer } from '../../ui/CustomDrawer';
 import { useQueryClient } from '@tanstack/react-query';
 import { qk } from '@/lib/queryKeys';
 import type { UserMeResponse } from '@/apis/user';
+import { useBirthdayMode } from '@/app/ModeContext';
 
 export type DrawerMenuProps = {
   open: boolean;
@@ -35,8 +36,8 @@ const secondary = [
 
 function getInitial(name?: string) {
   const n = (name ?? '').trim();
-  if (!n) return '사'; // 기본 한글 이니셜
-  return Array.from(n)[0]; // 간단 그라페메 추정(이모지/한글 첫 글자 대응)
+  if (!n) return '사';
+  return Array.from(n)[0];
 }
 
 export default function DrawerMenu({
@@ -49,14 +50,16 @@ export default function DrawerMenu({
   onSelect,
   children,
 }: DrawerMenuProps) {
+  const { isHost, isGuest } = useBirthdayMode();
   const qc = useQueryClient();
-  const me = qc.getQueryData<UserMeResponse>(qk.auth.me) ?? null;
-  const displayName = me?.name?.trim() || userName;
-  const avatarUrl = me?.profileImageUrl || '';
+
+  // host 모드에서만 me 캐시 접근
+  const me = isHost ? (qc.getQueryData<UserMeResponse>(qk.auth.me) ?? null) : null;
+  const displayName = isHost ? (me?.name?.trim() || userName) : '';
+  const avatarUrl = isHost ? (me?.profileImageUrl || '') : '';
 
   const [imgError, setImgError] = React.useState(false);
   React.useEffect(() => {
-    // 드로어 열릴 때마다 이미지 에러 상태 리셋
     if (open) setImgError(false);
   }, [open]);
 
@@ -65,62 +68,69 @@ export default function DrawerMenu({
     onClose();
   };
 
-  // SwipeableDrawer의 onOpen 대체: 외부에서 open=true로 변경되면 콜백 통지
   const prevOpen = React.useRef(open);
   React.useEffect(() => {
     if (!prevOpen.current && open) onOpen?.();
     prevOpen.current = open;
   }, [open, onOpen]);
 
-  // Drawer size: 좌/우는 폭, 상/하는 높이 사용
   const size = ((): string | number => {
-    if (anchor === 'left' || anchor === 'right') return typeof width === 'number' ? `${width}px` : width;
+    if (anchor === 'left' || anchor === 'right')
+      return typeof width === 'number' ? `${width}px` : width;
     return '56vh';
   })();
 
   return (
     <Drawer anchor={anchor} open={open} onClose={onClose} size={size} ariaLabel={`${anchor} menu`}>
       <div className="w-[80%] mx-auto flex h-full max-h-full flex-col bg-white">
-        {/* 상단 사용자 영역 */}
-        <div className="flex items-center gap-4 py-6 border-b border-[#D9D9D9]">
-          {/* 아바타: 이미지 → 실패 시 이니셜 */}
-          {avatarUrl && !imgError ? (
-            <img
-              src={avatarUrl}
-              alt={`${displayName} 프로필 이미지`}
-              className="h-10 w-10 rounded-full object-cover border border-[#E5E5E5]"
-              onError={() => setImgError(true)}
-              referrerPolicy="no-referrer"
-            />
-          ) : (
-            <div className="grid h-10 w-10 place-items-center rounded-full bg-[#D9D9D9] text-zinc-600 font-bold text-sm select-none">
-              {getInitial(displayName)}
-            </div>
-          )}
+        {/* 상단 사용자 영역: host 모드에서만 */}
+        {isHost && (
+          <div className="flex items-center gap-4 py-6 border-b border-[#D9D9D9]">
+            {/* 아바타: 이미지 → 실패 시 이니셜 */}
+            {avatarUrl && !imgError ? (
+              <img
+                src={avatarUrl}
+                alt={`${displayName} 프로필 이미지`}
+                className="h-10 w-10 rounded-full object-cover border border-[#E5E5E5]"
+                onError={() => setImgError(true)}
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div className="grid h-10 w-10 place-items-center rounded-full bg-[#D9D9D9] text-zinc-600 font-bold text-sm select-none">
+                {getInitial(displayName)}
+              </div>
+            )}
 
-          <div className="text-xl font-bold text-[#FF8B8B] truncate">{displayName}</div>
-        </div>
+            <div className="text-xl font-bold text-[#FF8B8B] truncate">{displayName}</div>
+          </div>
+        )}
+        {isGuest && <div className="h-5" />}
 
-        {/* 1차 메뉴 */}
-        <nav className="py-4">
-          <ul className="divide-y divide-neutral-50 rounded-xl bg-white">
-            {primary.map((item) => (
-              <li key={item.key}>
-                <button
-                  onClick={() => handleClick(item.key)}
-                  className="flex w-full items-center justify-between px-4 py-2 text-left hover:bg-neutral-50"
-                >
-                  <span className="text-base font-semibold tracking-[0.02em] text-[#A0A0A0]">{item.label}</span>
-                  <span aria-hidden className="pr-3">{rightArrow}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        {/* 1차 메뉴: host 모드에서만 */}
+        {isHost && (
+          <nav className="py-4">
+            <ul className="divide-y divide-neutral-50 rounded-xl bg-white">
+              {primary.map((item) => (
+                <li key={item.key}>
+                  <button
+                    onClick={() => handleClick(item.key)}
+                    className="flex w-full items-center justify-between px-4 py-2 text-left hover:bg-neutral-50"
+                  >
+                    <span className="text-base font-semibold tracking-[0.02em] text-[#A0A0A0]">
+                      {item.label}
+                    </span>
+                    <span aria-hidden className="pr-3">{rightArrow}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
 
-        <hr className="my-4 border-t border-[#D9D9D9]" />
+        {/* host일 때만 상·하 구분선 노출 */}
+        {isHost && <hr className="my-4 border-t border-[#D9D9D9]" />}
 
-        {/* 2차 메뉴 */}
+        {/* 2차 메뉴: 항상 노출 */}
         <nav className="py-4">
           <ul className="divide-y divide-neutral-50 rounded-xl bg-white">
             {secondary.map((item) => (
@@ -129,7 +139,9 @@ export default function DrawerMenu({
                   onClick={() => handleClick(item.key)}
                   className="flex w-full items-center justify-between px-4 py-2 text-left hover:bg-neutral-50"
                 >
-                  <span className="text-base font-semibold tracking-[0.02em] text-[#A0A0A0]">{item.label}</span>
+                  <span className="text-base font-semibold tracking-[0.02em] text-[#A0A0A0]">
+                    {item.label}
+                  </span>
                   <span aria-hidden className="pr-3">{rightArrow}</span>
                 </button>
               </li>
@@ -137,7 +149,6 @@ export default function DrawerMenu({
           </ul>
         </nav>
 
-        {/* (선택) 추가 섹션 */}
         {children && (
           <>
             <hr className="my-4 border-t border-neutral-100" />
