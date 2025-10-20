@@ -121,65 +121,68 @@ export default function WriteMessagePage() {
       onFooterButtonClick={handleSubmit}
       footerButtonDisabled={disabled}
     >
-      {/* 안내문 */}
-      <p className="mb-4 text-[13px] leading-5 text-neutral-400">
-        생일 메시지는 14일 전부터 등록할 수 있으며
-        <br className="sm:hidden" />
-        생일 당일에 공개됩니다.
-      </p>
+      <div className='w-full px-8 py-4'>
+        {/* 안내문 */}
+        <p className="mb-4 text-[13px] leading-5 text-neutral-400">
+          생일 메시지는 14일 전부터 등록할 수 있으며
+          <br className="sm:hidden" />
+          생일 당일에 공개됩니다.
+        </p>
 
-      {/* 입력 박스 */}
-      <label htmlFor="message" className="sr-only">
-        생일 메시지를 작성해주세요.
-      </label>
-      <div className="rounded-[10px] border border-neutral-200 bg-[#F7F7F7] p-3">
-        <textarea
-          id="message"
-          value={message}
-          onChange={(e) => setMessage(e.target.value.slice(0, maxLen))}
-          placeholder="생일 메시지를 작성해주세요."
-          className="h-40 w-full resize-none bg-transparent text-[14px] leading-relaxed placeholder:text-neutral-400 focus:outline-none"
-          maxLength={maxLen}
+        {/* 입력 박스 */}
+        <label htmlFor="message" className="sr-only">
+          생일 메시지를 작성해주세요.
+        </label>
+        <div className="rounded-[10px] border border-neutral-200 bg-[#F7F7F7] p-3">
+          <textarea
+            id="message"
+            value={message}
+            onChange={(e) => setMessage(e.target.value.slice(0, maxLen))}
+            placeholder="생일 메시지를 작성해주세요."
+            className="h-40 w-full resize-none bg-transparent text-[14px] leading-relaxed placeholder:text-neutral-400 focus:outline-none"
+            maxLength={maxLen}
+          />
+        </div>
+        <div className="mt-1 text-right text-[11px] text-neutral-400">
+          {message.length}/{maxLen}
+        </div>
+
+        {/* 아이콘 그리드 */}
+        <div className="mt-5 grid grid-cols-3 gap-x-6 gap-y-4">
+          {icons.map((it) => {
+            const active = selectedId === it.id;
+            return (
+              <button
+                key={it.id}
+                type="button"
+                onClick={() => setSelectedId(it.id)}
+                className={[
+                  'flex h-20 w-20 items-center justify-center rounded-[12px] transition',
+                  active ? 'ring-1 ring-[#FF8B8B] bg-white' : 'ring-1 ring-neutral-200 bg-white/60 hover:bg-white',
+                ].join(' ')}
+                aria-pressed={active}
+              >
+                <img src={it.src} alt={it.alt} className="h-12 w-auto object-contain" loading="lazy" />
+              </button>
+            );
+          })}
+        </div>
+
+        {/* 완료 모달 */}
+        <Modal
+          open={doneOpen}
+          type="alert"
+          message="생일 메시지를 남겼습니다."
+          confirmText="확인"
+          onConfirm={() => {
+            setDoneOpen(false);
+            setMessage('');
+            navigate(-1);
+          }}
+          onClose={() => setDoneOpen(false)}
         />
       </div>
-      <div className="mt-1 text-right text-[11px] text-neutral-400">
-        {message.length}/{maxLen}
-      </div>
 
-      {/* 아이콘 그리드 */}
-      <div className="mt-5 grid grid-cols-3 gap-x-6 gap-y-4">
-        {icons.map((it) => {
-          const active = selectedId === it.id;
-          return (
-            <button
-              key={it.id}
-              type="button"
-              onClick={() => setSelectedId(it.id)}
-              className={[
-                'flex h-20 w-20 items-center justify-center rounded-[12px] transition',
-                active ? 'ring-1 ring-[#FF8B8B] bg-white' : 'ring-1 ring-neutral-200 bg-white/60 hover:bg-white',
-              ].join(' ')}
-              aria-pressed={active}
-            >
-              <img src={it.src} alt={it.alt} className="h-12 w-auto object-contain" loading="lazy" />
-            </button>
-          );
-        })}
-      </div>
-
-      {/* 완료 모달 */}
-      <Modal
-        open={doneOpen}
-        type="alert"
-        message="생일 메시지를 남겼습니다."
-        confirmText="확인"
-        onConfirm={() => {
-          setDoneOpen(false);
-          setMessage('');
-          navigate(-1);
-        }}
-        onClose={() => setDoneOpen(false)}
-      />
     </AppLayout>
   );
 }
