@@ -47,7 +47,7 @@ export default function AppLayout({
 
       {/* 본문 */}
       <main className="flex-1 w-full flex justify-center overflow-x-hidden">
-        <div className="w-full max-w-[520px] px-8 py-4">
+        <div className="w-full max-w-[520px]">
           {children}
           {hasFooter && <div className="h-24" aria-hidden />}
         </div>

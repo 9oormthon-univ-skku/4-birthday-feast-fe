@@ -16,7 +16,7 @@ export default function ContactPage() {
       footerButtonLabel="확인"
       onFooterButtonClick={() => navigate(-1)}
     >
-      <div className="mx-auto mt-6">
+      <div className="mx-auto px-12 py-10">
         <p className="text-base leading-5 text-[#A0A0A0]">
           문제를 겪고 계신가요?
           <br />

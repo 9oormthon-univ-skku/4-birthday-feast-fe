@@ -111,89 +111,91 @@ export default function AccountSettingsPage() {
       footerButtonLabel="확인"
       onFooterButtonClick={() => navigate(-1)}
     >
-      {/* 프로필 섹션 */}
-      <section className="pt-9 pb-5 px-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-xl font-extrabold text-[#FF8B8B]">{displayName}</div>
-            <div className="text-base text-[#A0A0A0] mt-0.5 font-medium">카카오로 로그인 중</div>
+      <div className='px-8 py-4'>
+        {/* 프로필 섹션 */}
+        <section className="pt-9 pb-5 px-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-xl font-extrabold text-[#FF8B8B]">{displayName}</div>
+              <div className="text-base text-[#A0A0A0] mt-0.5 font-medium">카카오로 로그인 중</div>
+            </div>
+            {profileUrl ? (
+              <img
+                src={profileUrl}
+                alt="프로필 이미지"
+                className="w-16 h-16 rounded-full object-cover border border-[#E5E5E5]"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-[#D9D9D9]" />
+            )}
           </div>
-          {profileUrl ? (
-            <img
-              src={profileUrl}
-              alt="프로필 이미지"
-              className="w-16 h-16 rounded-full object-cover border border-[#E5E5E5]"
-            />
-          ) : (
-            <div className="w-16 h-16 rounded-full bg-[#D9D9D9]" />
-          )}
-        </div>
-      </section>
-
-      <section className="border-b border-[#D9D9D9]" />
-
-      {/* 공개 설정 + 기타 항목 */}
-      <section className="pt-9 space-y-6">
-        {/* 공개 스위치 */}
-        <div className="flex items-center justify-between px-3">
-          <span className="text-base text-[#A0A0A0] font-semibold">내게 온 메시지 모두에게 공개</span>
-          <button
-            type="button"
-            aria-pressed={publicAll}
-            onClick={handleToggleVisible}
-            disabled={loadingVisible}
-            className={[
-              'relative inline-flex items-center h-6 w-12 rounded-full transition-colors',
-              publicAll ? 'bg-[#FF8B8B]' : 'bg-[#E5E5E5]',
-            ].join(' ')}
-          >
-            <span
-              className={[
-                'absolute text-[10px] font-bold text-white',
-                publicAll ? 'left-2' : 'left-6',
-              ].join(' ')}
-            >
-              {publicAll ? 'ON' : 'OFF'}
-            </span>
-            <span
-              className={[
-                'inline-block h-4 w-4 rounded-full bg-white shadow transform transition',
-                publicAll ? 'translate-x-[28px]' : 'translate-x-[4px]',
-              ].join(' ')}
-            />
-          </button>
-        </div>
-
-        {/* 닉네임 변경 */}
-        <button
-          type="button"
-          onClick={handleChangeNickname}
-          className="w-full px-3 text-left text-base text-[#A0A0A0] font-semibold hover:text-[#FF8B8B] transition"
-        >
-          닉네임 변경
-        </button>
+        </section>
 
         <section className="border-b border-[#D9D9D9]" />
 
-        {/* 로그아웃 */}
-        <button
-          type="button"
-          onClick={handleLogout}
-          disabled={loggingOut}
-          className="w-full px-3 text-left text-base text-[#A0A0A0] font-semibold hover:text-[#FF8B8B] transition disabled:opacity-60"
-        >
-          {loggingOut ? '로그아웃 중…' : '로그아웃'}
-        </button>
+        {/* 공개 설정 + 기타 항목 */}
+        <section className="pt-9 space-y-6">
+          {/* 공개 스위치 */}
+          <div className="flex items-center justify-between px-3">
+            <span className="text-base text-[#A0A0A0] font-semibold">내게 온 메시지 모두에게 공개</span>
+            <button
+              type="button"
+              aria-pressed={publicAll}
+              onClick={handleToggleVisible}
+              disabled={loadingVisible}
+              className={[
+                'relative inline-flex items-center h-6 w-12 rounded-full transition-colors',
+                publicAll ? 'bg-[#FF8B8B]' : 'bg-[#E5E5E5]',
+              ].join(' ')}
+            >
+              <span
+                className={[
+                  'absolute text-[10px] font-bold text-white',
+                  publicAll ? 'left-2' : 'left-6',
+                ].join(' ')}
+              >
+                {publicAll ? 'ON' : 'OFF'}
+              </span>
+              <span
+                className={[
+                  'inline-block h-4 w-4 rounded-full bg-white shadow transform transition',
+                  publicAll ? 'translate-x-[28px]' : 'translate-x-[4px]',
+                ].join(' ')}
+              />
+            </button>
+          </div>
 
-        {/* 회원탈퇴 */}
-        <button
-          type="button"
-          onClick={handleWithdraw}
-          className="w-full px-3 text-left text-base text-[#A0A0A0] font-semibold hover:text-[#FF8B8B] transition"
-        >
-          회원탈퇴
-        </button>
-      </section>
+          {/* 닉네임 변경 */}
+          <button
+            type="button"
+            onClick={handleChangeNickname}
+            className="w-full px-3 text-left text-base text-[#A0A0A0] font-semibold hover:text-[#FF8B8B] transition"
+          >
+            닉네임 변경
+          </button>
+
+          <section className="border-b border-[#D9D9D9]" />
+
+          {/* 로그아웃 */}
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="w-full px-3 text-left text-base text-[#A0A0A0] font-semibold hover:text-[#FF8B8B] transition disabled:opacity-60"
+          >
+            {loggingOut ? '로그아웃 중…' : '로그아웃'}
+          </button>
+
+          {/* 회원탈퇴 */}
+          <button
+            type="button"
+            onClick={handleWithdraw}
+            className="w-full px-3 text-left text-base text-[#A0A0A0] font-semibold hover:text-[#FF8B8B] transition"
+          >
+            회원탈퇴
+          </button>
+        </section>
+      </div>
 
       {/* 닉네임 변경 모달 */}
       <NicknameModal

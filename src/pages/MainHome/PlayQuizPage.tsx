@@ -168,11 +168,14 @@ export default function PlayQuizPage() {
         </section>
       ) : (
         /* ---------------- 결과 화면 ---------------- */
-        <section className="pt-9">
-          <h2 className="text-4xl font-normal font-['KoreanSWGIG3'] text-[#FF8B8B]">결과는?</h2>
-          <p className="mt-1 mb-4 text-2xl font-normal font-['KoreanSWGIG3'] text-[#A0A0A0]">
-            {total}문제 중 <span className="text-[#FF8B8B]">{correctCount}</span>문제 맞췄어요!
-          </p>
+        <section className="">
+          <div className='w-full px-8 pt-9 pb-4'>
+            <h2 className="text-4xl font-normal font-['KoreanSWGIG3'] text-[#FF8B8B]">결과는?</h2>
+            <p className="mt-1 mb-4 text-2xl font-normal font-['KoreanSWGIG3'] text-[#A0A0A0]">
+              {total}문제 중 <span className="text-[#FF8B8B]">{correctCount}</span>문제 맞췄어요!
+            </p>
+
+          </div>
 
           {/* 토글 버튼 (필요 시) */}
           <div className="mb-3 flex gap-2">
@@ -200,6 +203,7 @@ export default function PlayQuizPage() {
             />
           ) : (
             <QuizRankList
+              className=' px-8 py-4'
               heightClassName="max-h-[70vh]"
               onShowAnswers={goAnswers} // ⬅️ 랭킹에서 “오답보기” 누르면 전환
             />

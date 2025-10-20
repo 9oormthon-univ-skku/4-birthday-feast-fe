@@ -136,54 +136,56 @@ export default function VisibilityPage() {
       footerButtonLabel="확인"
       onFooterButtonClick={() => navigate(-1)}
     >
-      {/* 캘린더 카드 */}
-      <section className=" bg-white overflow-hidden py-3">
-        {/* 월 네비게이션 */}
-        <div className="flex items-center justify-between px-3 py-3">
-          <button aria-label="이전 달" onClick={() => goMonth(-1)}>{prevMonth}</button>
-          <div className="text-center">
-            <div className="text-xl text-black font-normal font-['Inter']">{view.m + 1}월</div>
-            <div className="text-xs text-black font-normal font-['Inter']">{view.y}</div>
+      <div className='px-8 py-4'>
+        {/* 캘린더 카드 */}
+        <section className=" bg-white overflow-hidden py-3">
+          {/* 월 네비게이션 */}
+          <div className="flex items-center justify-between px-3 py-3">
+            <button aria-label="이전 달" onClick={() => goMonth(-1)}>{prevMonth}</button>
+            <div className="text-center">
+              <div className="text-xl text-black font-normal font-['Inter']">{view.m + 1}월</div>
+              <div className="text-xs text-black font-normal font-['Inter']">{view.y}</div>
+            </div>
+            <button aria-label="다음 달" onClick={() => goMonth(1)}>{nextMonth}</button>
           </div>
-          <button aria-label="다음 달" onClick={() => goMonth(1)}>{nextMonth}</button>
-        </div>
 
-        {/* 요일 헤더 */}
-        <div className="grid grid-cols-7 text-center text-sm text-[#707070] font-['Inter'] font-semibold">
-          {WEEKDAYS.map((d) => <div key={d} className="py-2">{d}</div>)}
-        </div>
+          {/* 요일 헤더 */}
+          <div className="grid grid-cols-7 text-center text-sm text-[#707070] font-['Inter'] font-semibold">
+            {WEEKDAYS.map((d) => <div key={d} className="py-2">{d}</div>)}
+          </div>
 
-        {/* 날짜 그리드 (읽기 전용) */}
-        <div className="grid grid-cols-7">
-          {grid.map(({ date, inMonth }, idx) => {
-            const inRange = start && end && isBetween(date, start, end);
-            const isStart = sameDay(start, date);
-            const isEnd = sameDay(end, date);
+          {/* 날짜 그리드 (읽기 전용) */}
+          <div className="grid grid-cols-7">
+            {grid.map(({ date, inMonth }, idx) => {
+              const inRange = start && end && isBetween(date, start, end);
+              const isStart = sameDay(start, date);
+              const isEnd = sameDay(end, date);
 
-            const base = "h-9 my-1 flex items-center justify-center text-sm text-medium transition";
-            const dim = inMonth ? 'text-black' : 'text-[#707070]';
-            const hover = 'hover:bg-black/5 active:scale-[0.98]';
-            const selectedBg = inRange ? 'bg-[#FF8B8B]/50' : '';
-            const boundary = isStart || isEnd ? 'bg-[#FF8B8B]/50' : '';
-            const roundLeft = isStart && !isEnd ? 'rounded-l-lg' : '';
-            const roundRight = isEnd && !isStart ? 'rounded-r-lg' : '';
-            const endRing = isEnd ? 'border-2 border-[#FF8B8B]' : '';
+              const base = "h-9 my-1 flex items-center justify-center text-sm text-medium transition";
+              const dim = inMonth ? 'text-black' : 'text-[#707070]';
+              const hover = 'hover:bg-black/5 active:scale-[0.98]';
+              const selectedBg = inRange ? 'bg-[#FF8B8B]/50' : '';
+              const boundary = isStart || isEnd ? 'bg-[#FF8B8B]/50' : '';
+              const roundLeft = isStart && !isEnd ? 'rounded-l-lg' : '';
+              const roundRight = isEnd && !isStart ? 'rounded-r-lg' : '';
+              const endRing = isEnd ? 'border-2 border-[#FF8B8B]' : '';
 
-            const className = [base, dim, hover, selectedBg, boundary, roundLeft, roundRight, endRing, "cursor-default"].join(' ');
+              const className = [base, dim, hover, selectedBg, boundary, roundLeft, roundRight, endRing, "cursor-default"].join(' ');
 
-            return <div key={idx} className={className}>{date.getDate()}</div>;
-          })}
-        </div>
-      </section>
+              return <div key={idx} className={className}>{date.getDate()}</div>;
+            })}
+          </div>
+        </section>
 
-      {loading && <div className="px-4 py-3 text-sm text-[#707070]">공개기간을 불러오는 중…</div>}
-      {err && <div className="px-4 py-3 text-sm text-red-500">{err}</div>}
+        {loading && <div className="px-4 py-3 text-sm text-[#707070]">공개기간을 불러오는 중…</div>}
+        {err && <div className="px-4 py-3 text-sm text-red-500">{err}</div>}
 
-      <div className='h-[1px] bg-[#D9D9D9] my-8' />
+        <div className='h-[1px] bg-[#D9D9D9] my-8' />
 
-      <p className="text-base leading-6 text-[#BFBFBF] break-keep">
-        생일 메시지는 14일 전부터 등록할 수 있으며 생일 당일에 공개됩니다.
-      </p>
+        <p className="text-base leading-6 text-[#BFBFBF] break-keep">
+          생일 메시지는 14일 전부터 등록할 수 있으며 생일 당일에 공개됩니다.
+        </p>
+      </div>
     </AppLayout>
   );
 }

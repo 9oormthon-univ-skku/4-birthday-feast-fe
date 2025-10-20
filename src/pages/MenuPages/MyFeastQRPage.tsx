@@ -56,53 +56,56 @@ export default function MyFeastQRPage() {
       footerButtonLabel="확인"
       onFooterButtonClick={() => navigate(-1)}
     >
-      <section className="mt-15 mx-auto rounded-[5px] bg-white shadow-[0px_0px_4px_0px_rgba(0,0,0,0.25)] p-4">
-        {/* QR 박스 */}
-        <div className="w-fit p-7 mx-auto rounded-md bg-white border border-[#A0A0A0]">
-          {/* code 준비 전이면 이미지 렌더 안 함 */}
-          {qrPng ? (
-            <img
-              src={qrPng}
-              alt="내 생일상 QR"
-              className="block w-[240px] h-[240px]"
-            />
-          ) : (
-            <div className="w-[240px] h-[240px] flex items-center justify-center text-xs text-gray-400">
-              링크 준비 중…
-            </div>
-          )}
-        </div>
+      <div className='px-8 py-4'>
+        <section className="mt-15 mx-auto rounded-[5px] bg-white shadow-[0px_0px_4px_0px_rgba(0,0,0,0.25)] p-4">
+          {/* QR 박스 */}
+          <div className="w-fit p-7 mx-auto rounded-md bg-white border border-[#A0A0A0]">
+            {/* code 준비 전이면 이미지 렌더 안 함 */}
+            {qrPng ? (
+              <img
+                src={qrPng}
+                alt="내 생일상 QR"
+                className="block w-[240px] h-[240px]"
+              />
+            ) : (
+              <div className="w-[240px] h-[240px] flex items-center justify-center text-xs text-gray-400">
+                링크 준비 중…
+              </div>
+            )}
+          </div>
 
-        {/* 공유 URL 미리보기 */}
-        <p className="mt-4 text-center text-xs text-gray-500 break-all">
-          {shareUrl || "링크 준비 중…"}
-        </p>
+          {/* 공유 URL 미리보기 */}
+          <p className="mt-4 text-center text-xs text-gray-500 break-all">
+            {shareUrl || "링크 준비 중…"}
+          </p>
 
-        {/* 액션 버튼들 */}
-        <div className="mt-5 flex items-center justify-center gap-4">
-          <button
-            onClick={onShare}
-            disabled={disabled}
-            className={`w-14 h-14 rounded-full bg-[#FF8B8B] text-white shadow-md active:scale-95 transition flex items-center justify-center ${disabled ? "opacity-50 cursor-not-allowed active:scale-100" : ""
-              }`}
-            aria-label="공유"
-            title={disabled ? "링크 준비 중" : "공유"}
-          >
-            {shareIcon}
-          </button>
+          {/* 액션 버튼들 */}
+          <div className="mt-5 flex items-center justify-center gap-4">
+            <button
+              onClick={onShare}
+              disabled={disabled}
+              className={`w-14 h-14 rounded-full bg-[#FF8B8B] text-white shadow-md active:scale-95 transition flex items-center justify-center ${disabled ? "opacity-50 cursor-not-allowed active:scale-100" : ""
+                }`}
+              aria-label="공유"
+              title={disabled ? "링크 준비 중" : "공유"}
+            >
+              {shareIcon}
+            </button>
 
-          <button
-            onClick={onDownload}
-            disabled={disabled}
-            className={`w-14 h-14 rounded-full bg-[#FF8B8B] text-white shadow-md active:scale-95 transition flex items-center justify-center ${disabled ? "opacity-50 cursor-not-allowed active:scale-100" : ""
-              }`}
-            aria-label="다운로드"
-            title={disabled ? "링크 준비 중" : "다운로드"}
-          >
-            {downloadIcon}
-          </button>
-        </div>
-      </section>
+            <button
+              onClick={onDownload}
+              disabled={disabled}
+              className={`w-14 h-14 rounded-full bg-[#FF8B8B] text-white shadow-md active:scale-95 transition flex items-center justify-center ${disabled ? "opacity-50 cursor-not-allowed active:scale-100" : ""
+                }`}
+              aria-label="다운로드"
+              title={disabled ? "링크 준비 중" : "다운로드"}
+            >
+              {downloadIcon}
+            </button>
+          </div>
+        </section>
+      </div>
+
     </AppLayout>
   );
 }

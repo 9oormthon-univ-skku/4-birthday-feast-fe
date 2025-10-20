@@ -278,13 +278,11 @@ export default function QuizPage() {
         }
       />
 
-      <main className="px-4 pb-6">
-        <div className="mb-4 h-[1px] bg-[#EFD9C6]" />
-
+      <main className="px-8 py-4 pt-8">
         {questions.length === 0 ? (
           <div className="py-12 text-center text-[#6b6b6b]">퀴즈가 없습니다.</div>
         ) : (
-          <ul className="space-y-4">
+          <ul className="space-y-5">
             {questions.map((q, i) => (
               <li key={q.questionId} className="flex items-stretch gap-3">
                 <span className="w-1.5 rounded-full bg-[#FF8B8B]" />

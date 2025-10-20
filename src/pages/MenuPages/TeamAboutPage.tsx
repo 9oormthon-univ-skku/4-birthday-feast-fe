@@ -50,7 +50,7 @@ export default function TeamAboutPage() {
       footerButtonLabel="확인"
       onFooterButtonClick={() => navigate(-1)}
     >
-      <div className="mx-auto p-1">
+      <div className="mx-auto px-8 py-4">
         <p className="px-3 mt-6 mb-11 text-base leading-5 font-medium text-[#A0A0A0] break-keep">
           생일한상은 성균관대학교와 한국예술종합학교 연합이 제작한
           생일 축하 앱 개발 프로젝트입니다.
