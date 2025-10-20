@@ -188,7 +188,7 @@ export default function PlayQuizPage() {
             <QuizRankList
               className=' px-8 py-4'
               heightClassName="max-h-[70vh]"
-              onShowAnswers={goAnswers} // ⬅️ 랭킹에서 “오답보기” 누르면 전환
+              onShowAnswers={goAnswers} // 랭킹에서 “오답보기” 누르면 전환
             />
           )}
         </>

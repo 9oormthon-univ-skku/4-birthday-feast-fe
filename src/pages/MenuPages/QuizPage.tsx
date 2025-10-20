@@ -68,7 +68,6 @@ function normalize(questions: QuizQuestion[]): QuizQuestion[] {
 }
 
 export default function QuizPage() {
-  const navigate = useNavigate();
 
   // 로딩/에러
   const [loading, setLoading] = useState(true);
@@ -79,6 +78,7 @@ export default function QuizPage() {
   const [pendingIndex, setPendingIndex] = useState<number | null>(null);
 
   const [editMode, setEditMode] = useState(false);
+  const [editConfirmOpen, setEditConfirmOpen] = useState(false);
 
   // 초기값(빈 상태)
   const [meta, setMeta] = useState<{ quizId: number | string | null; birthdayId?: number | string }>({
@@ -233,8 +233,24 @@ export default function QuizPage() {
       };
       saveToStorage(payload);
       console.log('[Quiz Save Payload -> localStorage]', payload);
+      setEditMode(false);
+      return;
     }
-    setEditMode((v) => !v);
+    // 편집 시작은 경고 모달로만 진입 (여긴 호출되지 않도록 분리)
+  };
+
+  // ✅ 편집 시작: 경고 모달 열기
+  const askStartEdit = () => {
+    setEditConfirmOpen(true);
+  };
+  // ✅ 경고 모달 "예" → 편집모드 ON
+  const confirmStartEdit = () => {
+    setEditConfirmOpen(false);
+    setEditMode(true);
+  };
+  // ✅ 경고 모달 "아니오"
+  const cancelStartEdit = () => {
+    setEditConfirmOpen(false);
   };
 
   // ----- 렌더 -----
@@ -272,7 +288,7 @@ export default function QuizPage() {
         rightExtra={
           <button
             aria-label={editMode ? '편집 완료' : '퀴즈 편집'}
-            onClick={handleToggleEditMode}
+            onClick={editMode ? handleToggleEditMode : askStartEdit}
             className="rounded-full p-2 transition hover:bg-black/5 active:scale-95"
           >
             {editMode ? editCompl : editStart}
@@ -350,6 +366,18 @@ export default function QuizPage() {
         onConfirm={confirmRemove}
         onCancel={closeConfirm}
         onClose={closeConfirm}
+      />
+      <Modal
+        open={editConfirmOpen}
+        type="confirm"
+        title="퀴즈를 편집하시겠어요?"
+        helperText="퀴즈 편집 시 기존 랭킹 데이터는 초기화됩니다."
+        confirmText="편집하기"
+        cancelText="취소"
+        onConfirm={confirmStartEdit}
+        onCancel={cancelStartEdit}
+        onClose={cancelStartEdit}
+        className='break-keep'
       />
     </div>
   );
