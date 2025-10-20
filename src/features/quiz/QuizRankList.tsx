@@ -6,6 +6,8 @@ type Props = {
   className?: string;
   /** 스크롤 높이 지정(기본 max-h-[70vh]) */
   heightClassName?: string;
+  /** “오답보기” 버튼 클릭 시 부모에 알림 */
+  onShowAnswers?: () => void;
 };
 
 type RankItem = { name: string; score: string };
@@ -36,6 +38,7 @@ const ITEMS: RankItem[] = [
 export default function QuizRankList({
   className,
   heightClassName = 'max-h-[68vh]',
+  onShowAnswers,
 }: Props) {
   return (
     <div className={clsx('w-full', className)}>
@@ -70,8 +73,7 @@ export default function QuizRankList({
                 type="button"
                 className="shrink-0 rounded-full bg-[#FF8B8B] px-3 py-1 text-xs font-semibold text-white shadow-sm active:scale-95 transition"
                 onClick={() => {
-                  // 개발용: 필요 시 동작 추가
-                  // console.log('오답보기:', it.name);
+                  onShowAnswers?.();
                 }}
               >
                 오답보기

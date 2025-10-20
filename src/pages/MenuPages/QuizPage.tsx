@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '@/ui/Header';
 import Modal from '@/ui/Modal';
 import { deleteQuizQuestion } from '@/apis/quiz'; // getQuiz 제거
-import { useQuizById } from '@/features/quiz/useQuizById';
+import { useQuizById } from '@/hooks/useQuizById';
 
 // 여기서 퀴즈 불러오는 api는 host 전용 !!! (이미 구현 완료)
 
