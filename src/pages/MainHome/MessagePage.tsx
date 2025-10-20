@@ -63,7 +63,7 @@ export default function MessagePage({
       {!hasItems ? (
         <div className="text-center text-[#9CA3AF] py-16">표시할 메세지가 없어요.</div>
       ) : (
-        <section className="relative w-full">
+        <section className="relative w-full px-8 py-4">
           <div
             className="
               relative mx-auto mt-20

@@ -1,13 +1,13 @@
 // src/pages/PlayQuizPage.tsx
 import React, { useEffect, useMemo, useState } from 'react';
 import AppLayout from '@/ui/AppLayout';
-// 필요 시 결과/랭크 컴포넌트 사용
-import QuizResultList from '@/features/quiz/QuizResultList';
 import QuizRankList from '@/features/quiz/QuizRankList';
+import QuizPlay from '@/features/quiz/QuizPlay';
+import QuizAnswerList from '@/features/quiz/QuizAnswerList';
 import { useLocation, useNavigate } from 'react-router-dom';
-
 // 여기서 퀴즈 불러오는 api는 guest 전용 !!!!
 // guest만 접근 가능하도록 하는 로직 추가 필요 !!!!
+// host일 경우 ui만 표시, api 연결은 없음 (퀴즈 조회만 api 연결, 결과 등록은 하지 않음)
 
 /* ---------- 타입 ---------- */
 type QuizQuestion = {
@@ -49,14 +49,11 @@ function normalize(questions: QuizQuestion[]): QuizQuestion[] {
 /* ---------- 페이지 ---------- */
 export default function PlayQuizPage() {
   const navigate = useNavigate();
-  const location = useLocation(); // 현재 쿼리 유지용
+  const location = useLocation();
 
-  // 최초 로드 시점에만 스토리지에서 불러오기
   const initial = useMemo<QuizData>(() => {
     const stored = loadFromStorage();
-    if (stored) {
-      return { ...stored, questions: normalize(stored.questions) };
-    }
+    if (stored) return { ...stored, questions: normalize(stored.questions) };
     return { quizId: 'local-quiz', questions: [], updatedAt: new Date().toISOString() };
   }, []);
 
@@ -67,7 +64,8 @@ export default function PlayQuizPage() {
   );
   const [finished, setFinished] = useState(false);
 
-  // 다른 탭/창에서 변경 시 실시간 반영
+  const [showAnswers, setShowAnswers] = useState(false);
+
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
       if (e.key !== STORAGE_KEY) return;
@@ -78,13 +76,13 @@ export default function PlayQuizPage() {
         setIndex(0);
         setUserAnswers(Array(normalized.length).fill(null));
         setFinished(false);
+        setShowAnswers(false); // 동기화 시 뷰 초기화
       }
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
   }, []);
 
-  // 질문 길이가 바뀌면 답안 배열/인덱스 안전 보정
   useEffect(() => {
     setUserAnswers((prev) => {
       if (prev.length === questions.length) return prev;
@@ -112,24 +110,37 @@ export default function PlayQuizPage() {
       : userAnswers.reduce((acc, v, i) => acc + (v === questions[i]?.answer ? 1 : 0), 0);
 
   const progressPct =
-    total === 0 ? 0 : Math.min(((index) / Math.max(total, 1)) * 100, 100);
+    total === 0 ? 0 : Math.min((index / Math.max(total, 1)) * 100, 100);
 
-  const reset = () => {
+  const resetToMain = () => {
     setIndex(0);
     setUserAnswers(Array(total).fill(null));
     setFinished(false);
-    // ✅ /u/:userId/main 으로 이동 + ?code=... 유지
+    setShowAnswers(false);
     navigate({ pathname: '../main', search: location.search });
   };
+
+  const goAnswers = () => setShowAnswers(true);
+
+  const footerAction = finished ? resetToMain : undefined;
+  const headerTitle = showAnswers ? (
+    <>
+      <span className="text-[#FF8B8B]">김땡땡</span>
+      <span className="text-[#A0A0A0]">님의 오답</span>
+    </>
+  ) : (
+    <span className="text-[#FF8B8B]">생일 퀴즈</span>
+  );
 
   return (
     <AppLayout
       showBack
       showMenu={false}
       showBrush={false}
-      title={<span className="text-[#FF8B8B]">생일 퀴즈</span>}
-      footerButtonLabel={finished ? '처음으로' : undefined}
-      onFooterButtonClick={finished ? reset : undefined}
+      title={headerTitle}
+      footerButtonLabel={'처음으로'}
+      onFooterButtonClick={footerAction}
+      onBack={showAnswers ? () => setShowAnswers(false) : undefined}
     >
       {total === 0 ? (
         <section className="py-20 text-center">
@@ -142,51 +153,45 @@ export default function PlayQuizPage() {
         <section className="pt-2">
           {/* 진행바 */}
           <div className="mt-28 mx-auto mb-8 w-64">
-            <div className="mb-1 text-[11px] font-semibold text-[#FF8B8B]">
-              {index + 1}/{total}
+            <div className="mb-1 text-sm font-normal font-['KoreanSWGIG3']">
+              <span className='text-[#FF8B8B] '>{index + 1}</span>
+              <span className='text-[#D9D9D9]'>/{total}</span>
             </div>
-            <div className="h-1 w-full overflow-hidden rounded bg-[#D9D9D9]">
+            <div className="h-[5px] w-full overflow-hidden rounded bg-[#D9D9D9]">
               <div className="h-full bg-[#FF8B8B]" style={{ width: `${progressPct}%` }} />
             </div>
           </div>
 
-          {/* 문제 */}
-          <div className="my-20 text-center text-2xl font-normal leading-snug text-[#FF8B8B] font-['KoreanSWGIG3']">
-            {current?.content ?? ''}
-          </div>
-
-          {/* O / X */}
-          <div className="mt-10 flex items-center justify-center gap-8">
-            <button
-              type="button"
-              aria-label="O"
-              onClick={() => handleChoose(true)}
-              className="grid h-16 w-16 place-items-center rounded-full bg-[#FF8B8B] shadow-sm active:scale-95 transition"
-            >
-              {O}
-            </button>
-            <button
-              type="button"
-              aria-label="X"
-              onClick={() => handleChoose(false)}
-              className="grid h-16 w-16 place-items-center rounded-full border-2 border-neutral-300 bg-white text-neutral-400 shadow-sm active:scale-95 transition"
-            >
-              {X}
-            </button>
-          </div>
+          <QuizPlay
+            content={current?.content}
+            onChoose={handleChoose}
+            disabled={finished || !current}
+          />
         </section>
       ) : (
         /* ---------------- 결과 화면 ---------------- */
-        <section className="pt-9">
-          <h2 className="text-4xl font-normal font-['KoreanSWGIG3'] text-[#FF8B8B]">결과는?</h2>
-          <p className="mt-1 mb-4 text-2xl font-normal font-['KoreanSWGIG3'] text-[#A0A0A0]">
-            {total}문제 중 <span className="text-[#FF8B8B]">{correctCount}</span>문제 맞췄어요!
-          </p>
+        <>
+          {!showAnswers && <div className='w-full px-8 pt-9 pb-4'>
+            <h2 className="text-4xl font-normal font-['KoreanSWGIG3'] text-[#FF8B8B]">결과는?</h2>
+            <p className="mt-1 mb-4 text-2xl font-normal font-['KoreanSWGIG3'] text-[#A0A0A0]">
+              {total}문제 중 <span className="text-[#FF8B8B]">{correctCount}</span>문제 맞췄어요!
+            </p>
+          </div>}
 
-          {/* 필요에 따라 결과/랭킹 중 택1 */}
-          {/* <QuizResultList questions={questions} userAnswers={userAnswers} total={total} heightClassName="max-h-[70vh]" /> */}
-          <QuizRankList />
-        </section>
+          {showAnswers ? (
+            <QuizAnswerList
+              questions={questions}
+              userAnswers={userAnswers}
+              heightClassName="max-h-[70vh]"
+            />
+          ) : (
+            <QuizRankList
+              className=' px-8 py-4'
+              heightClassName="max-h-[70vh]"
+              onShowAnswers={goAnswers} // 랭킹에서 “오답보기” 누르면 전환
+            />
+          )}
+        </>
       )}
     </AppLayout>
   );

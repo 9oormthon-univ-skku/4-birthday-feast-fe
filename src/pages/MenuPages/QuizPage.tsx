@@ -4,7 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import Header from '@/ui/Header';
 import Modal from '@/ui/Modal';
 import { deleteQuizQuestion } from '@/apis/quiz'; // getQuiz 제거
-import { useQuizById } from '@/features/quiz/useQuizById';
+import { useQuizById } from '@/hooks/useQuizById';
+import OIcon from '@/assets/images/OIcon.svg';
+import XIcon from '@/assets/images/XIcon.svg';
 
 // 여기서 퀴즈 불러오는 api는 host 전용 !!! (이미 구현 완료)
 
@@ -66,7 +68,6 @@ function normalize(questions: QuizQuestion[]): QuizQuestion[] {
 }
 
 export default function QuizPage() {
-  const navigate = useNavigate();
 
   // 로딩/에러
   const [loading, setLoading] = useState(true);
@@ -77,6 +78,7 @@ export default function QuizPage() {
   const [pendingIndex, setPendingIndex] = useState<number | null>(null);
 
   const [editMode, setEditMode] = useState(false);
+  const [editConfirmOpen, setEditConfirmOpen] = useState(false);
 
   // 초기값(빈 상태)
   const [meta, setMeta] = useState<{ quizId: number | string | null; birthdayId?: number | string }>({
@@ -231,8 +233,24 @@ export default function QuizPage() {
       };
       saveToStorage(payload);
       console.log('[Quiz Save Payload -> localStorage]', payload);
+      setEditMode(false);
+      return;
     }
-    setEditMode((v) => !v);
+    // 편집 시작은 경고 모달로만 진입 (여긴 호출되지 않도록 분리)
+  };
+
+  // ✅ 편집 시작: 경고 모달 열기
+  const askStartEdit = () => {
+    setEditConfirmOpen(true);
+  };
+  // ✅ 경고 모달 "예" → 편집모드 ON
+  const confirmStartEdit = () => {
+    setEditConfirmOpen(false);
+    setEditMode(true);
+  };
+  // ✅ 경고 모달 "아니오"
+  const cancelStartEdit = () => {
+    setEditConfirmOpen(false);
   };
 
   // ----- 렌더 -----
@@ -270,7 +288,7 @@ export default function QuizPage() {
         rightExtra={
           <button
             aria-label={editMode ? '편집 완료' : '퀴즈 편집'}
-            onClick={handleToggleEditMode}
+            onClick={editMode ? handleToggleEditMode : askStartEdit}
             className="rounded-full p-2 transition hover:bg-black/5 active:scale-95"
           >
             {editMode ? editCompl : editStart}
@@ -278,15 +296,13 @@ export default function QuizPage() {
         }
       />
 
-      <main className="px-4 pb-6">
-        <div className="mb-4 h-[1px] bg-[#EFD9C6]" />
-
+      <main className="px-8 py-4 pt-8 font-['Pretendard']">
         {questions.length === 0 ? (
           <div className="py-12 text-center text-[#6b6b6b]">퀴즈가 없습니다.</div>
         ) : (
-          <ul className="space-y-4">
+          <ul className="space-y-5">
             {questions.map((q, i) => (
-              <li key={q.questionId} className="flex items-stretch gap-3">
+              <li key={q.questionId} className="flex items-stretch gap-3 h-12">
                 <span className="w-1.5 rounded-full bg-[#FF8B8B]" />
                 <div className="flex flex-1 items-center justify-between rounded-sm bg-[#F5F5F5] px-4 py-3 text-base text-[#3E3E3E]">
                   {!editMode ? (
@@ -302,21 +318,11 @@ export default function QuizPage() {
                         <input
                           value={q.content}
                           onChange={(e) => changeContent(i, e.target.value)}
-                          placeholder="문항을 입력하세요"
-                          className="w-full rounded-md border border-[#EFD9C6] bg-white px-3 py-2 text-[#3E3E3E] outline-none focus:ring-2 focus:ring-[#FF8B8B]/40"
+                          placeholder="생일 퀴즈를 작성해주세요."
+                          className="w-full text-[#A0A0A0] font-medium text-base outline-none focus:ring-1 focus:ring-[#FF8B8B]/40"
                         />
                       </div>
                     </label>
-                  )}
-                  {!editMode && (
-                    <span
-                      className={`ml-3 inline-flex h-8 w-8 items-center justify-center rounded-full ${q.answer ? 'bg-[#FF8B8B] text-white' : 'border border-[#FF8B8B] text-[#FF8B8B]'
-                        }`}
-                      aria-label={q.answer ? '정답 O' : '정답 X'}
-                      title={q.answer ? '정답 O' : '정답 X'}
-                    >
-                      {q.answer ? '○' : '✕'}
-                    </span>
                   )}
                 </div>
 
@@ -325,11 +331,15 @@ export default function QuizPage() {
                     <button
                       aria-label={answers[i] ? '정답(O)로 설정' : '정답(X)로 설정'}
                       onClick={() => toggleAnswer(i)}
-                      className={`flex h-8 w-8 items-center justify-center rounded-full ${answers[i] ? 'bg-[#FF8B8B] text-white' : 'border border-[#FF8B8B] text-[#FF8B8B]'
+                      className={`flex items-center justify-center'
                         }`}
                       title={answers[i] ? '정답 O' : '정답 X'}
                     >
-                      {answers[i] ? '○' : '✕'}
+                      <img
+                        src={q.answer ? OIcon : XIcon}
+                        alt={q.answer ? '정답 O' : '정답 X'}
+                        className="h-11 w-11"
+                      />
                     </button>
                     <button
                       aria-label="삭제"
@@ -356,6 +366,18 @@ export default function QuizPage() {
         onConfirm={confirmRemove}
         onCancel={closeConfirm}
         onClose={closeConfirm}
+      />
+      <Modal
+        open={editConfirmOpen}
+        type="confirm"
+        title="퀴즈를 편집하시겠어요?"
+        helperText="퀴즈 편집 시 기존 랭킹 데이터는 초기화됩니다."
+        confirmText="편집하기"
+        cancelText="취소"
+        onConfirm={confirmStartEdit}
+        onCancel={cancelStartEdit}
+        onClose={cancelStartEdit}
+        className='break-keep'
       />
     </div>
   );
