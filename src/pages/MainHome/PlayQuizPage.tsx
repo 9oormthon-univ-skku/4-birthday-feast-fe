@@ -64,7 +64,6 @@ export default function PlayQuizPage() {
   );
   const [finished, setFinished] = useState(false);
 
-  // ⬇️ 추가: 결과화면 내 랭킹/오답 탭 전환
   const [showAnswers, setShowAnswers] = useState(false);
 
   useEffect(() => {
@@ -121,25 +120,27 @@ export default function PlayQuizPage() {
     navigate({ pathname: '../main', search: location.search });
   };
 
-  const goRank = () => setShowAnswers(false);
   const goAnswers = () => setShowAnswers(true);
 
-  const footerLabel = finished
-    ? (showAnswers ? '랭킹으로' : '처음으로')
-    : undefined;
-
-  const footerAction = finished
-    ? (showAnswers ? goRank : resetToMain)
-    : undefined;
+  const footerAction = finished ? resetToMain : undefined;
+  const headerTitle = showAnswers ? (
+    <>
+      <span className="text-[#FF8B8B]">김땡땡</span>
+      <span className="text-[#A0A0A0]">님의 오답</span>
+    </>
+  ) : (
+    <span className="text-[#FF8B8B]">생일 퀴즈</span>
+  );
 
   return (
     <AppLayout
       showBack
       showMenu={false}
       showBrush={false}
-      title={<span className="text-[#FF8B8B]">생일 퀴즈</span>}
-      footerButtonLabel={footerLabel}
+      title={headerTitle}
+      footerButtonLabel={'처음으로'}
       onFooterButtonClick={footerAction}
+      onBack={showAnswers ? () => setShowAnswers(false) : undefined}
     >
       {total === 0 ? (
         <section className="py-20 text-center">
@@ -152,10 +153,11 @@ export default function PlayQuizPage() {
         <section className="pt-2">
           {/* 진행바 */}
           <div className="mt-28 mx-auto mb-8 w-64">
-            <div className="mb-1 text-[11px] font-semibold text-[#FF8B8B]">
-              {index + 1}/{total}
+            <div className="mb-1 text-sm font-normal font-['KoreanSWGIG3']">
+              <span className='text-[#FF8B8B] '>{index + 1}</span>
+              <span className='text-[#D9D9D9]'>/{total}</span>
             </div>
-            <div className="h-1 w-full overflow-hidden rounded bg-[#D9D9D9]">
+            <div className="h-[5px] w-full overflow-hidden rounded bg-[#D9D9D9]">
               <div className="h-full bg-[#FF8B8B]" style={{ width: `${progressPct}%` }} />
             </div>
           </div>
@@ -168,32 +170,13 @@ export default function PlayQuizPage() {
         </section>
       ) : (
         /* ---------------- 결과 화면 ---------------- */
-        <section className="">
-          <div className='w-full px-8 pt-9 pb-4'>
+        <>
+          {!showAnswers && <div className='w-full px-8 pt-9 pb-4'>
             <h2 className="text-4xl font-normal font-['KoreanSWGIG3'] text-[#FF8B8B]">결과는?</h2>
             <p className="mt-1 mb-4 text-2xl font-normal font-['KoreanSWGIG3'] text-[#A0A0A0]">
               {total}문제 중 <span className="text-[#FF8B8B]">{correctCount}</span>문제 맞췄어요!
             </p>
-
-          </div>
-
-          {/* 토글 버튼 (필요 시) */}
-          <div className="mb-3 flex gap-2">
-            <button
-              type="button"
-              className={clsxBtn(!showAnswers)}
-              onClick={goRank}
-            >
-              랭킹
-            </button>
-            <button
-              type="button"
-              className={clsxBtn(showAnswers)}
-              onClick={goAnswers}
-            >
-              오답보기
-            </button>
-          </div>
+          </div>}
 
           {showAnswers ? (
             <QuizAnswerList
@@ -208,18 +191,10 @@ export default function PlayQuizPage() {
               onShowAnswers={goAnswers} // ⬅️ 랭킹에서 “오답보기” 누르면 전환
             />
           )}
-        </section>
+        </>
       )}
     </AppLayout>
   );
-}
-
-/** 내부 유틸: 탭 버튼 스타일 */
-function clsxBtn(active: boolean) {
-  return [
-    'rounded-full px-3 py-1 text-xs font-semibold shadow-sm active:scale-95 transition',
-    active ? 'bg-[#FF8B8B] text-white' : 'bg-neutral-200 text-neutral-700'
-  ].join(' ');
 }
 
 /* ---------- 아이콘 svg ---------- */
