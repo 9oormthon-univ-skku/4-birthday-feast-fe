@@ -205,83 +205,86 @@ export default function CreateQuizPage() {
       onFooterButtonClick={handleSave}
       footerButtonDisabled={!allValid || submitting}
     >
-      {/* 설명 */}
-      <p className="text-sm text-[#A0A0A0] mb-4">
-        각 문항은 <span className="text-[#FF8B8B] font-bold">O / X</span> 중 하나의 정답을 선택해 주세요.<br />
-        (최대 {MAX_LEN}자)
-      </p>
+      <div className="w-full px-8 py-4">
+        {/* 설명 */}
+        <p className="text-sm text-[#A0A0A0] mb-4">
+          각 문항은 <span className="text-[#FF8B8B] font-bold">O / X</span> 중 하나의 정답을 선택해 주세요.<br />
+          (최대 {MAX_LEN}자)
+        </p>
 
-      {/* 문항 리스트 */}
-      <div className="space-y-4">
-        {questions.map((q, idx) => (
-          <div key={q.questionId} className="rounded-[5px] border border-gray-200 p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-sm text-[#383838]">Q. {idx + 1}</div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => moveUp(idx)}
-                  className="rounded-md border-2 p-1 text-xs font-bold text-[#A0A0A0] hover:bg-gray-50"
-                  disabled={idx === 0 || submitting}
-                  aria-label="위로 이동"
-                >
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  onClick={() => moveDown(idx)}
-                  className="rounded-md border-2 p-1 text-xs font-bold text-[#A0A0A0] hover:bg-gray-50"
-                  disabled={idx === questions.length - 1 || submitting}
-                  aria-label="아래로 이동"
-                >
-                  ↓
-                </button>
-                <button
-                  type="button"
-                  onClick={() => removeQuestion(q.questionId)}
-                  className="rounded-md border-2 px-2 py-1 font-semibold text-xs text-[#FF8B8B]"
-                  disabled={submitting}
-                  aria-label="삭제"
-                >
-                  삭제
-                </button>
+        {/* 문항 리스트 */}
+        <div className="space-y-4">
+          {questions.map((q, idx) => (
+            <div key={q.questionId} className="rounded-[5px] border border-gray-200 p-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-sm text-[#383838]">Q. {idx + 1}</div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => moveUp(idx)}
+                    className="rounded-md border-2 p-1 text-xs font-bold text-[#A0A0A0] hover:bg-gray-50"
+                    disabled={idx === 0 || submitting}
+                    aria-label="위로 이동"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveDown(idx)}
+                    className="rounded-md border-2 p-1 text-xs font-bold text-[#A0A0A0] hover:bg-gray-50"
+                    disabled={idx === questions.length - 1 || submitting}
+                    aria-label="아래로 이동"
+                  >
+                    ↓
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeQuestion(q.questionId)}
+                    className="rounded-md border-2 px-2 py-1 font-semibold text-xs text-[#FF8B8B]"
+                    disabled={submitting}
+                    aria-label="삭제"
+                  >
+                    삭제
+                  </button>
+                </div>
+              </div>
+
+              <input
+                value={q.content}
+                onChange={(e) => updateContent(q.questionId, e.target.value)}
+                placeholder="퀴즈 내용을 입력하세요"
+                className=" w-full rounded-[5px] border border-gray-200 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#FF8B8B] mb-3"
+                disabled={submitting}
+              />
+
+              <div className="flex justify-between">
+                <div className="flex items-center gap-2s">
+                  <OXToggle
+                    value={q.answer}
+                    onChange={(val) => toggleAnswer(q.questionId, val)}
+                  />
+                </div>
+                <span className="text-sm text-[#A0A0A0] px-2">
+                  정답: <span className="font-medium text-[#383838]">{q.answer ? "O" : "X"}</span>
+                </span>
               </div>
             </div>
+          ))}
+        </div>
 
-            <input
-              value={q.content}
-              onChange={(e) => updateContent(q.questionId, e.target.value)}
-              placeholder="퀴즈 내용을 입력하세요"
-              className=" w-full rounded-[5px] border border-gray-200 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#FF8B8B] mb-3"
-              disabled={submitting}
-            />
-
-            <div className="flex justify-between">
-              <div className="flex items-center gap-2s">
-                <OXToggle
-                  value={q.answer}
-                  onChange={(val) => toggleAnswer(q.questionId, val)}
-                />
-              </div>
-              <span className="text-sm text-[#A0A0A0] px-2">
-                정답: <span className="font-medium text-[#383838]">{q.answer ? "O" : "X"}</span>
-              </span>
-            </div>
-          </div>
-        ))}
+        {/* 추가 버튼 */}
+        <div className="mt-6 flex justify-center">
+          <button
+            type="button"
+            onClick={addQuestion}
+            className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+            disabled={submitting}
+          >
+            + 퀴즈 추가
+          </button>
+        </div>
       </div>
 
-      {/* 추가 버튼 */}
-      <div className="mt-6 flex justify-center">
-        <button
-          type="button"
-          onClick={addQuestion}
-          className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-          disabled={submitting}
-        >
-          + 퀴즈 추가
-        </button>
-      </div>
     </AppLayout>
   );
 }

@@ -10,6 +10,7 @@ import { useFeastThisYear } from "@/hooks/useFeastThisYear";
 import { qk } from "@/lib/queryKeys";
 import type { UserMeResponse } from "@/apis/user";
 import { useQueryClient } from "@tanstack/react-query";
+import HostSkipInfoModal from "./HostSkipInfoModal";
 
 const LS_HOST_WELCOME_SHOWN = "bh.host.welcomeShownDate";
 
@@ -28,6 +29,7 @@ export default function OnboardingGate(): React.ReactElement | null {
   // 훅은 항상 같은 순서/개수로 호출
   const [showWelcome, setShowWelcome] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
   const qc = useQueryClient();
   const me = (isAuthenticated ? qc.getQueryData<UserMeResponse>(qk.auth.me) : null) ?? null;
@@ -91,7 +93,10 @@ export default function OnboardingGate(): React.ReactElement | null {
   const handleQuizLater = () => {
     setHasSeenQuizPrompt(true);
     setShowQuiz(false);
-    alert("우측 상단 메뉴의 '내 생일 퀴즈' 탭에서 언제든지 만들 수 있어요!");
+    setShowInfo(true); // 안내 모달 오픈
+  };
+  const handleInfoClose = () => {
+    setShowInfo(false);
     if (!isOnMain) nav("../main", { replace: true });
   };
 
@@ -106,8 +111,9 @@ export default function OnboardingGate(): React.ReactElement | null {
         nickname={me?.name ?? ""}
         onClose={handleWelcomeClose}
       />
-
       <QuizPromptModal open={showQuiz} onMake={handleQuizMake} onLater={handleQuizLater} />
+
+      <HostSkipInfoModal open={showInfo} onClose={handleInfoClose} />
     </>
   );
 }
