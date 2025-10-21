@@ -5,6 +5,8 @@ import QuizRankList from '@/features/quiz/QuizRankList';
 import QuizPlay from '@/features/quiz/QuizPlay';
 import QuizAnswerList from '@/features/quiz/QuizAnswerList';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useBirthdayMode } from '@/app/ModeContext';
+
 // 여기서 퀴즈 불러오는 api는 guest 전용 !!!!
 // guest만 접근 가능하도록 하는 로직 추가 필요 !!!!
 // host일 경우 ui만 표시, api 연결은 없음 (퀴즈 조회만 api 연결, 결과 등록은 하지 않음)
@@ -50,6 +52,7 @@ function normalize(questions: QuizQuestion[]): QuizQuestion[] {
 export default function PlayQuizPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isHost } = useBirthdayMode();
 
   const initial = useMemo<QuizData>(() => {
     const stored = loadFromStorage();
@@ -122,7 +125,7 @@ export default function PlayQuizPage() {
 
   const goAnswers = () => setShowAnswers(true);
 
-  const footerAction = finished ? resetToMain : undefined;
+  const footerAction = resetToMain;
   const headerTitle = showAnswers ? (
     <>
       <span className="text-[#FF8B8B]">김땡땡</span>
@@ -145,9 +148,22 @@ export default function PlayQuizPage() {
       {total === 0 ? (
         <section className="py-20 text-center">
           <h3 className="text-xl text-[#FF8B8B] font-['KoreanSWGIG3']">등록된 퀴즈가 없어요</h3>
-          <p className="mt-2 text-sm text-[#A0A0A0]">
-            생일자가 퀴즈를 등록하면 여기에서 풀 수 있어요.
-          </p>
+          {isHost ? (
+            // host: 클릭 가능한 안내
+            <button
+              type="button"
+              onClick={() => navigate('../create-quiz')}
+              className="mt-3 text-sm text-[#A0A0A0] underline underline-offset-2 hover:opacity-90 active:scale-95 transition"
+              aria-label="생일 퀴즈 등록하러 가기"
+            >
+              여기를 눌러 생일 퀴즈를 등록해주세요.
+            </button>
+          ) : (
+            // guest: 기존 문구 유지
+            <p className="mt-2 text-sm text-[#A0A0A0]">
+              생일자가 퀴즈를 등록하면 여기에서 풀 수 있어요.
+            </p>
+          )}
         </section>
       ) : !finished ? (
         <section className="pt-2">
