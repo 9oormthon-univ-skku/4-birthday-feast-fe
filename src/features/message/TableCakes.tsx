@@ -23,16 +23,8 @@ const SLOTS: Slot[] = [
 
 export default function TableCakes({
   items,
-  uniformWidth,
-  // zIndex = 20,
-  onSelect,
-  buttonClassName,
 }: {
   items: CakeItem[];
-  uniformWidth?: string;
-  // zIndex?: number;
-  onSelect?: (item: CakeItem, index: number, e: MouseEvent<HTMLButtonElement>) => void;
-  buttonClassName?: string;
 }) {
   const navigate = useNavigate();
   const location = useLocation(); // 현재 쿼리 보존 용도            
@@ -125,14 +117,13 @@ export default function TableCakes({
             position: 'absolute',
             left: slot.left,
             bottom: slot.bottom,
-            width: uniformWidth ?? slot.width,
+            width: slot.width,
             transform: slot.anchorCenter ? 'translateX(-50%)' : undefined,
           };
 
           const globalIndex = page * PAGE_SIZE + i;
 
           const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-            onSelect?.(cake, globalIndex, e);
 
             const dest = userId
               ? { pathname: `/u/${userId}/message`, search: buildSearchWithIndex(globalIndex) }
@@ -153,7 +144,6 @@ export default function TableCakes({
                 'absolute block bg-transparent p-0 m-0 border-0 outline-none',
                 'cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2',
                 'rounded-xl pointer-events-auto',
-                buttonClassName ?? '',
               ].join(' ')}
             >
               <img
