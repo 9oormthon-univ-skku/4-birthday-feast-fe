@@ -21,7 +21,7 @@ export default function HostSkipInfoModal({ open, onClose }: Props) {
             className="w-8 h-10 shrink-0"
           />
           <span className="pt-2 text-[#FF8B8B] text-lg font-semibold">
-            나중에 참여할 수 있어요
+            나중에 작성할 수 있어요
           </span>
         </div>
       }
