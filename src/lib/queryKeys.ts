@@ -37,5 +37,4 @@ export const qk = {
     resultByPlayId: (playId: string | number) =>
       ['quiz', 'result', String(playId)] as const,           // GET /api/guest-quiz/result/{playId}
   },
-
 }

@@ -51,7 +51,7 @@ export default function WriteMessagePage() {
   const maxLen = 300;
   const disabled = message.trim().length === 0;
 
-  // 2~3줄 그리드가 되도록 8개 정도 구성
+  // 2~3줄 그리드가 되도록
   const icons = useMemo(
     () => [
       { id: 'food-1', src: food1, alt: '디저트 1' },
@@ -60,8 +60,6 @@ export default function WriteMessagePage() {
       { id: 'food-4', src: food4, alt: '디저트 4' },
       { id: 'food-5', src: food5, alt: '디저트 5' },
       { id: 'food-6', src: food6, alt: '디저트 6' },
-      { id: 'food-1b', src: food1, alt: '디저트 1' },
-      { id: 'food-2b', src: food2, alt: '디저트 2' },
     ],
     []
   );

@@ -1,9 +1,9 @@
 // src/routes/BirthdayMessageRoute.tsx
 import { useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import MessagePage from '@/pages/MainHome/MessagePage';
-import { getStoredUserId } from '@/stores/authStorage'; // ⬅️ 추가
+import { getStoredUserId } from '@/stores/authStorage';
 import { useBirthdayCards } from '@/hooks/useBirthdayCards';
+import BirthdayMessagePage from '@/pages/MainHome/MessagePage';
 
 export default function BirthdayMessageRoute() {
   const navigate = useNavigate();
@@ -13,22 +13,14 @@ export default function BirthdayMessageRoute() {
   const indexFromQuery = Number(qs.get('i') ?? 0);
   const initialIndexRaw = Number.isFinite(indexFromQuery) ? indexFromQuery : 0;
 
-  // 더미 데이터 로딩
+  // 서버/로컬에서 카드 로딩
   const { data: cards = [], isLoading, error } = useBirthdayCards();
 
-  // BirthdayMessagePage에서 기대하는 형태로 매핑
-  const messages = useMemo(
-    () =>
-      cards.map((c) => ({
-        id: c.birthdayCardId,
-        title: c.nickname,
-        body: c.message,
-        imgSrc: c.imageUrl,
-      })),
-    [cards]
+  // 인덱스 보정
+  const safeInitialIndex = Math.max(
+    0,
+    Math.min(initialIndexRaw, Math.max(cards.length - 1, 0))
   );
-
-  const safeInitialIndex = Math.max(0, Math.min(initialIndexRaw, Math.max(messages.length - 1, 0)));
 
   // if (isLoading) return <Loading />;
 
@@ -55,8 +47,8 @@ export default function BirthdayMessageRoute() {
   };
 
   return (
-    <MessagePage
-      messages={messages}
+    <BirthdayMessagePage
+      cards={cards}
       initialIndex={safeInitialIndex}
       onBack={() => navigate(-1)}
     // onHome={handleHome}
