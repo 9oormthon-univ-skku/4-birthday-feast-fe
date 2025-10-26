@@ -1,9 +1,9 @@
 // src/apis/guest.ts
 import { apiClient } from "./index";
 
-export const LS_GUEST_AT = "bh.guest.accessToken";
-export const LS_GUEST_RT = "bh.guest.refreshToken";
-export const LS_GUEST_NN = "bh.visitor.nickname";
+export const SS_GUEST_AT = "bh.guest.accessToken";
+export const SS_GUEST_RT = "bh.guest.refreshToken";
+export const SS_GUEST_NN = "bh.visitor.nickname";
 
 export type GuestAuthReq = { code: string; nickname: string };
 export type GuestAuthRes = {
@@ -39,7 +39,7 @@ export type GuestCardCreateReq = {
 
 /* 공통 유틸 */
 function getGuestAT() {
-  return localStorage.getItem(LS_GUEST_AT) || "";
+  return sessionStorage.getItem(SS_GUEST_AT) || "";
 }
 
 function guestAuthHeaders() {
@@ -57,8 +57,8 @@ export async function guestLogin(body: GuestAuthReq): Promise<GuestAuthRes> {
   const { data } = await apiClient.post<GuestAuthRes>("/api/auth-guest", body, {
     _guest: true, // 재발급 우회(의미상), 헤더 자동첨부도 우회됨
   });
-  localStorage.setItem(LS_GUEST_AT, data.accessToken);
-  localStorage.setItem(LS_GUEST_RT, data.refreshToken);
+  sessionStorage.setItem(SS_GUEST_AT, data.accessToken);
+  sessionStorage.setItem(SS_GUEST_RT, data.refreshToken);
   return data;
 }
 

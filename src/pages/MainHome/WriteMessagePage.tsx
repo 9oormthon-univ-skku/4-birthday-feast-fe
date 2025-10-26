@@ -11,6 +11,7 @@ import food3 from '@/assets/images/food-3.svg';
 import food4 from '@/assets/images/food-4.svg';
 import food5 from '@/assets/images/food-5.svg';
 import food6 from '@/assets/images/food-6.svg';
+import { SS_GUEST_NN } from '@/apis/guest';
 
 // 🔸 로컬스토리지 관련 타입/유틸 추가
 type StoredMessage = {
@@ -68,7 +69,7 @@ export default function WriteMessagePage() {
     if (disabled) return;
 
     // 닉네임, 이미지 경로 가져오기
-    const nickname = localStorage.getItem('bh.visitor.nickname') || '익명';
+    const nickname = sessionStorage.getItem(SS_GUEST_NN) || '익명';
     const icon = icons.find((it) => it.id === selectedId);
 
     // 🎯 저장할 구조: birthdayCardId / message / nickname / imageUrl
