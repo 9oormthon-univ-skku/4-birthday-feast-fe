@@ -154,7 +154,7 @@ export default function CreateQuizPage() {
   // ✅ 실제 API 호출
   const handleSave = async () => {
     if (!birthdayId) {
-      alert("생일상 ID를 찾을 수 없어요. URL에 ?birthdayId= 를 포함하거나 온보딩을 완료해주세요.");
+      alert("생일상 ID를 찾을 수 없어요.");
       return;
     }
     if (!allValid) return;

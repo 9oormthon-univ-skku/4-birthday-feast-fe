@@ -112,7 +112,7 @@ const MainHome: React.FC = () => {
       }
 
       {/* 방문자 온보딩 게이트만 유지 (게스트 전용) */}
-      {isGuest && <VisitorOnboardingGate quizPlayPath="../play" />}
+      {/* {isGuest && <VisitorOnboardingGate quizPlayPath="../play" />} */}
 
       <CapturePreview open={!!shotUrl} src={shotUrl} onClose={() => setShotUrl(null)} />
     </div >
