@@ -2,7 +2,9 @@
 import { useEffect, useMemo } from "react";
 import type { BirthdayCard } from "@/types/birthday";
 import { useFeastThisYear } from "@/hooks/useFeastThisYear";
-import { GuestBirthdayCard } from "@/apis/guest";
+import { useBirthdayMode } from "@/app/ModeContext";
+import { useGuestBirthday } from "@/hooks/useGuestBirthday";
+import type { GuestBirthdayCard } from "@/apis/guest";
 
 /* ----------------------------------------------------------------------------- 
  * 로컬스토리지 폴백
@@ -37,7 +39,7 @@ function adaptServerCards(list: ServerBirthdayCard[]): BirthdayCard[] {
     birthdayCardId: c.birthdayCardId,
     message: c.message,
     nickname: (c.nickname ?? "").trim() || "익명",
-    imageUrl: c.imageUrl ?? undefined, // ✅ 항상 imageUrl 그대로 사용
+    imageUrl: c.imageUrl ?? undefined,
   }));
 }
 
@@ -46,7 +48,7 @@ function adaptLocalCards(list: LocalCard[]): BirthdayCard[] {
     birthdayCardId: c.birthdayCardId,
     message: c.message,
     nickname: (c.nickname ?? "").trim() || "익명",
-    imageUrl: c.imageUrl ?? undefined, // ✅ 그대로 사용
+    imageUrl: c.imageUrl ?? undefined,
   }));
 }
 
@@ -54,43 +56,73 @@ function adaptLocalCards(list: LocalCard[]): BirthdayCard[] {
  * 메인 훅
  * ---------------------------------------------------------------------------*/
 export function useBirthdayCards() {
-  // 올해 생일상 데이터(캐시 포함)를 즉시 사용
-  const { data: feast, loading, reload, preloadThisYearQuietly } = useFeastThisYear();
+  const { isHost, isGuest } = useBirthdayMode();
 
-  // 앱 진입 시 조용히 프리페치(최초 1회)
+  // Host: 올해 생일상 (캐시 포함)
+  const {
+    data: hostFeast,
+    loading: hostLoading,
+    reload: hostReload,
+    preloadThisYearQuietly,
+  } = useFeastThisYear();
+
+  // Guest: 게스트 생일상
+  const {
+    data: guestFeast,
+    isLoading: guestLoading,
+    refetch: guestRefetch,
+  } = useGuestBirthday({
+    // 게스트 토큰 만료 시 자동 재시도는 훅 내부에서 401 방지 처리
+    refetchOnWindowFocus: false,
+  });
+
+  // 앱 진입 시 조용히 프리페치: Host에서만 수행
   useEffect(() => {
-    preloadThisYearQuietly();
-  }, [preloadThisYearQuietly]);
+    if (isHost) {
+      preloadThisYearQuietly();
+    }
+  }, [isHost, preloadThisYearQuietly]);
 
   // 서버 카드 우선 사용, 없으면 로컬 폴백
   const serverCards: ServerBirthdayCard[] = useMemo(() => {
-    return Array.isArray(feast?.birthdayCards)
-      ? (feast!.birthdayCards as ServerBirthdayCard[])
-      : [];
-  }, [feast?.birthdayCards]);
+    const list =
+      isHost
+        ? (hostFeast?.birthdayCards ?? [])
+        : isGuest
+          ? (guestFeast?.birthdayCards ?? [])
+          : [];
+    return Array.isArray(list) ? (list as ServerBirthdayCard[]) : [];
+  }, [isHost, isGuest, hostFeast?.birthdayCards, guestFeast?.birthdayCards]);
 
   const data: BirthdayCard[] = useMemo(() => {
     if (serverCards.length > 0) return adaptServerCards(serverCards);
     return adaptLocalCards(readLocalCards());
   }, [serverCards]);
 
-  // 다른 탭/창에서 로컬 카드가 바뀌면 서버/캐시도 재확인
+  // 다른 탭/창의 로컬 변경 감지 → 서버/캐시도 재확인
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY) {
-        reload(); // 올해 데이터 쿼리 invalidate+refetch
+        if (isHost) hostReload();
+        else if (isGuest) void guestRefetch();
       }
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
-  }, [reload]);
+  }, [isHost, isGuest, hostReload, guestRefetch]);
 
   // 캐시가 있어 즉시 카드가 만들어지면 로딩 표시를 줄여 UX 개선
-  const isLoading = loading && serverCards.length === 0;
-  const error: Error | null = null; // 오류 처리는 useFeastThisYear 내부에서 관리 중
+  const primaryLoading = isHost ? hostLoading : guestLoading;
+  const isLoading = primaryLoading && serverCards.length === 0;
+
+  const error: Error | null = null; // 오류 처리는 각 소스 훅 내부에서 관리
 
   const count = useMemo(() => data.length, [data]);
-  const refetch = () => void reload();
+
+  const refetch = () => {
+    if (isHost) hostReload();
+    else if (isGuest) void guestRefetch();
+  };
 
   return { data, isLoading, error, count, refetch };
 }
