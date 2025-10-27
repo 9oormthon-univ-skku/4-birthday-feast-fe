@@ -5,19 +5,16 @@ import { useQueryClient } from '@tanstack/react-query';
 import { qk } from '@/lib/queryKeys';
 import type { UserMeResponse } from '@/apis/user';
 import { useBirthdayMode } from '@/app/ModeContext';
+import type { MotionProps, PanInfo } from 'framer-motion';
 
 export type DrawerMenuProps = {
   open: boolean;
   onOpen?: () => void;
   onClose: () => void;
   anchor?: 'left' | 'right' | 'top' | 'bottom';
-  /** 좌/우 드로어 폭 */
   width?: number | string;
-  /** 메뉴 선택 시 호출 (예: 'account', 'visibility' ...) */
   onSelect?: (key: string) => void;
-  /** 상단 표시 이름 (기본: '사용자님') — me 캐시 없을 때 사용 */
   userName?: string;
-  /** 필요하면 하단에 추가 섹션을 넣고 싶을 때 사용 */
   children?: React.ReactNode;
 };
 
@@ -53,7 +50,6 @@ export default function DrawerMenu({
   const { isHost, isGuest } = useBirthdayMode();
   const qc = useQueryClient();
 
-  // host 모드에서만 me 캐시 접근
   const me = isHost ? (qc.getQueryData<UserMeResponse>(qk.auth.me) ?? null) : null;
   const displayName = isHost ? (me?.name?.trim() || userName) : '';
   const avatarUrl = isHost ? (me?.profileImageUrl || '') : '';
@@ -80,8 +76,44 @@ export default function DrawerMenu({
     return '56vh';
   })();
 
+
+  // ========= 드래그로 닫기 =========
+  const CLOSE_DRAG_THRESHOLD = 64;
+  const FAST_VELOCITY = 800;
+
+  const onDragEndCommon = (_e: MouseEvent | PointerEvent | TouchEvent, info: PanInfo) => {
+    if (anchor === 'right') {
+      // 오른쪽으로 밀면(+x) 닫힘
+      if (info.offset.x > CLOSE_DRAG_THRESHOLD || info.velocity.x > FAST_VELOCITY) {
+        onClose();
+      }
+    }
+    // anchor='left'는 드래그 닫기 동작 제거
+  };
+
+  const panelMotionProps = React.useMemo<MotionProps | undefined>(() => {
+    if (!open) return undefined;
+
+    if (anchor === 'right') {
+      return {
+        drag: 'x',
+        dragConstraints: { left: 0, right: 0 },
+        dragElastic: 0.02,
+        dragMomentum: false,
+        onDragEnd: onDragEndCommon,
+      };
+    }
+
+    // 요청사항에 따라 anchor='left'는 드래그 닫기 미적용
+    // top/bottom도 미적용 (필요 시 확장)
+    return undefined;
+  }, [open, anchor]);
+
   return (
-    <Drawer anchor={anchor} open={open} onClose={onClose} size={size} ariaLabel={`${anchor} menu`}>
+    <Drawer
+      anchor={anchor} open={open} onClose={onClose} size={size} ariaLabel={`${anchor} menu`}
+      panelMotionProps={panelMotionProps}
+    >
       <div className="w-[80%] mx-auto flex h-full max-h-full flex-col bg-white">
         {/* 상단 사용자 영역: host 모드에서만 */}
         {isHost && (
@@ -127,10 +159,8 @@ export default function DrawerMenu({
           </nav>
         )}
 
-        {/* host일 때만 상·하 구분선 노출 */}
         {isHost && <hr className="my-4 border-t border-[#D9D9D9]" />}
 
-        {/* 2차 메뉴: 항상 노출 */}
         <nav className="py-4">
           <ul className="divide-y divide-neutral-50 rounded-xl bg-white">
             {secondary.map((item) => (
@@ -156,7 +186,7 @@ export default function DrawerMenu({
           </>
         )}
       </div>
-    </Drawer>
+    </Drawer >
   );
 }
 
