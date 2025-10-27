@@ -11,7 +11,7 @@ import MyFeastQRPage from './pages/MenuPages/MyFeastQRPage';
 import HistoryPage from './pages/MenuPages/HistoryPage';
 import VisibilityPage from './pages/MenuPages/VisibilityPage';
 import AccountSettingsPage from './pages/MenuPages/AccountSettingsPage';
-import WriteMessagePage from './pages/MenuPages/WriteMessagePage';
+import WriteMessagePage from './pages/MainHome/WriteMessagePage';
 import PlayQuizPage from './pages/MainHome/PlayQuizPage';
 import ThemeSettingsPage from './pages/MenuPages/ThemeSettingsPage';
 import BirthdayMessageRoute from './routes/BirthdayMessageRoute';

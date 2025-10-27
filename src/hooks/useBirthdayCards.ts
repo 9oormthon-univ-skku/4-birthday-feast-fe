@@ -2,53 +2,9 @@
 import { useEffect, useMemo } from "react";
 import type { BirthdayCard } from "@/types/birthday";
 import { useFeastThisYear } from "@/hooks/useFeastThisYear";
+import { GuestBirthdayCard } from "@/apis/guest";
 
-/* -----------------------------------------------------------------------------
- * 이미지 에셋 매핑 (food-*)
- * - import.meta.glob 로드 후 basename -> url 맵으로 정규화
- * - 매핑 실패 시 절대 ""(빈 문자열) 반환하지 않음 (React 경고 방지)
- * ---------------------------------------------------------------------------*/
-const assetModules = import.meta.glob(
-  "@/assets/images/food-*.{svg,png,jpg,jpeg}",
-  { eager: true }
-);
-
-const ASSET_MAP: Record<string, string> = Object.entries(assetModules).reduce(
-  (acc, [path, mod]: any) => {
-    const file = path.split("/").pop() as string;        // e.g. food-1.svg
-    const name = file.replace(/\.(svg|png|jpe?g)$/i, ""); // e.g. food-1
-    const url = mod?.default ?? mod;
-    if (url) acc[name] = url;
-    return acc;
-  },
-  {} as Record<string, string>
-);
-
-const FOOD_KEYS = Object.keys(ASSET_MAP);
-
-function resolveAssetUrl(key: string): string | undefined {
-  return ASSET_MAP[key];
-}
-
-/** 후보값을 url로 변환. 매칭 실패 시 undefined를 반환(빈 문자열 금지). */
-function toImageUrl(
-  candidate: string | null | undefined,
-  indexSeed = 0
-): string | undefined {
-  // 파일명 키 패턴 (food-12, food-3a 등)
-  if (candidate && /^food-\d+[a-zA-Z]*$/.test(candidate)) {
-    const u = resolveAssetUrl(candidate);
-    if (u) return u;
-  }
-  // 외부 URL
-  if (candidate && /^https?:\/\//.test(candidate)) return candidate;
-
-  // 랜덤/순번 기반 기본 이미지 키
-  const key = FOOD_KEYS[indexSeed % Math.max(FOOD_KEYS.length, 1)] ?? "food-1";
-  return resolveAssetUrl(key);
-}
-
-/* -----------------------------------------------------------------------------
+/* ----------------------------------------------------------------------------- 
  * 로컬스토리지 폴백
  * ---------------------------------------------------------------------------*/
 const STORAGE_KEY = "birthday_cards";
@@ -71,35 +27,30 @@ function readLocalCards(): LocalCard[] {
   }
 }
 
-/* -----------------------------------------------------------------------------
+/* ----------------------------------------------------------------------------- 
  * 서버 → BirthdayCard 어댑터
  * ---------------------------------------------------------------------------*/
-type ServerBirthdayCard = {
-  birthdayCardId: number | string;
-  message: string;
-  nickname?: string | null;
-  imageUrl?: string | null;
-};
+type ServerBirthdayCard = BirthdayCard | GuestBirthdayCard;
 
 function adaptServerCards(list: ServerBirthdayCard[]): BirthdayCard[] {
-  return list.map((c, i) => ({
+  return list.map((c) => ({
     birthdayCardId: c.birthdayCardId,
     message: c.message,
     nickname: (c.nickname ?? "").trim() || "익명",
-    imageUrl: toImageUrl(c.imageUrl ?? undefined, i),
+    imageUrl: c.imageUrl ?? undefined, // ✅ 항상 imageUrl 그대로 사용
   }));
 }
 
 function adaptLocalCards(list: LocalCard[]): BirthdayCard[] {
-  return list.map((c, i) => ({
+  return list.map((c) => ({
     birthdayCardId: c.birthdayCardId,
     message: c.message,
     nickname: (c.nickname ?? "").trim() || "익명",
-    imageUrl: toImageUrl(c.imageUrl ?? undefined, i),
+    imageUrl: c.imageUrl ?? undefined, // ✅ 그대로 사용
   }));
 }
 
-/* -----------------------------------------------------------------------------
+/* ----------------------------------------------------------------------------- 
  * 메인 훅
  * ---------------------------------------------------------------------------*/
 export function useBirthdayCards() {

@@ -1,8 +1,8 @@
 // src/features/home/MainList.tsx
-import React from 'react';
+import { FC } from 'react';
 import clsx from 'clsx';
 import type { BirthdayCard } from '@/types/birthday';
-import { useNavigate, useLocation, useParams } from 'react-router-dom'; // ✅ Params 추가
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useBirthdayCards } from '@/hooks/useBirthdayCards';
 
 type MainListProps = {
@@ -14,7 +14,7 @@ type MainListProps = {
 const colClass = (n: 2 | 3 | 4) =>
   ({ 2: 'grid-cols-2', 3: 'grid-cols-3', 4: 'grid-cols-4' }[n]);
 
-const MainList: React.FC<MainListProps> = ({ columns = 4, onSelect, className }) => {
+const MainList: FC<MainListProps> = ({ columns = 4, onSelect, className }) => {
   const { data, isLoading, error } = useBirthdayCards();
   const navigate = useNavigate();
   const location = useLocation();

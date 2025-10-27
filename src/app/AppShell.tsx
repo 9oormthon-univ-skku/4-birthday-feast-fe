@@ -6,14 +6,7 @@ import { BirthdayModeProvider } from '@/app/ModeContext';
 import FeastBootstrap from '@/features/feast/FeastBootstrap';
 import OnboardingGate from '@/features/onboarding/OnboardingGate';
 import { useMe } from '@/hooks/useMe';
-
-/*
-UserLayout
-  ├─ BirthdayModeProvider       ← host/guest 모드 컨텍스트
-  │   ├─ FeastBootstrap          ← 호스트용 생일상 데이터 생성
-  │   ├─ OnboardingGate          ← 호스트 온보딩(생일 설정 등)
-  │   └─ <Outlet />              ← 실제 페이지 (MainHome 등)
- */
+import VisitorOnboardingGate from '@/features/visitorOnboarding/VisitorOnboardingGate';
 
 /**
  * /u/:userId/.. 형태의 라우팅 구조
@@ -44,6 +37,8 @@ export default function AppShell() {
       {!isShareView && <FeastBootstrap enabled={true} />}
       {!isShareView && isMyPage && <OnboardingGate />}
 
+      {isShareView && (
+        <VisitorOnboardingGate quizPlayPath={`/u/${userId}/play`} />)}
       <Outlet />
     </BirthdayModeProvider>
   );

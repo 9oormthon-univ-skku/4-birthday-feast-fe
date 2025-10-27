@@ -1,5 +1,5 @@
 import { toPng } from "html-to-image";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 
 type Props = {
   open: boolean;
@@ -21,9 +21,17 @@ export default function CapturePreview({
   onShare,
   closeOnBackdrop = true,
   className,
-  titleDate = "2025. 00. 00",
 }: Props) {
   const cardRef = useRef<HTMLDivElement | null>(null);
+
+  // 오늘 날짜 자동 생성 (YYYY. MM. DD)
+  const todayString = useMemo(() => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    return `${yyyy}. ${mm}. ${dd}`;
+  }, []);
 
   // ESC 닫기
   useEffect(() => {
@@ -113,7 +121,7 @@ export default function CapturePreview({
         </div>
 
         <h2 className="mt-2 ms-2 font-normal font-['KoreanSWGIG2'] text-[#FF8B8B] text-2xl">
-          {titleDate}
+          {todayString}
         </h2>
 
         <input className="ms-2 w-[90%] text-[#BFBFBF] text-base font-semibold font-['Pretendard']

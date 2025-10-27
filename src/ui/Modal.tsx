@@ -161,7 +161,7 @@ export default function Modal({
             </div>
           )}
 
-          {helperText && <p className="text-sm leading-5 text-[#A0A0A0]">{helperText}</p>}
+          {helperText && <span className="text-sm leading-5 text-[#A0A0A0]">{helperText}</span>}
 
           {isPrompt && (
             <div className="mt-8">
@@ -179,7 +179,7 @@ export default function Modal({
                 }}
               />
               {errorText && (
-                <p className="mt-2 ms-2 text-start text-sm text-[#FF8B8B]">{errorText}</p>
+                <span className="mt-2 ms-2 text-start text-sm text-[#FF8B8B]">{errorText}</span>
               )}
             </div>
           )}

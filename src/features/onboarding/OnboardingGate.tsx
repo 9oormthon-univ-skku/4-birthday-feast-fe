@@ -1,37 +1,53 @@
 // src/features/onboarding/OnboardingGate.tsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import QuizPromptModal from "./QuizPromptModal";
-import { useBirthdayOnboarding } from "../../hooks/useBirthdayOnboarding";
 import { useAuth } from "@/hooks/useAuth";
 import WelcomeModal from "@/features/home/WelcomeModal";
 import { useFeastThisYear } from "@/hooks/useFeastThisYear";
-// import { useMe } from "../../hooks/useMe";
 import { qk } from "@/lib/queryKeys";
 import type { UserMeResponse } from "@/apis/user";
 import { useQueryClient } from "@tanstack/react-query";
+import HostSkipInfoModal from "./HostSkipInfoModal";
 
 const LS_HOST_WELCOME_SHOWN = "bh.host.welcomeShownDate";
+const LS_QUIZ_PROMPT_SHOWN = "bh.quiz.prompt.shown"; // "1" | "0"
 
 export default function OnboardingGate(): React.ReactElement | null {
   const nav = useNavigate();
   const loc = useLocation();
   const { isAuthenticated } = useAuth();
 
-  const { hasSeenQuizPrompt, setHasSeenQuizPrompt } = useBirthdayOnboarding();
+  // ----- 온보딩 로컬 상태(훅 제거하고 직접 관리) -----
+  const [hasSeenQuizPrompt, setHasSeenQuizPromptState] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(LS_QUIZ_PROMPT_SHOWN) === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  const setHasSeenQuizPrompt = useCallback((v: boolean) => {
+    setHasSeenQuizPromptState(v);
+    try {
+      localStorage.setItem(LS_QUIZ_PROMPT_SHOWN, v ? "1" : "0");
+    } catch { }
+  }, []);
+  // -----------------------------------------------
 
   const isOnMain = useMemo(
     () => /^\/u\/[^/]+\/main$/.test((loc.pathname || "/").replace(/\/+$/, "") || "/"),
     [loc.pathname]
   );
 
-  // 훅은 항상 같은 순서/개수로 호출
   const [showWelcome, setShowWelcome] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
   const qc = useQueryClient();
   const me = (isAuthenticated ? qc.getQueryData<UserMeResponse>(qk.auth.me) : null) ?? null;
-  const { preloadThisYearQuietly } = useFeastThisYear();
+
+  const { preloadThisYearQuietly, ensureThisYearCreated } = useFeastThisYear();
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -71,14 +87,18 @@ export default function OnboardingGate(): React.ReactElement | null {
       localStorage.setItem(LS_HOST_WELCOME_SHOWN, today);
     } catch { }
 
-    // 조용한 프리페치 (실패 무시)
+    // 1) 조용한 프리페치 (실패 무시)
     try {
       await preloadThisYearQuietly();
     } catch { }
 
-    setShowWelcome(false);
+    // 2) 올해 생일상 없으면 생성 (실패 무시)
+    try {
+      await ensureThisYearCreated();
+    } catch { }
 
-    // 환영 모달 이후 퀴즈 프롬프트 한 번만
+    // 3) 모달 닫고, 필요 시 퀴즈 프롬프트 노출
+    setShowWelcome(false);
     if (!hasSeenQuizPrompt) setShowQuiz(true);
   };
 
@@ -91,11 +111,14 @@ export default function OnboardingGate(): React.ReactElement | null {
   const handleQuizLater = () => {
     setHasSeenQuizPrompt(true);
     setShowQuiz(false);
-    alert("우측 상단 메뉴의 '내 생일 퀴즈' 탭에서 언제든지 만들 수 있어요!");
+    setShowInfo(true);
+  };
+
+  const handleInfoClose = () => {
+    setShowInfo(false);
     if (!isOnMain) nav("../main", { replace: true });
   };
 
-  // 훅 호출이 끝난 뒤에 조건부로 렌더 차단 (안전)
   if (!isAuthenticated || !isOnMain) return null;
 
   return (
@@ -106,8 +129,10 @@ export default function OnboardingGate(): React.ReactElement | null {
         nickname={me?.name ?? ""}
         onClose={handleWelcomeClose}
       />
-
       <QuizPromptModal open={showQuiz} onMake={handleQuizMake} onLater={handleQuizLater} />
+      <HostSkipInfoModal open={showInfo} onClose={handleInfoClose} />
+
+      {/* 필요 시 리셋 버튼/디버그용: resetOnboarding() */}
     </>
   );
 }

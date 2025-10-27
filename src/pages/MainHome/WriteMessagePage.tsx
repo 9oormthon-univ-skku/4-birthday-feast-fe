@@ -11,6 +11,7 @@ import food3 from '@/assets/images/food-3.svg';
 import food4 from '@/assets/images/food-4.svg';
 import food5 from '@/assets/images/food-5.svg';
 import food6 from '@/assets/images/food-6.svg';
+import { SS_GUEST_NN } from '@/apis/guest';
 
 // 🔸 로컬스토리지 관련 타입/유틸 추가
 type StoredMessage = {
@@ -51,7 +52,7 @@ export default function WriteMessagePage() {
   const maxLen = 300;
   const disabled = message.trim().length === 0;
 
-  // 2~3줄 그리드가 되도록 8개 정도 구성
+  // 2~3줄 그리드가 되도록
   const icons = useMemo(
     () => [
       { id: 'food-1', src: food1, alt: '디저트 1' },
@@ -60,8 +61,6 @@ export default function WriteMessagePage() {
       { id: 'food-4', src: food4, alt: '디저트 4' },
       { id: 'food-5', src: food5, alt: '디저트 5' },
       { id: 'food-6', src: food6, alt: '디저트 6' },
-      { id: 'food-1b', src: food1, alt: '디저트 1' },
-      { id: 'food-2b', src: food2, alt: '디저트 2' },
     ],
     []
   );
@@ -70,7 +69,7 @@ export default function WriteMessagePage() {
     if (disabled) return;
 
     // 닉네임, 이미지 경로 가져오기
-    const nickname = localStorage.getItem('bh.visitor.nickname') || '익명';
+    const nickname = sessionStorage.getItem(SS_GUEST_NN) || '익명';
     const icon = icons.find((it) => it.id === selectedId);
 
     // 🎯 저장할 구조: birthdayCardId / message / nickname / imageUrl
@@ -121,65 +120,68 @@ export default function WriteMessagePage() {
       onFooterButtonClick={handleSubmit}
       footerButtonDisabled={disabled}
     >
-      {/* 안내문 */}
-      <p className="mb-4 text-[13px] leading-5 text-neutral-400">
-        생일 메시지는 14일 전부터 등록할 수 있으며
-        <br className="sm:hidden" />
-        생일 당일에 공개됩니다.
-      </p>
+      <div className='w-full px-8 py-4'>
+        {/* 안내문 */}
+        <p className="mb-4 text-[13px] leading-5 text-neutral-400">
+          생일 메시지는 14일 전부터 등록할 수 있으며
+          <br className="sm:hidden" />
+          생일 당일에 공개됩니다.
+        </p>
 
-      {/* 입력 박스 */}
-      <label htmlFor="message" className="sr-only">
-        생일 메시지를 작성해주세요.
-      </label>
-      <div className="rounded-[10px] border border-neutral-200 bg-[#F7F7F7] p-3">
-        <textarea
-          id="message"
-          value={message}
-          onChange={(e) => setMessage(e.target.value.slice(0, maxLen))}
-          placeholder="생일 메시지를 작성해주세요."
-          className="h-40 w-full resize-none bg-transparent text-[14px] leading-relaxed placeholder:text-neutral-400 focus:outline-none"
-          maxLength={maxLen}
+        {/* 입력 박스 */}
+        <label htmlFor="message" className="sr-only">
+          생일 메시지를 작성해주세요.
+        </label>
+        <div className="rounded-[10px] border border-neutral-200 bg-[#F7F7F7] p-3">
+          <textarea
+            id="message"
+            value={message}
+            onChange={(e) => setMessage(e.target.value.slice(0, maxLen))}
+            placeholder="생일 메시지를 작성해주세요."
+            className="h-40 w-full resize-none bg-transparent text-[14px] leading-relaxed placeholder:text-neutral-400 focus:outline-none"
+            maxLength={maxLen}
+          />
+        </div>
+        <div className="mt-1 text-right text-[11px] text-neutral-400">
+          {message.length}/{maxLen}
+        </div>
+
+        {/* 아이콘 그리드 */}
+        <div className="mt-5 grid grid-cols-3 gap-x-6 gap-y-4">
+          {icons.map((it) => {
+            const active = selectedId === it.id;
+            return (
+              <button
+                key={it.id}
+                type="button"
+                onClick={() => setSelectedId(it.id)}
+                className={[
+                  'flex h-20 w-20 items-center justify-center rounded-[12px] transition',
+                  active ? 'ring-1 ring-[#FF8B8B] bg-white' : 'ring-1 ring-neutral-200 bg-white/60 hover:bg-white',
+                ].join(' ')}
+                aria-pressed={active}
+              >
+                <img src={it.src} alt={it.alt} className="h-12 w-auto object-contain" loading="lazy" />
+              </button>
+            );
+          })}
+        </div>
+
+        {/* 완료 모달 */}
+        <Modal
+          open={doneOpen}
+          type="alert"
+          message="생일 메시지를 남겼습니다."
+          confirmText="확인"
+          onConfirm={() => {
+            setDoneOpen(false);
+            setMessage('');
+            navigate(-1);
+          }}
+          onClose={() => setDoneOpen(false)}
         />
       </div>
-      <div className="mt-1 text-right text-[11px] text-neutral-400">
-        {message.length}/{maxLen}
-      </div>
 
-      {/* 아이콘 그리드 */}
-      <div className="mt-5 grid grid-cols-3 gap-x-6 gap-y-4">
-        {icons.map((it) => {
-          const active = selectedId === it.id;
-          return (
-            <button
-              key={it.id}
-              type="button"
-              onClick={() => setSelectedId(it.id)}
-              className={[
-                'flex h-20 w-20 items-center justify-center rounded-[12px] transition',
-                active ? 'ring-1 ring-[#FF8B8B] bg-white' : 'ring-1 ring-neutral-200 bg-white/60 hover:bg-white',
-              ].join(' ')}
-              aria-pressed={active}
-            >
-              <img src={it.src} alt={it.alt} className="h-12 w-auto object-contain" loading="lazy" />
-            </button>
-          );
-        })}
-      </div>
-
-      {/* 완료 모달 */}
-      <Modal
-        open={doneOpen}
-        type="alert"
-        message="생일 메시지를 남겼습니다."
-        confirmText="확인"
-        onConfirm={() => {
-          setDoneOpen(false);
-          setMessage('');
-          navigate(-1);
-        }}
-        onClose={() => setDoneOpen(false)}
-      />
     </AppLayout>
   );
 }

@@ -1,6 +1,4 @@
-import React, { useMemo } from 'react';
-import clsx from 'clsx';
-
+import { FC, memo, useMemo } from 'react';
 // 내부 이미지/자원 임포트
 import table from '@/assets/images/table.svg';
 import lBalloon from '@/assets/images/left-balloon.svg';
@@ -19,10 +17,10 @@ export type MainFeastProps = {
   className?: string;
 };
 
-const MainFeast: React.FC<MainFeastProps> = ({ className }) => {
+const MainFeast: FC<MainFeastProps> = ({ className }) => {
   const { data: cards = [] } = useBirthdayCards();
 
-  // 🎂 로컬스토리지 카드만 사용 — 폴백 없음
+  // 카드 하나-> 케이크 하나로 반환 
   const cakes: CakeItem[] = useMemo(() => {
     return cards.map((c: any, idx: number) => ({
       id: c.birthdayCardId ?? `card-${idx}`,
@@ -73,4 +71,4 @@ const MainFeast: React.FC<MainFeastProps> = ({ className }) => {
   );
 };
 
-export default React.memo(MainFeast);
+export default memo(MainFeast);

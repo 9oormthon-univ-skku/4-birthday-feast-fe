@@ -3,39 +3,37 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import VisitorQuizPromptModal from "./VisitorQuizPropmptModal";
 import VisitorSkipInfoModal from "./VisitorSkipInfoModal";
-import { useVisitorOnboarding } from "../../hooks/useVisitorOnboarding";
 import NicknameModal from "@/features/auth/NicknameModal";
 import WelcomeModal from "../home/WelcomeModal";
 
 // 🔐 게스트 인증 API
 import {
   guestLogin,
-  LS_GUEST_AT,
-  LS_GUEST_RT,
-  LS_GUEST_NN,
+  SS_GUEST_AT,
+  SS_GUEST_RT,
+  SS_GUEST_NN,
 } from "@/apis/guest";
 
-type Props = {
-  quizIconSrc?: string;
-  /** B안 중첩 라우팅 대응: 기본 상대경로 */
-  quizPlayPath?: string; // 기본: "../play"
-  nicknameOverride?: string | null;
-};
+// const LS_NICK = "bh.visitor.nickname";
+const LS_WELCOME = "bh.visitor.welcomeShownDate";
+const PLAY_PROMPT_SEEN_KEY = "bh.visitor.hasSeenPlayPrompt"; // 퀴즈 프롬프트 노출 여부(기기 단위)
 
-// ✅ 레거시 경로 완전 제거: /u/:userId/main 만 메인으로 인식
+/** 메인 경로 판별 */
 function useIsOnMain() {
   const loc = useLocation();
   const pathname = (loc.pathname || "/").replace(/\/+$/, "") || "/";
   return useMemo(() => /^\/u\/[^/]+\/main$/.test(pathname), [pathname]);
 }
 
-const LS_NICK = "bh.visitor.nickname";
-const LS_WELCOME = "bh.visitor.welcomeShownDate";
 
+type Props = {
+  quizIconSrc?: string;
+  quizPlayPath?: string; // 기본: "../play"
+  // nicknameOverride?: string | null;
+};
 export default function VisitorOnboardingGate({
   quizIconSrc,
-  quizPlayPath = "../play", // ⬅️ 상대 경로 기본값
-  nicknameOverride,
+  quizPlayPath = "../play", // 기본값 
 }: Props) {
   const nav = useNavigate();
   const loc = useLocation();
@@ -44,17 +42,24 @@ export default function VisitorOnboardingGate({
   const isOnMain = useIsOnMain();
   const today = new Date().toISOString().slice(0, 10);
 
-  const { nickname: hookNickname, hasSeenPlayPrompt, markPlayPromptSeen } =
-    useVisitorOnboarding();
+  // const { nickname: hookNickname, hasSeenPlayPrompt, markPlayPromptSeen } =
+  //   useVisitorOnboarding();
 
-  const [localNickname, setLocalNickname] = useState<string | null>(() => {
+  const [sessionNickname, setSessionNickname] = useState<string | null>(() => {
     try {
-      return localStorage.getItem(LS_NICK);
+      return sessionStorage.getItem(SS_GUEST_NN);
     } catch {
       return null;
     }
   });
-  const nickname = nicknameOverride ?? hookNickname ?? localNickname ?? null;
+
+  const [hasSeenPlayPrompt, setHasSeenPlayPrompt] = useState<boolean>(() => sessionStorage.getItem(PLAY_PROMPT_SEEN_KEY) === "1");
+  const markPlayPromptSeen = () => {
+    setHasSeenPlayPrompt(true);
+    sessionStorage.setItem(PLAY_PROMPT_SEEN_KEY, "1");
+  };
+
+  // const nickname = sessionNickname ?? null;
 
   const [showNickname, setShowNickname] = useState(false);
   const [showPlayPrompt, setShowPlayPrompt] = useState(false);
@@ -75,24 +80,24 @@ export default function VisitorOnboardingGate({
       setShowNickname(false);
       return;
     }
-    setShowNickname(!nickname);
-  }, [isOnMain, nickname]);
+    setShowNickname(!sessionNickname);
+  }, [isOnMain, sessionNickname]);
 
   // 닉네임이 있고, 오늘 환영 모달을 아직 안봤다면 자동으로 환영 모달 오픈
   useEffect(() => {
-    if (!isOnMain || !nickname) return;
-    const lastShown = localStorage.getItem(LS_WELCOME);
+    if (!isOnMain || !sessionNickname) return;
+    const lastShown = sessionStorage.getItem(LS_WELCOME);
     if (lastShown !== today) setShowWelcome(true);
-  }, [isOnMain, nickname, today]);
+  }, [isOnMain, sessionNickname, today]);
 
   // 환영 모달이 열려 있을 땐 프롬프트 자동 오픈 금지
   useEffect(() => {
-    if (isOnMain && nickname && !hasSeenPlayPrompt && !showWelcome) {
+    if (isOnMain && sessionNickname && !hasSeenPlayPrompt && !showWelcome) {
       setShowPlayPrompt(true);
     } else {
       setShowPlayPrompt(false);
     }
-  }, [isOnMain, nickname, hasSeenPlayPrompt, showWelcome]);
+  }, [isOnMain, sessionNickname, hasSeenPlayPrompt, showWelcome]);
 
   // 메인 이탈 시 정리
   useEffect(() => {
@@ -107,10 +112,10 @@ export default function VisitorOnboardingGate({
   // ✅ 닉네임이 있고, 게스트 토큰이 없고, code가 있으면 1회 자동 게스트 인증
   useEffect(() => {
     const hasGuestTokens =
-      !!localStorage.getItem(LS_GUEST_AT) && !!localStorage.getItem(LS_GUEST_RT);
+      !!sessionStorage.getItem(SS_GUEST_AT) && !!sessionStorage.getItem(SS_GUEST_RT);
     if (!isOnMain) return;
     if (didGuestAuthOnce.current) return;
-    if (!nickname) return;
+    if (!sessionNickname) return;
     if (!urlCode) return;
     if (hasGuestTokens) return;
 
@@ -118,9 +123,9 @@ export default function VisitorOnboardingGate({
     (async () => {
       try {
         setAuthLoading(true);
-        await guestLogin({ code: urlCode, nickname });
+        await guestLogin({ code: urlCode, nickname: sessionNickname });
         try {
-          localStorage.setItem(LS_GUEST_NN, nickname);
+          sessionStorage.setItem(SS_GUEST_NN, sessionNickname);
         } catch { }
       } catch (e) {
         // Kakao 로그인은 절대 타지 않고, 게스트 인증 실패만 처리
@@ -130,19 +135,19 @@ export default function VisitorOnboardingGate({
         setAuthLoading(false);
       }
     })();
-  }, [isOnMain, nickname, urlCode]);
+  }, [isOnMain, sessionNickname, urlCode]);
 
-  // ⛳ 닉네임 제출 -> 로컬 저장 + (code 있으면) 게스트 인증 -> 환영/프롬프트
+  // ⛳ 닉네임 제출 -> 세션 저장 + (code 있으면) 게스트 인증 -> 환영/프롬프트
   const handleNicknameSubmit = async (name: string) => {
     const trimmed = name.trim();
     if (!trimmed) return;
 
     try {
-      localStorage.setItem(LS_NICK, trimmed);
-      localStorage.setItem(LS_GUEST_NN, trimmed);
+      // sessionStorage.setItem(LS_NICK, trimmed);
+      sessionStorage.setItem(SS_GUEST_NN, trimmed);
     } catch { }
 
-    setLocalNickname(trimmed);
+    setSessionNickname(trimmed);
     setShowNickname(false);
 
     if (urlCode && !authLoading) {
@@ -156,7 +161,7 @@ export default function VisitorOnboardingGate({
       }
     }
 
-    const lastShown = localStorage.getItem(LS_WELCOME);
+    const lastShown = sessionStorage.getItem(LS_WELCOME);
     if (lastShown !== today) {
       setShowWelcome(true);
     } else if (isOnMain && !hasSeenPlayPrompt) {
@@ -166,10 +171,10 @@ export default function VisitorOnboardingGate({
 
   const handleWelcomeClose = () => {
     try {
-      localStorage.setItem(LS_WELCOME, today);
+      sessionStorage.setItem(LS_WELCOME, today);
     } catch { }
     setShowWelcome(false);
-    if (isOnMain && (nickname ?? localNickname) && !hasSeenPlayPrompt) {
+    if (isOnMain && sessionNickname && !hasSeenPlayPrompt) {
       setShowPlayPrompt(true);
     }
   };
@@ -191,7 +196,7 @@ export default function VisitorOnboardingGate({
     <>
       <NicknameModal
         open={showNickname}
-        defaultValue={localNickname ?? ""}
+        defaultValue={sessionNickname ?? ""}
         onSubmit={handleNicknameSubmit}
         onClose={() => setShowNickname(false)}
       // loading={authLoading} // 필요시 모달 버튼 로딩에 반영
@@ -200,13 +205,13 @@ export default function VisitorOnboardingGate({
       <WelcomeModal
         open={showWelcome}
         isHost={false}
-        nickname={nickname ?? localNickname ?? ""}
+        nickname={sessionNickname ?? ""}
         onClose={handleWelcomeClose}
       />
 
       <VisitorQuizPromptModal
         open={showPlayPrompt}
-        nickname={nickname ?? undefined}
+        nickname={sessionNickname ?? ""}
         onParticipate={handleParticipate}
         onSkip={handleSkip}
         onClose={() => setShowPlayPrompt(false)}

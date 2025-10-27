@@ -52,7 +52,7 @@ const GuestMessage = ({ nickname }: { nickname?: string }) => (
 
 export default function WelcomeModal({ open, isHost, onClose, nickname }: WelcomeModalProps) {
   const highlightText = isHost ? nickname || '사용자' : nickname || '게스트';
-  const helperText = isHost ? '공개 기간은 설정할 수 있어요.' : '공개 기간은 호스트가 설정해요.';
+  const helperText = isHost ? '공개 범위는 설정할 수 있어요.' : '공개 범위는 생일자가 설정해요.';
 
   return (
     <Modal
