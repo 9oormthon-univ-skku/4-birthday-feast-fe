@@ -64,6 +64,12 @@ export default function DrawerMenu({
     onClose();
   };
 
+  const handleBlankClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // 컨텐츠 바깥(여백)만 닫기
+    if (e.currentTarget === e.target) onClose();
+  };
+
+
   const prevOpen = React.useRef(open);
   React.useEffect(() => {
     if (!prevOpen.current && open) onOpen?.();
@@ -114,7 +120,9 @@ export default function DrawerMenu({
       anchor={anchor} open={open} onClose={onClose} size={size} ariaLabel={`${anchor} menu`}
       panelMotionProps={panelMotionProps}
     >
-      <div className="w-[80%] mx-auto flex h-full max-h-full flex-col bg-white">
+      <div className="w-[80%] mx-auto flex h-full max-h-full flex-col bg-white"
+        onClick={handleBlankClick}
+      >
         {/* 상단 사용자 영역: host 모드에서만 */}
         {isHost && (
           <div className="flex items-center gap-4 py-6 border-b border-[#D9D9D9]">

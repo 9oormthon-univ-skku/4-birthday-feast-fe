@@ -130,7 +130,7 @@ export default function BottomSheet({
         </div>
 
         {/* 본문 */}
-        <div className="h-full overflow-auto px-8 py-3">{children}</div>
+        <div className="h-full overflow-hidden px-8 py-3">{children}</div>
       </Drawer>
     </>
   );
