@@ -1,6 +1,6 @@
 // src/components/DrawerAnchor.tailwind.tsx
 import React from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, type MotionProps } from "framer-motion";
 import { createPortal } from "react-dom";
 
 /**
@@ -22,6 +22,7 @@ export function Drawer({
   children,
   usePortal = true,
   container,
+  panelMotionProps,
 }: {
   anchor?: "top" | "right" | "bottom" | "left";
   open: boolean;
@@ -31,6 +32,7 @@ export function Drawer({
   children?: React.ReactNode;
   usePortal?: boolean;
   container?: Element;
+  panelMotionProps?: MotionProps; // 추가
 }) {
   const panelRef = React.useRef<HTMLDivElement>(null);
 
@@ -68,10 +70,10 @@ export function Drawer({
   const transitionSpring = { type: "spring", stiffness: 420, damping: 42 } as const;
 
   const initial =
-    anchor === "left"  ? { x: "-100%" } :
-    anchor === "right" ? { x: "100%" }  :
-    anchor === "top"   ? { y: "-100%" } :
-                          { y: "100%" };
+    anchor === "left" ? { x: "-100%" } :
+      anchor === "right" ? { x: "100%" } :
+        anchor === "top" ? { y: "-100%" } :
+          { y: "100%" };
 
   const animate =
     anchor === "left" || anchor === "right"
@@ -79,19 +81,19 @@ export function Drawer({
       : { y: 0, transition: transitionSpring };
 
   const exit =
-    anchor === "left"  ? { x: "-100%", transition: { duration: 0.18 } } :
-    anchor === "right" ? { x: "100%",  transition: { duration: 0.18 } } :
-    anchor === "top"   ? { y: "-100%", transition: { duration: 0.18 } } :
-                          { y: "100%",  transition: { duration: 0.18 } };
+    anchor === "left" ? { x: "-100%", transition: { duration: 0.18 } } :
+      anchor === "right" ? { x: "100%", transition: { duration: 0.18 } } :
+        anchor === "top" ? { y: "-100%", transition: { duration: 0.18 } } :
+          { y: "100%", transition: { duration: 0.18 } };
 
   const roundByAnchor =
     anchor === "left"
       ? "rounded-r-2xl"
       : anchor === "right"
-      ? ""
-      : anchor === "top"
-      ? "rounded-b-2xl"
-      : "rounded-t-2xl";
+        ? ""
+        : anchor === "top"
+          ? "rounded-b-2xl"
+          : "rounded-t-2xl";
 
   const positionByAnchor = (() => {
     switch (anchor) {
@@ -138,6 +140,7 @@ export function Drawer({
             initial={initial}
             animate={animate}
             exit={exit}
+            {...panelMotionProps}
           >
             <div className="flex h-full max-h-full flex-col">{children}</div>
           </motion.div>
