@@ -7,6 +7,8 @@ import FeastBootstrap from '@/features/feast/FeastBootstrap';
 import OnboardingGate from '@/features/onboarding/OnboardingGate';
 import { useMe } from '@/hooks/useMe';
 import VisitorOnboardingGate from '@/features/visitorOnboarding/VisitorOnboardingGate';
+import { useEffect, useState } from 'react';
+import { isGuestReady } from '@/features/visitorOnboarding/guestReady';
 
 /**
  * /u/:userId/.. 형태의 라우팅 구조
@@ -28,6 +30,23 @@ export default function AppShell() {
   // 초기 모드 결정 (전역 컨텍스트인 BirthdayModeContext에 전달됨)
   const initialMode: 'host' | 'guest' = isShareView ? 'guest' : 'host';
 
+  // ✅ 게스트 온보딩 완료 여부 (세션스토리지 판정 + 콜백으로 즉시 반영)
+  const [guestReady, setGuestReady] = useState(() => isGuestReady());
+
+  // 혹시 다른 탭/리다이렉트로 완료되었을 때 대비(가벼운 폴링 or 가시 이벤트)
+  useEffect(() => {
+    if (!isShareView) return;
+    const id = window.setInterval(() => {
+      const ok = isGuestReady();
+      if (ok) {
+        setGuestReady(true);
+        window.clearInterval(id);
+      }
+    }, 500);
+    return () => window.clearInterval(id);
+  }, [isShareView]);
+
+
   return (
     // 전역적으로 mode 값을 제공 (isHost | isGuest)
     <BirthdayModeProvider
@@ -37,9 +56,14 @@ export default function AppShell() {
       {!isShareView && <FeastBootstrap enabled={true} />}
       {!isShareView && isMyPage && <OnboardingGate />}
 
-      {isShareView && (
-        <VisitorOnboardingGate quizPlayPath={`/u/${userId}/play`} />)}
-      <Outlet />
+      {isShareView && !guestReady && (
+        <VisitorOnboardingGate
+          quizPlayPath={`/u/${userId}/play`}
+          onCompleted={() => setGuestReady(true)} // 완료 즉시 진입 허용
+        />
+      )}
+      {/* Outlet렌더 보호 */}
+      {(!isShareView || guestReady) && <Outlet />}
     </BirthdayModeProvider>
   );
 }
