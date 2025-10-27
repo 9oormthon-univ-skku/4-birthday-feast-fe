@@ -7,14 +7,22 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useBirthdayMode } from '@/app/ModeContext';
 import { QuizQuestion } from '@/apis/quiz';
 import { useQuizById } from '@/hooks/useQuizById';
+import { useGuestQuizById } from '@/hooks/useGuestQuizById';
 
 export default function PlayQuizPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isHost } = useBirthdayMode();
+  const { isHost, isGuest } = useBirthdayMode();
 
-  // 서버 퀴즈 조회 훅 (데이터 반영은 isHost일 때만)
-  const { data: quizData } = useQuizById();
+  // 호스트 전용: 서버 퀴즈 훅
+  const { data: hostQuiz, isLoading: hostLoading, isError: hostError } = useQuizById();
+
+  // 게스트 전용: URL 기반 퀴즈 훅
+  const {
+    questions: guestQuestions,
+    isLoading: guestLoading,
+    isError: guestIsError,
+  } = useGuestQuizById();
 
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [index, setIndex] = useState(0);
@@ -22,18 +30,27 @@ export default function PlayQuizPage() {
   const [finished, setFinished] = useState(false);
   const [showAnswers, setShowAnswers] = useState(false);
 
-  // isHost인 경우에만 서버 데이터로 세팅
+  // 역할에 따라 질문 세팅
   useEffect(() => {
-    if (!isHost) return;
-    if (!quizData?.questions) return;
-
-    const qs = quizData.questions || [];
-    setQuestions(qs);
-    setUserAnswers(Array(qs.length).fill(null));
-    setIndex(0);
-    setFinished(false);
-    setShowAnswers(false);
-  }, [isHost, quizData]);
+    if (isHost && hostQuiz?.questions) {
+      const qs = hostQuiz.questions;
+      setQuestions(qs);
+      setUserAnswers(Array(qs.length).fill(null));
+      setIndex(0);
+      setFinished(false);
+      setShowAnswers(false);
+      return;
+    }
+    if (isGuest) {
+      const qs = guestQuestions || [];
+      setQuestions(qs);
+      setUserAnswers(Array(qs.length).fill(null));
+      setIndex(0);
+      setFinished(false);
+      setShowAnswers(false);
+      return;
+    }
+  }, [isHost, hostQuiz, isGuest, guestQuestions]);
 
   const total = questions.length;
   const current = questions[index];
@@ -74,6 +91,31 @@ export default function PlayQuizPage() {
   ) : (
     <span className="text-[#FF8B8B]">생일 퀴즈</span>
   );
+
+  // 로딩/에러 안내 ui
+  const loading = (isHost && hostLoading) || (isGuest && guestLoading);
+  const isError = (isHost && hostError) || (isGuest && guestIsError);
+
+  if (loading && total === 0) {
+    return (
+      <AppLayout showBack showMenu={false} showBrush={false} title={headerTitle}
+        footerButtonLabel={'처음으로'} onFooterButtonClick={footerAction}>
+        <section className="py-20 text-center text-[#A0A0A0]">퀴즈를 불러오는 중…</section>
+      </AppLayout>
+    );
+  }
+
+  if (isError && total === 0) {
+    return (
+      <AppLayout showBack showMenu={false} showBrush={false} title={headerTitle}
+        footerButtonLabel={'처음으로'} onFooterButtonClick={footerAction}>
+        <section className="py-20 text-center">
+          <h3 className="text-xl text-[#FF8B8B] font-['KoreanSWGIG3']">퀴즈를 불러오지 못했어요</h3>
+          <p className="mt-2 text-sm text-[#A0A0A0]">잠시 후 다시 시도해주세요.</p>
+        </section>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout
@@ -123,12 +165,14 @@ export default function PlayQuizPage() {
         </section>
       ) : (
         <>
-          {!showAnswers && <div className='w-full px-8 pt-9 pb-4'>
-            <h2 className="text-4xl font-normal font-['KoreanSWGIG3'] text-[#FF8B8B]">결과는?</h2>
-            <p className="mt-1 mb-4 text-2xl font-normal font-['KoreanSWGIG3'] text-[#A0A0A0]">
-              {total}문제 중 <span className="text-[#FF8B8B]">{correctCount}</span>문제 맞췄어요!
-            </p>
-          </div>}
+          {!showAnswers && (
+            <div className="w-full px-8 pt-9 pb-4">
+              <h2 className="text-4xl font-normal font-['KoreanSWGIG3'] text-[#FF8B8B]">결과는?</h2>
+              <p className="mt-1 mb-4 text-2xl font-normal font-['KoreanSWGIG3'] text-[#A0A0A0]">
+                {total}문제 중 <span className="text-[#FF8B8B]">{correctCount}</span>문제 맞췄어요!
+              </p>
+            </div>
+          )}
 
           {showAnswers ? (
             <QuizAnswerList
@@ -140,7 +184,7 @@ export default function PlayQuizPage() {
             <QuizRankList
               className=" px-8 py-4"
               heightClassName="max-h-[70vh]"
-              onShowAnswers={goAnswers} // 랭킹에서 “오답보기” 누르면 전환
+              onShowAnswers={goAnswers}
             />
           )}
         </>
