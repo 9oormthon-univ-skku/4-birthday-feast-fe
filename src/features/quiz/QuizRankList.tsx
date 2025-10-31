@@ -57,7 +57,7 @@ export default function QuizRankList({
               {/* Right: 오답보기 버튼 */}
               {onShowAnswers && nickName === it.name && (<button
                 type="button"
-                className="shrink-0 rounded-full bg-[#FF8B8B] px-3 py-1 text-xs font-semibold text-white shadow-sm active:scale-95 transition"
+                className="shrink-0 rounded-full bg-[#FF8B8B] mx-2 px-3 py-1 text-xs font-semibold text-white shadow-sm active:scale-95 transition"
                 onClick={() => {
                   onShowAnswers?.();
                 }}

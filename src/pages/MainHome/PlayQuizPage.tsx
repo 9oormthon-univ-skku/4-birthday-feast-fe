@@ -190,7 +190,7 @@ export default function PlayQuizPage() {
           {!showAnswers && (
             <div className="w-full px-8 pt-9 pb-4">
               <h2 className="text-4xl font-normal font-['KoreanSWGIG3'] text-[#FF8B8B]">결과는?</h2>
-              <p className="mt-1 mb-4 text-2xl font-normal font-['KoreanSWGIG3'] text-[#A0A0A0]">
+              <p className="my-1 text-2xl font-normal font-['KoreanSWGIG3'] text-[#A0A0A0]">
                 {total}문제 중 <span className="text-[#FF8B8B]">{correctCount}</span>문제 맞췄어요!
               </p>
             </div>
