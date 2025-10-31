@@ -74,6 +74,7 @@ export function useBirthdayCards() {
   } = useGuestBirthday({
     // 게스트 토큰 만료 시 자동 재시도는 훅 내부에서 401 방지 처리
     refetchOnWindowFocus: false,
+    enabled: isGuest,
   });
 
   // 앱 진입 시 조용히 프리페치: Host에서만 수행
