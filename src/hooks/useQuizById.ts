@@ -39,6 +39,7 @@ const qkQuizById = (quizId: string | number) =>
 type UseQuizOptions = {
   /** 서버 성공 시 로컬 스토리지/lastQuizId 업데이트 (기본 true) */
   persistLocalOnSuccess?: boolean;
+  enabled?: boolean;
 };
 
 type UseQuizResult = {

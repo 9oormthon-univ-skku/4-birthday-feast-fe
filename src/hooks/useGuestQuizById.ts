@@ -17,7 +17,7 @@ type UseGuestQuizResult = {
 };
 
 /** URL ?quizId=... 에서 quizId를 추출하여 게스트 퀴즈를 가져오는 훅 */
-export function useGuestQuizById(): UseGuestQuizResult {
+export function useGuestQuizById(options?: { enabled?: boolean }): UseGuestQuizResult {
   const location = useLocation();
 
   const quizIdFromQS = useMemo(() => {

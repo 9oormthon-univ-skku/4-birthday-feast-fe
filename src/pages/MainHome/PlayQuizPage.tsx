@@ -15,15 +15,19 @@ export default function PlayQuizPage() {
   const location = useLocation();
   const { isHost, isGuest } = useBirthdayMode();
 
-  // 호스트 전용: 서버 퀴즈 훅
-  const { data: hostQuiz, isLoading: hostLoading, isError: hostError } = useQuizById();
+  // 🎂 호스트 전용: host일 때만 네트워크/효과 활성화
+  const { data: hostQuiz, isLoading: hostLoading, isError: hostError } = useQuizById({
+    enabled: isHost,
+  });
 
-  // 게스트 전용: URL 기반 퀴즈 훅
+  // 🎂 게스트 전용: guest일 때만 네트워크/효과 활성화
   const {
     questions: guestQuestions,
     isLoading: guestLoading,
     isError: guestIsError,
-  } = useGuestQuizById();
+  } = useGuestQuizById({
+    enabled: isGuest,
+  });
 
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [index, setIndex] = useState(0);
@@ -34,7 +38,7 @@ export default function PlayQuizPage() {
   // 표시용 닉네임 (게스트)
   const [nickName, setNickName] = useState<string>('익명');
 
-  // 닉네임 로컬스토리지 연동
+  // 닉네임 세션스토리지 연동
   useEffect(() => {
     const readNick = () => {
       const nn = sessionStorage.getItem(SS_GUEST_NN)?.trim();
