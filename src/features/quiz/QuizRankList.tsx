@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import clsx from 'clsx';
 import { useQuizRanking } from '@/hooks/useQuizRanking';
+import { GoPersonFill } from "react-icons/go";
 
 type Props = {
   className?: string;
@@ -8,12 +9,14 @@ type Props = {
   heightClassName?: string;
   /** “오답보기” 버튼 클릭 시 부모에 알림 */
   onShowAnswers?: () => void;
+  nickName?: string;
 };
 
 export default function QuizRankList({
   className,
   heightClassName = 'max-h-[68vh]',
   onShowAnswers,
+  nickName,
 }: Props) {
   const { items, isLoading, isError } = useQuizRanking({
   });
@@ -52,7 +55,7 @@ export default function QuizRankList({
               </div>
 
               {/* Right: 오답보기 버튼 */}
-              {onShowAnswers && <button
+              {onShowAnswers && nickName === it.name && (<button
                 type="button"
                 className="shrink-0 rounded-full bg-[#FF8B8B] px-3 py-1 text-xs font-semibold text-white shadow-sm active:scale-95 transition"
                 onClick={() => {
@@ -60,11 +63,11 @@ export default function QuizRankList({
                 }}
               >
                 오답보기
-              </button>}
+              </button>)}
             </li>
           ))}
         </ul>
       </div>
-    </div>
+    </div >
   );
 }

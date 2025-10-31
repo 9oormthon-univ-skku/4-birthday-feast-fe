@@ -8,6 +8,7 @@ import { useBirthdayMode } from '@/app/ModeContext';
 import { QuizQuestion } from '@/apis/quiz';
 import { useQuizById } from '@/hooks/useQuizById';
 import { useGuestQuizById } from '@/hooks/useGuestQuizById';
+import { SS_GUEST_NN } from '@/apis/guest';
 
 export default function PlayQuizPage() {
   const navigate = useNavigate();
@@ -29,6 +30,27 @@ export default function PlayQuizPage() {
   const [userAnswers, setUserAnswers] = useState<(boolean | null)[]>([]);
   const [finished, setFinished] = useState(false);
   const [showAnswers, setShowAnswers] = useState(false);
+
+  // 표시용 닉네임 (게스트)
+  const [nickName, setNickName] = useState<string>('익명');
+
+  // 닉네임 로컬스토리지 연동
+  useEffect(() => {
+    const readNick = () => {
+      const nn = sessionStorage.getItem(SS_GUEST_NN)?.trim();
+      setNickName(nn && nn.length > 0 ? nn : '익명');
+    };
+    readNick();
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === SS_GUEST_NN) {
+        const nn = (e.newValue ?? '').trim();
+        setNickName(nn && nn.length > 0 ? nn : '익명');
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   // 역할에 따라 질문 세팅
   useEffect(() => {
@@ -85,7 +107,7 @@ export default function PlayQuizPage() {
   const footerAction = resetToMain;
   const headerTitle = showAnswers ? (
     <>
-      <span className="text-[#FF8B8B]">김땡땡</span>
+      <span className="text-[#FF8B8B]">{nickName}</span>
       <span className="text-[#A0A0A0]">님의 오답</span>
     </>
   ) : (
@@ -185,6 +207,7 @@ export default function PlayQuizPage() {
               className=" px-8 py-4"
               heightClassName="max-h-[70vh]"
               onShowAnswers={goAnswers}
+              nickName={nickName}
             />
           )}
         </>
