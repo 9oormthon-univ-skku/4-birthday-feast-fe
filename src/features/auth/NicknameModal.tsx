@@ -37,7 +37,7 @@ export default function NicknameModal({
         if (!nickname) return;
         onSubmit(nickname);
       }}
-      closeOnBackdrop={true}
+      closeOnBackdrop={false}
       onClose={onClose}
       className="pt-4"
     />
