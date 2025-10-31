@@ -10,6 +10,7 @@ import { useLogout } from '@/hooks/useLogout';
 import { qk } from '@/lib/queryKeys';
 import type { UserMeResponse } from '@/apis/user';
 import { useQueryClient } from '@tanstack/react-query';
+import { GoPersonFill } from 'react-icons/go';
 
 const LOCAL_KEY = "bh.lastBirthdayId";
 
@@ -126,7 +127,10 @@ export default function AccountSettingsPage() {
                 className="w-16 h-16 rounded-full object-cover border border-[#E5E5E5]"
               />
             ) : (
-              <div className="w-16 h-16 rounded-full bg-[#D9D9D9]" />
+              // <div className="w-16 h-16 rounded-full bg-[#D9D9D9]" />
+              <div className="h-16 w-16 rounded-full overflow-hidden bg-[#D9D9D9] border-2 border-[#D9D9D9]" aria-hidden >
+                <GoPersonFill className="h-full w-full mt-2 text-[#bebebe]" />
+              </div>
             )}
           </div>
         </section>

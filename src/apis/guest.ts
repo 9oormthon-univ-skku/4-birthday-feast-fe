@@ -102,7 +102,6 @@ export type GuestQuizGetRes = {
   quizId: number | string;
   birthdayId: number | string;
   questions: GuestQuizQuestion[];
-  updatedAt?: string | null;
 };
 
 export type GuestQuizRankingItem = {

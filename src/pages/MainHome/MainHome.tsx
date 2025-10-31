@@ -89,7 +89,7 @@ const MainHome: React.FC = () => {
       </div>
 
       <BottomSheet>
-        <h2 className="my-2 text-[#FF8B8B] text-xl font-bold">방문자 퀴즈 랭킹</h2>
+        <h2 className="mb-2 text-[#FF8B8B] text-xl font-bold">방문자 퀴즈 랭킹</h2>
         <QuizRankList />
       </BottomSheet>
 

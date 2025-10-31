@@ -1,87 +1,73 @@
-// src/features/quiz/QuizRankList.tsx
-import React from 'react';
+import React, { useMemo } from 'react';
 import clsx from 'clsx';
+import { useQuizRanking } from '@/hooks/useQuizRanking';
+import { GoPersonFill } from "react-icons/go";
 
 type Props = {
   className?: string;
-  /** 스크롤 높이 지정(기본 max-h-[70vh]) */
+  /** 스크롤 높이 지정(기본 max-h-[68vh]) */
   heightClassName?: string;
   /** “오답보기” 버튼 클릭 시 부모에 알림 */
   onShowAnswers?: () => void;
+  nickName?: string;
 };
-
-type RankItem = { name: string; score: string };
-
-const ITEMS: RankItem[] = [
-  { name: '김땡땡님', score: '15/20' },
-  { name: '어쩌구저쩌구님', score: '13/20' },
-  { name: '김수한무거북이와두루미님', score: '10/20' },
-  { name: '4동님', score: '9/20' },
-  { name: '선풍기고장남님', score: '20/8' },
-  { name: '생일축하해님', score: '20/7' },
-  { name: '허리아프다님', score: '20/6' },
-  { name: '거북목님', score: '20/5' },
-  { name: '철수님', score: '20/4' },
-  { name: '영희님', score: '20/3' },
-  { name: '치즈님', score: '20/2' },
-  { name: '모닥불님', score: '20/2' },
-  { name: '둘리님', score: '20/1' },
-  { name: '도우너님', score: '20/0' },
-  { name: '또치님', score: '20/12' },
-  { name: '마이쮸님', score: '20/11' },
-  { name: '마카롱님', score: '20/10' },
-  { name: '딸기케이크님', score: '20/9' },
-  { name: '초코쿠키님', score: '20/8' },
-  { name: '솜사탕님', score: '20/7' },
-];
 
 export default function QuizRankList({
   className,
   heightClassName = 'max-h-[68vh]',
   onShowAnswers,
+  nickName,
 }: Props) {
+  const { items, isLoading, isError } = useQuizRanking({
+  });
+
+  const displayItems = useMemo(() => items, [items]);
+
   return (
     <div className={clsx('w-full', className)}>
       <div className={clsx('overflow-auto pr-1', heightClassName)}>
+        {/* 상태 표시 */}
+        <div className="mb-2 flex items-center gap-2 text-xs">
+          {isLoading && <span className="animate-pulse text-[#FF8B8B]">랭킹을 불러오는 중…</span>}
+          {isError && <span className="text-[#FF8B8B]">네트워크 오류로 예시 데이터를 표시합니다.</span>}
+        </div>
+
         <ul className="w-full">
-          {ITEMS.map((it, idx) => (
+          {displayItems.map((it) => (
             <li
-              key={`${it.name}-${idx}`}
+              key={`${it.guestQuizId ?? 'fallback'}-${it.rank}-${it.name}`}
               className="flex items-center justify-between py-2"
             >
-              {/* Left: 번호 + 아바타 + 텍스트 */}
+              {/* Left: 순위 + 아바타 + 이름/점수 */}
               <div className="flex min-w-0 items-center gap-3">
-                {/* 번호 */}
-                <div className="w-5 text-right text-sm font-bold text-[#E49393] tabular-nums">
-                  {idx + 1}
+                <div className="w-5 text-right text-sm font-bold text-[#FF8B8B] tabular-nums">
+                  {it.rank}
                 </div>
-
-                {/* 아바타 (회색 원) */}
-                <div className="h-7 w-7 rounded-full bg-neutral-300/60" aria-hidden />
-
-                {/* 이름/점수 */}
+                <div className="h-7 w-7 rounded-full overflow-hidden bg-[#D9D9D9] border-1 border-[#D9D9D9]" aria-hidden >
+                  <GoPersonFill className="h-full w-full mt-[0.185rem] text-[#bebebe]" />
+                </div>
                 <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold text-[#FF8B8B]">
+                  <div className="truncate text-sm font-bold text-[#FF8B8B]">
                     {it.name}
                   </div>
-                  <div className="text-[11px] text-[#E49393]">{it.score}</div>
+                  <div className="text-xs text-[#BFBFBF] font-bold">{it.score}</div>
                 </div>
               </div>
 
               {/* Right: 오답보기 버튼 */}
-              <button
+              {onShowAnswers && nickName === it.name && (<button
                 type="button"
-                className="shrink-0 rounded-full bg-[#FF8B8B] px-3 py-1 text-xs font-semibold text-white shadow-sm active:scale-95 transition"
+                className="shrink-0 rounded-full bg-[#FF8B8B] mx-2 px-3 py-1 text-xs font-semibold text-white shadow-sm active:scale-95 transition"
                 onClick={() => {
                   onShowAnswers?.();
                 }}
               >
                 오답보기
-              </button>
+              </button>)}
             </li>
           ))}
         </ul>
       </div>
-    </div>
+    </div >
   );
 }
