@@ -63,7 +63,8 @@ export default function AppShell() {
         />
       )}
       {/* Outlet렌더 보호 */}
-      {(!isShareView || guestReady) && <Outlet />}
+      {/* {(!isShareView || guestReady) && <Outlet />} */}
+      <Outlet />
     </BirthdayModeProvider>
   );
 }

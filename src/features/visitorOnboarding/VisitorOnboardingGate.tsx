@@ -258,9 +258,9 @@ export default function VisitorOnboardingGate({
   // 차단 화면(온보딩 중단 UI)
   if (accessBlocked) {
     return (
-      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white/95 px-6 text-center">
-        <div className="mx-auto w-full max-w-[420px] rounded-2xl border border-[#ffe0e0] p-6 shadow-lg">
-          <h2 className="mb-2 text-xl font-bold text-[#FF8B8B]">접속이 제한되었어요</h2>
+      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/50 px-6 text-center">
+        <div className="mx-auto w-full max-w-[420px] rounded-2xl bg-white border border-[#ffe0e0] p-6 shadow-lg">
+          <h2 className="mb-2 text-xl font-bold text-[#FF8B8B]">접속이 제한되었어요🥲</h2>
           <p className="mb-4 text-sm text-[#666] whitespace-pre-line">
             {blockedReason || "생일상에 접속할 수 없습니다."}
           </p>
