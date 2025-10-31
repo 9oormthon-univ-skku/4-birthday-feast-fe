@@ -1,5 +1,9 @@
+// src/features/quiz/useQuizRanking.ts
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLocation, useParams } from 'react-router-dom';
+import { useBirthdayMode } from '@/app/ModeContext';
 import { getQuizRanking, type QuizRankingItem } from '@/apis/quiz';
+import { getGuestQuizRanking, GuestQuizRankingItem } from '@/apis/guest';
 
 const LS_LAST_QUIZ_ID = 'bh.lastQuizId';
 
@@ -26,7 +30,7 @@ const FALLBACK_ITEMS_SERVER: QuizRankingItem[] = [
 ];
 
 /** 서버 응답 -> UI 표시용으로 매핑 */
-function mapToRankItems(list: QuizRankingItem[]): RankItem[] {
+function mapToRankItems(list: QuizRankingItem[] | GuestQuizRankingItem[]): RankItem[] {
   return (list ?? [])
     .slice()
     .sort((a, b) => a.rank - b.rank)
@@ -41,7 +45,12 @@ function mapToRankItems(list: QuizRankingItem[]): RankItem[] {
 const FALLBACK_ITEMS: RankItem[] = mapToRankItems(FALLBACK_ITEMS_SERVER);
 
 type UseQuizRankingOptions = {
-  /** 지정 시 이 값 사용, 미지정 시 localStorage('bh.lastQuizId') 사용 */
+  /**
+   * 외부에서 quizId를 강제 지정하고 싶을 때 사용.
+   * 미지정 시:
+   *  - guest: useParams().quizId 사용
+   *  - host : localStorage('bh.lastQuizId') 사용
+   */
   quizId?: number | string;
   /** 자동 패칭 on/off (기본 true) */
   enabled?: boolean;
@@ -49,12 +58,32 @@ type UseQuizRankingOptions = {
 
 export function useQuizRanking(options: UseQuizRankingOptions = {}) {
   const { quizId, enabled = true } = options;
+  const { isGuest, isHost } = useBirthdayMode();
+  // const params = useParams<{ quizId?: string }>();
+  const location = useLocation(); // ← 추가
 
+  // 모드/옵션에 따라 quizId 결정
   const effectiveQuizId = useMemo<string | undefined>(() => {
     if (quizId != null) return String(quizId).trim();
-    const stored = localStorage.getItem(LS_LAST_QUIZ_ID)?.trim();
-    return stored || undefined;
-  }, [quizId]);
+
+    if (isGuest) {
+      // 1) 경로 파라미터에서 시도
+      // const fromParams = params.quizId?.trim();
+      // if (fromParams) return fromParams;
+
+      // 2) 쿼리스트링에서 시도 (?quizId=...)
+      const sp = new URLSearchParams(location.search);
+      const fromQuery = sp.get('quizId')?.trim();
+      if (fromQuery) return fromQuery;
+
+      return undefined;
+    }
+    // 호스트: 로컬스토리지에서 가져옴
+    if (isHost) {
+      const stored = localStorage.getItem(LS_LAST_QUIZ_ID)?.trim();
+      return stored || undefined;
+    }
+  }, [quizId, isGuest, location.search]); //params.quizId,
 
   const [items, setItems] = useState<RankItem[]>(FALLBACK_ITEMS);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -62,6 +91,7 @@ export function useQuizRanking(options: UseQuizRankingOptions = {}) {
 
   const fetchRanking = useCallback(async () => {
     if (!enabled) return;
+
     if (!effectiveQuizId) {
       setItems(FALLBACK_ITEMS);
       return;
@@ -70,18 +100,22 @@ export function useQuizRanking(options: UseQuizRankingOptions = {}) {
     setIsLoading(true);
     setIsError(false);
     try {
-      const data = await getQuizRanking(effectiveQuizId);
+      // 게스트/호스트에 따라 다른 API 사용
+      const data = isGuest
+        ? await getGuestQuizRanking(effectiveQuizId)
+        : await getQuizRanking(effectiveQuizId);
+
       const mapped = mapToRankItems(data ?? []);
       setItems(mapped.length > 0 ? mapped : FALLBACK_ITEMS);
     } catch (err) {
       // eslint-disable-next-line no-console
-      console.error('❌ getQuizRanking failed', err);
+      console.error('❌ quiz ranking fetch failed', err);
       setIsError(true);
       setItems(FALLBACK_ITEMS);
     } finally {
       setIsLoading(false);
     }
-  }, [effectiveQuizId, enabled]);
+  }, [effectiveQuizId, enabled, isGuest]);
 
   useEffect(() => {
     if (!enabled) return;
