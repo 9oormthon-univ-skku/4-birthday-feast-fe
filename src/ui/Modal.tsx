@@ -156,7 +156,7 @@ export default function Modal({
           {title && <h3 className="text-base font-semibold text-[#383838]">{title}</h3>}
 
           {message && (
-            <div className="whitespace-pre-line text-base font-semibold leading-6 text-[#373737]">
+            <div className="whitespace-pre-line break-keep text-base font-semibold leading-6 text-[#373737]">
               {message}
             </div>
           )}

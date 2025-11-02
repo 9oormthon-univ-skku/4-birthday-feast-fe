@@ -1,21 +1,24 @@
 // src/features/home/MainList.tsx
 import { FC } from 'react';
 import clsx from 'clsx';
-import type { BirthdayCard } from '@/types/birthday';
+import type { BirthdayCardLike } from '@/types/birthday';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
-import { useBirthdayCards } from '@/hooks/useBirthdayCards';
+// import { useBirthdayCards } from '@/hooks/useBirthdayCards';
 
 type MainListProps = {
+  cards: BirthdayCardLike[];
   columns?: 2 | 3 | 4;
-  onSelect?: (card: BirthdayCard) => void;
+  onSelect?: (card: BirthdayCardLike) => void;
   className?: string;
+  isLoading?: boolean;
+  error?: unknown;
 };
 
 const colClass = (n: 2 | 3 | 4) =>
   ({ 2: 'grid-cols-2', 3: 'grid-cols-3', 4: 'grid-cols-4' }[n]);
 
-const MainList: FC<MainListProps> = ({ columns = 4, onSelect, className }) => {
-  const { data, isLoading, error } = useBirthdayCards();
+const MainList: FC<MainListProps> = ({ columns = 4, onSelect, className, cards, isLoading, error }) => {
+  // const { data, isLoading, error } = useBirthdayCards();
   const navigate = useNavigate();
   const location = useLocation();
   const { userId } = useParams(); // 현재 경로 파라미터 사용
@@ -40,7 +43,7 @@ const MainList: FC<MainListProps> = ({ columns = 4, onSelect, className }) => {
     return q ? `?${q}` : '';
   };
 
-  const handleClick = (c: BirthdayCard, index: number) => {
+  const handleClick = (c: BirthdayCardLike, index: number) => {
     onSelect?.(c);
 
     const id = (c as any).birthdayCardId ?? (c as any).id ?? '';
@@ -71,7 +74,7 @@ const MainList: FC<MainListProps> = ({ columns = 4, onSelect, className }) => {
       )}
       role="list"
     >
-      {data.map((c, idx) => (
+      {cards.map((c, idx) => (
         <li key={(c as any).birthdayCardId ?? (c as any).id ?? `${c.nickname}-${c.imageUrl}`}>
           <button
             type="button"

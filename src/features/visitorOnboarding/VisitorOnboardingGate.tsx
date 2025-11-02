@@ -13,8 +13,8 @@ import {
   SS_GUEST_NN,
 } from "@/apis/guest";
 
-const LS_WELCOME = "bh.visitor.welcomeShownDate";
-const PLAY_PROMPT_SEEN_KEY = "bh.visitor.hasSeenPlayPrompt"; // 퀴즈 프롬프트 노출 여부(기기 단위)
+const LS_WELCOME = "bh.guest.welcomeShownDate";
+const PLAY_PROMPT_SEEN_KEY = "bh.guest.hasSeenPlayPrompt"; // 퀴즈 프롬프트 노출 여부(기기 단위)
 
 /** 메인 경로 판별 */
 function useIsOnMain() {

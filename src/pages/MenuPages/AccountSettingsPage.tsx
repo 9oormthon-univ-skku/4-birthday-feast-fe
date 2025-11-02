@@ -7,12 +7,11 @@ import NicknameModal from '@/features/auth/NicknameModal';
 // import { useMe } from '@/hooks/useMe';
 import { updateBirthdayVisible } from "@/apis/birthday"; // getBirthdayPeriod 제거
 import { useLogout } from '@/hooks/useLogout';
-import { qk } from '@/lib/queryKeys';
+import { qk } from '@/apis/queryKeys';
 import type { UserMeResponse } from '@/apis/user';
 import { useQueryClient } from '@tanstack/react-query';
 import { GoPersonFill } from 'react-icons/go';
-
-const LOCAL_KEY = "bh.lastBirthdayId";
+import { LS_LAST_BID } from '@/hooks/useFeastThisYear';
 
 export default function AccountSettingsPage() {
   const navigate = useNavigate();
@@ -34,7 +33,7 @@ export default function AccountSettingsPage() {
     const next = !publicAll;
     setPublicAll(next);
 
-    const idRaw = localStorage.getItem(LOCAL_KEY);
+    const idRaw = localStorage.getItem(LS_LAST_BID);
     if (!idRaw) {
       alert("생일상 ID를 찾을 수 없습니다.");
       return;

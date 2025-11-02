@@ -2,9 +2,9 @@
 import { useMemo, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createBirthday, getThisYearBirthday } from "@/apis/birthday";
-import { qk } from "../lib/queryKeys";
+import { qk } from "../apis/queryKeys";
 
-const LS_LAST_BID = "bh.lastBirthdayId";
+export const LS_LAST_BID = "bh.lastBirthdayId";
 const LS_LAST_CODE = "bh.lastBirthdayCode";
 
 export type FeastData = {

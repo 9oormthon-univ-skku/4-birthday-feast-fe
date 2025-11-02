@@ -5,12 +5,12 @@ import QuizPromptModal from "./QuizPromptModal";
 import { useAuth } from "@/hooks/useAuth";
 import WelcomeModal from "@/features/home/WelcomeModal";
 import { useFeastThisYear } from "@/hooks/useFeastThisYear";
-import { qk } from "@/lib/queryKeys";
+import { qk } from "@/apis/queryKeys";
 import type { UserMeResponse } from "@/apis/user";
 import { useQueryClient } from "@tanstack/react-query";
 import HostSkipInfoModal from "./HostSkipInfoModal";
 
-const LS_HOST_WELCOME_SHOWN = "bh.host.welcomeShownDate";
+const SS_HOST_WELCOME_SHOWN = "bh.host.welcomeShown";
 const LS_QUIZ_PROMPT_SHOWN = "bh.quiz.prompt.shown"; // "1" | "0"
 
 export default function OnboardingGate(): React.ReactElement | null {
@@ -55,16 +55,21 @@ export default function OnboardingGate(): React.ReactElement | null {
   useEffect(() => {
     if (!isOnMain) return;
 
-    const lastShown = localStorage.getItem(LS_HOST_WELCOME_SHOWN);
+    let hasSessionToken = false;
+    try {
+      hasSessionToken = !!sessionStorage.getItem(SS_HOST_WELCOME_SHOWN);
+    } catch {
+      hasSessionToken = false;
+    }
 
-    // 오늘 환영 모달을 아직 안 봤다면 우선 환영 모달
-    if (lastShown !== today) {
+    if (!hasSessionToken) {
+      // 세션 최초 진입 → 환영 모달 우선
       setShowWelcome(true);
       setShowQuiz(false);
       return;
     }
 
-    // 환영 모달은 이미 본 상태 → 퀴즈 프롬프트 노출 (한 번만)
+    // 환영 모달은 이미 본 상태 → 퀴즈 프롬프트 (세션 유지와 무관, 로컬 기준 한 번만)
     if (!hasSeenQuizPrompt) {
       setShowQuiz(true);
       return;
@@ -72,7 +77,7 @@ export default function OnboardingGate(): React.ReactElement | null {
 
     // 모두 종료 상태
     setShowQuiz(false);
-  }, [isOnMain, hasSeenQuizPrompt, today]);
+  }, [isOnMain, hasSeenQuizPrompt]);
 
   // 메인 경로가 아니면 모든 모달 닫기
   useEffect(() => {
@@ -84,7 +89,7 @@ export default function OnboardingGate(): React.ReactElement | null {
 
   const handleWelcomeClose = async () => {
     try {
-      localStorage.setItem(LS_HOST_WELCOME_SHOWN, today);
+      sessionStorage.setItem(SS_HOST_WELCOME_SHOWN, "1");
     } catch { }
 
     // 1) 조용한 프리페치 (실패 무시)
@@ -131,8 +136,6 @@ export default function OnboardingGate(): React.ReactElement | null {
       />
       <QuizPromptModal open={showQuiz} onMake={handleQuizMake} onLater={handleQuizLater} />
       <HostSkipInfoModal open={showInfo} onClose={handleInfoClose} />
-
-      {/* 필요 시 리셋 버튼/디버그용: resetOnboarding() */}
     </>
   );
 }

@@ -73,7 +73,7 @@ export default function FeatureButtons({
       }
     } catch (e) {
       console.error(e);
-      alert("이미지 저장 중 오류가 발생했습니다. (외부 이미지 CORS를 확인해주세요)");
+      alert("이미지 저장 중 오류가 발생했습니다.");
     }
   };
 
