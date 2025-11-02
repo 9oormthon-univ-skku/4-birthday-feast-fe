@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import AppLayout from "@/ui/AppLayout";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { createQuiz } from "@/apis/quiz"; // API 연결
+import { LS_LAST_BID } from "@/hooks/useFeastThisYear";
 
 type QuizQuestion = {
   questionId: string;
@@ -18,7 +19,6 @@ type QuizDraft = {
 };
 
 const DRAFT_KEY = "bh.quiz.ox.draft";
-const LS_BIRTHDAY_ID = "bh.lastBirthdayId";
 const MAX_LEN = 100;
 const MIN_QUESTIONS = 1;
 
@@ -58,7 +58,7 @@ function normalizeSequence(list: QuizQuestion[]): QuizQuestion[] {
 
 function readLastBirthdayId(): string | number | undefined {
   try {
-    const raw = localStorage.getItem(LS_BIRTHDAY_ID);
+    const raw = localStorage.getItem(LS_LAST_BID);
     if (!raw) return undefined;
     // 숫자로 저장된 경우와 문자열 모두 지원
     const n = Number(raw);

@@ -3,9 +3,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import AppLayout from '@/ui/AppLayout';
 import { getBirthdayPeriod, type BirthdayPeriod } from "@/apis/birthday";
 import { useNavigate } from 'react-router-dom';
+import { LS_LAST_BID } from '@/hooks/useFeastThisYear';
 
 const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일'];
-const LOCAL_KEY = "bh.lastBirthdayId";
 
 // ---- 폴백 기간 설정: 로컬스토리지 키가 없거나 API가 실패하면 오늘-14일 ~ 오늘로 자동 표시
 const FALLBACK_DAYS_BEFORE = 14;
@@ -74,7 +74,7 @@ export default function VisibilityPage() {
   });
 
   useEffect(() => {
-    const idRaw = localStorage.getItem(LOCAL_KEY);
+    const idRaw = localStorage.getItem(LS_LAST_BID);
 
     // 로컬스토리지 미존재 → 폴백 세팅
     if (!idRaw) {
