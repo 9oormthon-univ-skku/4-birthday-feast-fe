@@ -153,7 +153,7 @@ export default function WriteMessagePage() {
 
     // API 이미지가 없으면 방어
     if (!isApiSelected) {
-      setErrorOpen('이미지를 정상적으로 등록하지 못했습니다.\n네트워크 연결을 확인한 후 다시 시도해주세요.');
+      alert('생일 메시지를 정상적으로 등록하지 못했습니다.\n네트워크 연결을 확인한 후 다시 시도해주세요.');
       return;
     }
 
@@ -244,14 +244,14 @@ export default function WriteMessagePage() {
           onClose={() => setDoneOpen(false)}
         />
         {/* 에러 모달 */}
-        <Modal
+        {/* <Modal
           open={!!errorOpen}
           type="alert"
           message={errorOpen ?? ''}
           confirmText="확인"
           onConfirm={() => setErrorOpen(null)}
           onClose={() => setErrorOpen(null)}
-        />
+        /> */}
       </div>
     </AppLayout>
   );
