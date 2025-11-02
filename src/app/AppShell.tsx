@@ -1,5 +1,4 @@
 // src/routes/UserLayout.tsx
-// 모드 감지 후 모드에 따라 분기 (host -> onboarding gate | guest -> 게스트 플로우 따르기)
 import { Outlet, useParams, useSearchParams } from 'react-router-dom';
 import { getStoredUserId } from '@/stores/authStorage';
 import { BirthdayModeProvider } from '@/app/ModeContext';
@@ -10,15 +9,7 @@ import VisitorOnboardingGate from '@/features/visitorOnboarding/VisitorOnboardin
 import { useEffect, useState } from 'react';
 import { isGuestReady } from '@/features/visitorOnboarding/guestReady';
 
-/**
- * /u/:userId/.. 형태의 라우팅 구조
- * userId는 페이지 소유자(host)의 id, 
- * ?code=xxxx 쿼리가 있으면 게스트 공유 링크로 접근한 경우로 판단 
- */
 export default function AppShell() {
-  // 전역 캐시 관리 데이터 
-  const { me, loading, error } = useMe();
-
   const { userId } = useParams();
   const [qs] = useSearchParams();
   const code = qs.get('code'); // 게스트 초대 코드 가져옴
@@ -30,15 +21,12 @@ export default function AppShell() {
   // 초기 모드 결정 (전역 컨텍스트인 BirthdayModeContext에 전달됨)
   const initialMode: 'host' | 'guest' = isShareView ? 'guest' : 'host';
 
-  // ✅ 게스트 온보딩 완료 여부 (세션스토리지 판정 + 콜백으로 즉시 반영)
+  // ✅ 게스트 온보딩 완료 여부 (세션스토리지 판정)
   const [guestReady, setGuestReady] = useState(() => isGuestReady());
-
-  // 혹시 다른 탭/리다이렉트로 완료되었을 때 대비(가벼운 폴링 or 가시 이벤트)
   useEffect(() => {
     if (!isShareView) return;
     const id = window.setInterval(() => {
-      const ok = isGuestReady();
-      if (ok) {
+      if (isGuestReady()) {
         setGuestReady(true);
         window.clearInterval(id);
       }
@@ -46,6 +34,18 @@ export default function AppShell() {
     return () => window.clearInterval(id);
   }, [isShareView]);
 
+  // ✅ host가 자기 페이지 볼 때만 /api-user/me 호출 (초기 체인에서 제거)
+  const { me, loading, error } = useMe({ enabled: !isShareView && !!isMyPage });
+
+  // (선택) idle에 프리페치: host인데 내 페이지가 아니면 화면 그린 뒤 백그라운드 호출
+  useEffect(() => {
+    if (!isShareView && !isMyPage && 'requestIdleCallback' in window) {
+      (window as any).requestIdleCallback?.(() => {
+        // 미리 캐시해두고 싶다면 여기서 queryClient.prefetchQuery 호출
+        // queryClient.prefetchQuery({ queryKey: qk.auth.me, queryFn: getUserMe });
+      });
+    }
+  }, [isShareView, isMyPage]);
 
   return (
     // 전역적으로 mode 값을 제공 (isHost | isGuest)
@@ -53,9 +53,11 @@ export default function AppShell() {
       defaultMode={initialMode}
       key={`mode-${initialMode}-${code ?? userId ?? 'self'}`}
     >
+      {/* host 전용 부트스트랩 */}
       {!isShareView && <FeastBootstrap enabled={true} />}
       {!isShareView && isMyPage && <OnboardingGate />}
 
+      {/* guest 온보딩 게이트 */}
       {isShareView && !guestReady && (
         <VisitorOnboardingGate
           quizPlayPath={`/u/${userId}/play`}
