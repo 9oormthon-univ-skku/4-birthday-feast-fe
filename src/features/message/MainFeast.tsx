@@ -17,9 +17,10 @@ export type CakeItem = { id: number | string; src: string; alt?: string };
 export type MainFeastProps = {
   className?: string;
   cards: BirthdayCardLike[];
+  hideQuizButton?: boolean;
 };
 
-const MainFeast: FC<MainFeastProps> = ({ className, cards = [] }) => {
+const MainFeast: FC<MainFeastProps> = ({ className, cards = [], hideQuizButton = false }) => {
 
   // 카드 하나-> 케이크 하나로 반환 
   const cakes: CakeItem[] = useMemo(() => {
@@ -31,7 +32,7 @@ const MainFeast: FC<MainFeastProps> = ({ className, cards = [] }) => {
   }, [cards]);
 
   return (
-    <div className="relative w-full max-w-[520px]">
+    <div className={`relative w-full max-w-[520px] ${className}`}>
       {/* 풍선 */}
       <img
         src={lBalloon}
@@ -47,13 +48,13 @@ const MainFeast: FC<MainFeastProps> = ({ className, cards = [] }) => {
       {/* 호스트 / 퀴즈 버튼 */}
       <div className="absolute left-1/2 z-40 -translate-x-1/2 -translate-y-[83%] w-[46%]">
         <img src={host} alt="host" className="w-full" />
-        <div className="absolute left-0 top-1/2 -translate-x-[55%] -translate-y-1/2">
+        {!hideQuizButton && (<div className="absolute left-0 top-1/2 -translate-x-[55%] -translate-y-1/2">
           <PlayQuizButton
             variant="inline"
             imgSizeClassName="h-17 w-21"
             ariaLabel="퀴즈 플레이 버튼"
           />
-        </div>
+        </div>)}
       </div>
 
       <img

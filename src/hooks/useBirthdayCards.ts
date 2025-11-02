@@ -36,7 +36,7 @@ function readLocalCards(): LocalCard[] {
  * ---------------------------------------------------------------------------*/
 export type ServerBirthdayCard = BirthdayCard | GuestBirthdayCard;
 
-function adaptServerCards(list: ServerBirthdayCard[]): BirthdayCardLike[] {
+export function adaptServerCards(list: ServerBirthdayCard[]): BirthdayCardLike[] {
   return list.map((c) => ({
     birthdayCardId: c.birthdayCardId,
     message: c.message,
@@ -45,7 +45,7 @@ function adaptServerCards(list: ServerBirthdayCard[]): BirthdayCardLike[] {
   }));
 }
 
-function adaptLocalCards(list: LocalCard[]): BirthdayCardLike[] {
+export function adaptLocalCards(list: LocalCard[]): BirthdayCardLike[] {
   return list.map((c) => ({
     birthdayCardId: c.birthdayCardId,
     message: c.message,
