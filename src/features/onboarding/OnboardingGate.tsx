@@ -5,10 +5,9 @@ import QuizPromptModal from "./QuizPromptModal";
 import { useAuth } from "@/hooks/useAuth";
 import WelcomeModal from "@/features/home/WelcomeModal";
 import { useFeastThisYear } from "@/hooks/useFeastThisYear";
-import { qk } from "@/apis/queryKeys";
-import type { UserMeResponse } from "@/apis/user";
-import { useQueryClient } from "@tanstack/react-query";
 import HostSkipInfoModal from "./HostSkipInfoModal";
+import { useMe } from "@/hooks/useMe";              // ✅ 추가
+// (qk, UserMeResponse, useQueryClient 는 더이상 불필요하면 제거)
 
 const SS_HOST_WELCOME_SHOWN = "bh.host.welcomeShown";
 const LS_QUIZ_PROMPT_SHOWN = "bh.quiz.prompt.shown"; // "1" | "0"
@@ -18,7 +17,7 @@ export default function OnboardingGate(): React.ReactElement | null {
   const loc = useLocation();
   const { isAuthenticated } = useAuth();
 
-  // ----- 온보딩 로컬 상태(훅 제거하고 직접 관리) -----
+  // ----- 온보딩 로컬 상태 -----
   const [hasSeenQuizPrompt, setHasSeenQuizPromptState] = useState<boolean>(() => {
     try {
       return localStorage.getItem(LS_QUIZ_PROMPT_SHOWN) === "1";
@@ -26,14 +25,13 @@ export default function OnboardingGate(): React.ReactElement | null {
       return false;
     }
   });
-
   const setHasSeenQuizPrompt = useCallback((v: boolean) => {
     setHasSeenQuizPromptState(v);
     try {
       localStorage.setItem(LS_QUIZ_PROMPT_SHOWN, v ? "1" : "0");
     } catch { }
   }, []);
-  // -----------------------------------------------
+  // ---------------------------
 
   const isOnMain = useMemo(
     () => /^\/u\/[^/]+\/main$/.test((loc.pathname || "/").replace(/\/+$/, "") || "/"),
@@ -44,12 +42,16 @@ export default function OnboardingGate(): React.ReactElement | null {
   const [showQuiz, setShowQuiz] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
 
-  const qc = useQueryClient();
-  const me = (isAuthenticated ? qc.getQueryData<UserMeResponse>(qk.auth.me) : null) ?? null;
+  // ✅ 여기서 me를 비차단으로 가져오도록 변경
+  //    - 초기 렌더를 블로킹하지 않음
+  //    - 데이터가 오면 모달 내 닉네임만 자연스럽게 업데이트됨
+  const { me } = useMe({
+    enabled: isAuthenticated && isOnMain,
+    staleTime: 1000 * 60 * 5,
+    // suspense: false  // 훅 내부 기본값이 false라면 생략 가능
+  });
 
   const { preloadThisYearQuietly, ensureThisYearCreated } = useFeastThisYear();
-
-  const today = new Date().toISOString().slice(0, 10);
 
   // 온보딩 노출 결정
   useEffect(() => {
@@ -69,7 +71,7 @@ export default function OnboardingGate(): React.ReactElement | null {
       return;
     }
 
-    // 환영 모달은 이미 본 상태 → 퀴즈 프롬프트 (세션 유지와 무관, 로컬 기준 한 번만)
+    // 환영 모달은 이미 본 상태 → 퀴즈 프롬프트 (로컬 기준 한 번만)
     if (!hasSeenQuizPrompt) {
       setShowQuiz(true);
       return;
@@ -131,7 +133,7 @@ export default function OnboardingGate(): React.ReactElement | null {
       <WelcomeModal
         open={showWelcome}
         isHost={true}
-        nickname={me?.name ?? ""}
+        nickname={me?.name ?? ""}   // ✅ me가 늦게 와도 빈 문자열로 안전
         onClose={handleWelcomeClose}
       />
       <QuizPromptModal open={showQuiz} onMake={handleQuizMake} onLater={handleQuizLater} />
