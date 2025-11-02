@@ -44,7 +44,7 @@ const MainHome: React.FC = () => {
     initialData: () => queryClient.getQueryData<UserMeResponse>(qk.auth.me), // 이미 프리패치된 값 사용
   });
 
-  const { data: cards = [] } = useBirthdayCards();
+  const { data: cards = [], isLoading: cardsLoading, error: cardsError } = useBirthdayCards();
 
   const nameFromQS = (isGuest ? (qs.get('name')?.trim() || '') : '').trim();
   const displayName = (isGuest ? nameFromQS : me?.name?.trim()) || '사용자';
@@ -86,7 +86,11 @@ const MainHome: React.FC = () => {
           </div>
         ) : (
           <div className="mx-auto w-full max-w-[520px] px-4 pb-3">
-            <MainList columns={4} />
+            <MainList columns={4}
+              cards={cards}
+              isLoading={cardsLoading}
+              error={cardsError}
+            />
           </div>
         )}
       </div>
