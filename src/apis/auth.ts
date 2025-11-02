@@ -1,4 +1,4 @@
-import { apiClient } from "@/apis"; 
+import { apiClient, refreshClient } from "@/apis";
 
 // 카카오 로그인 응답 
 export type KakaoLoginResponse = {
@@ -30,6 +30,6 @@ export async function postLogout() {
 /** 액세스 토큰 재발급 API */
 // RT는 HttpOnly 쿠키에서 자동으로 읽힘
 export async function reissueAccessToken(): Promise<ReissueResponse> {
-  const res = await apiClient.post(`/api/auth-user/reissue`, null);
+  const res = await refreshClient.post(`/api/auth-user/reissue`, null);
   return res.data as ReissueResponse;
 }

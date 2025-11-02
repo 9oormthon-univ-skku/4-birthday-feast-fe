@@ -43,7 +43,7 @@ function isGuestContext(): boolean {
       typeof window !== "undefined" &&
       !!new URLSearchParams(window.location.search).get("code");
     // 2) 게스트 AT가 로컬에 있으면 게스트 컨텍스트로 간주
-    const hasGuestAT = !!localStorage.getItem(SS_GUEST_AT);
+    const hasGuestAT = !!sessionStorage.getItem(SS_GUEST_AT);
     return hasCode || hasGuestAT;
   } catch {
     return false;
