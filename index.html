@@ -10,38 +10,20 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#ffffff" />
 
-  <!-- 0) 외부 도메인 선연결 (DNS/TLS 핸드셰이크 단축) -->
-  <link rel="preconnect" href="https://t1.kakaocdn.net" crossorigin>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <!-- 1) LCP 후보 이미지(메인 케이크 등) 미리 당겨오기 -->
   <link rel="preload" as="image" href="/images/host.png" fetchpriority="high" />
   <link rel="preload" as="image" href="/images/main-cake.png">
-  <!-- 2) 웹폰트 선로딩 (woff2 권장) -->
-  <!-- <link rel="preload" as="font" type="font/woff2" href="/fonts/KoreanSWGIG3.woff2" crossorigin /> -->
-  <!-- Pretendard Variable도 로컬로 쓰고 싶다면 -->
+
   <link rel="preload" as="font" type="font/woff2" href="/fonts/PretendardVariable.woff2" crossorigin />
   <link rel="preload" as="font" type="font/woff2" href="/fonts/KoreanSWGIG3.woff2" crossorigin />
-
-
-  <!-- 3) “비필수” 스타일을 렌더 차단 없이 로드 (예: 애니메이션/아이콘 등) -->
-  <link rel="preload" as="style" href="/css/optional.css" />
-  <link rel="stylesheet" href="/css/critical.css" />
-  <link rel="stylesheet" href="/css/optional.css" media="print" onload="this.media='all'">
-  <noscript>
-    <link rel="stylesheet" href="/css/optional.css">
-  </noscript>
 </head>
 
 <body>
   <div id="root"></div>
 
-  <!-- Kakao SDK: defer + onload -->
   <script defer src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" crossorigin="anonymous"
     onload="window.dispatchEvent(new Event('kakao:ready'))">
     </script>
 
-  <!-- Kakao init (SDK 준비 후) -->
   <script type="module">
     function initKakao() {
       try {
@@ -55,7 +37,6 @@
     else window.addEventListener('kakao:ready', initKakao, { once: true });
   </script>
 
-  <!-- 앱 엔트리: 지연 실행 -->
   <script type="module" src="/src/main.tsx"></script>
 </body>
 
