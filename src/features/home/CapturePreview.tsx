@@ -120,7 +120,7 @@ export default function CapturePreview({
           <img src={src} alt="캡쳐 이미지" className="w-full h-auto block" />
         </div>
 
-        <h2 className="mt-2 ms-2 font-normal font-['KoreanSWGIG2'] text-[#FF8B8B] text-2xl">
+        <h2 className="mt-2 ms-2 font-normal font-['KoreanSWGIG3'] text-[#FF8B8B] text-2xl">
           {todayString}
         </h2>
 
