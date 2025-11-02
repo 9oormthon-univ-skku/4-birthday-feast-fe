@@ -3,7 +3,7 @@ import { useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { getStoredUserId } from "@/stores/authStorage";
-import { qk } from "@/app/queryKeys";
+import { qk } from "@/apis/queryKeys";
 import type { UserMeResponse } from "@/apis/user";
 
 const LS_LAST_QUIZ_ID = "bh.lastQuizId";

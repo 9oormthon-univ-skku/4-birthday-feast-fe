@@ -7,7 +7,7 @@ import NicknameModal from '@/features/auth/NicknameModal';
 // import { useMe } from '@/hooks/useMe';
 import { updateBirthdayVisible } from "@/apis/birthday"; // getBirthdayPeriod 제거
 import { useLogout } from '@/hooks/useLogout';
-import { qk } from '@/app/queryKeys';
+import { qk } from '@/apis/queryKeys';
 import type { UserMeResponse } from '@/apis/user';
 import { useQueryClient } from '@tanstack/react-query';
 import { GoPersonFill } from 'react-icons/go';

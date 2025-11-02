@@ -1,7 +1,7 @@
 // src/features/auth/useAuth.ts
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { qk } from "../app/queryKeys";
+import { qk } from "../apis/queryKeys";
 
 export const TOKEN_KEY = "bh.auth.accessToken" as const;
 

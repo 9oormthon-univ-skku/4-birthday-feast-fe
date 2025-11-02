@@ -5,7 +5,7 @@ import QuizPromptModal from "./QuizPromptModal";
 import { useAuth } from "@/hooks/useAuth";
 import WelcomeModal from "@/features/home/WelcomeModal";
 import { useFeastThisYear } from "@/hooks/useFeastThisYear";
-import { qk } from "@/app/queryKeys";
+import { qk } from "@/apis/queryKeys";
 import type { UserMeResponse } from "@/apis/user";
 import { useQueryClient } from "@tanstack/react-query";
 import HostSkipInfoModal from "./HostSkipInfoModal";

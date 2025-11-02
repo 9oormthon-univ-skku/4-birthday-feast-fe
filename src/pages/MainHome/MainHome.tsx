@@ -17,7 +17,7 @@ import CapturePreview from '@/features/home/CapturePreview';
 import VisitorOnboardingGate from '@/features/visitorOnboarding/VisitorOnboardingGate';
 import BottomSheet from './BottomSheet';
 
-import { qk } from '@/app/queryKeys';
+import { qk } from '@/apis/queryKeys';
 import { getUserMe, type UserMeResponse } from '@/apis/user';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useBirthdayCards } from '@/hooks/useBirthdayCards';
