@@ -95,11 +95,13 @@ export default function HistoryPage() {
                     className="relative w-[90%] mx-auto mt-[5%] bg-[#fff4df] flex items-center justify-center overflow-hidden"
                     style={{ aspectRatio: '156/229' }}
                   >
-                    <MainFeast
-                      hideQuizButton={true}
-                      cards={b._cards}
-                      className="!w-full !h-full pt-[80%]"
-                    />
+                    <div className="!w-full !h-full pt-[80%]">
+                      <MainFeast
+                        hideQuizButton={true}
+                        cards={b._cards}
+                      />
+                    </div>
+
                   </div>
 
                   {/* 메타/캡션 */}
