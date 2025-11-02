@@ -1,47 +1,27 @@
-// src/pages/MessageComposePage.tsx
-import React, { useMemo, useState } from 'react';
+// 게스트 전용 메시지 입력 페이지 (API 이미지 + 로컬 폴백) 
+// 추후 로컬 폴백 삭제 (api 있어야 createpayload 작성 가능)
+
+// TODO: createGuestCard 추가하기
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { GuestCardCreateReq, SS_GUEST_NN, getGuestImages, type GuestImage } from '@/apis/guest';
 import AppLayout from '@/ui/AppLayout';
 import Modal from '@/ui/Modal';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 
-// 아이콘 에셋 ...
+// 더미 에셋 (폴백)
 import food1 from '@/assets/images/food-1.svg';
 import food2 from '@/assets/images/food-2.svg';
 import food3 from '@/assets/images/food-3.svg';
 import food4 from '@/assets/images/food-4.svg';
 import food5 from '@/assets/images/food-5.svg';
 import food6 from '@/assets/images/food-6.svg';
-import { SS_GUEST_NN } from '@/apis/guest';
 
-// 🔸 로컬스토리지 관련 타입/유틸 추가
-type StoredMessage = {
-  id: string;
-  text: string;
-  iconId: string;
-  nickname?: string;
-  createdAt: number; // epoch ms
-};
+// 세션스토리지 드래프트 키
+const SS_GUEST_CARD_DRAFT = 'bh.guest.cardDraft';
 
-const STORAGE_KEY = 'birthday_messages';
-
-function readMessages(): StoredMessage[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeMessages(list: StoredMessage[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-  } catch {
-    // 용량 초과 등 쓰기 실패는 조용히 무시
-  }
-}
+// 아이콘 공통 타입
+type IconItem = { id: string; src: string; alt: string };
 
 export default function WriteMessagePage() {
   const navigate = useNavigate();
@@ -52,8 +32,8 @@ export default function WriteMessagePage() {
   const maxLen = 300;
   const disabled = message.trim().length === 0;
 
-  // 2~3줄 그리드가 되도록
-  const icons = useMemo(
+  // 1) 로컬 폴백 아이콘
+  const fallbackIcons: IconItem[] = useMemo(
     () => [
       { id: 'food-1', src: food1, alt: '디저트 1' },
       { id: 'food-2', src: food2, alt: '디저트 2' },
@@ -65,45 +45,94 @@ export default function WriteMessagePage() {
     []
   );
 
+  // 2) API에서 이미지 목록 받아오기 (TanStack Query)
+  const { data } = useQuery<GuestImage[]>({
+    queryKey: ['guestImages'],
+    queryFn: getGuestImages,
+    // staleTime: 1000 * 60 * 10, // 10분
+    retry: 1,
+  });
+
+  // 3) 서버에서 가져온 이미지를 아이콘 포맷으로 변환
+  const apiIcons: IconItem[] = useMemo(() => {
+    if (!data || !Array.isArray(data)) return [];
+    return data.map((g, idx) => ({
+      id: String(g.imageId),
+      src: g.imageUrl,
+      alt: `카드 이미지 ${idx + 1}`,
+    }));
+  }, [data]);
+
+  // 4) 최종 아이콘 소스 (서버 우선, 실패/빈배열 시 폴백)
+  const icons: IconItem[] = apiIcons.length > 0 ? apiIcons : fallbackIcons;
+
+  // 최초 로드나 데이터 변경으로 현재 선택된 id가 목록에 없으면 첫 번째로 맞춤
+  useEffect(() => {
+    if (icons.length === 0) return;
+    if (!icons.some((i) => i.id === selectedId)) {
+      setSelectedId(icons[0].id);
+    }
+  }, [icons, selectedId]);
+
+  // 드래프트 복원 (한 번만)
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (restoredRef.current) return;
+    if (icons.length === 0) return;
+
+    try {
+      const raw = sessionStorage.getItem(SS_GUEST_CARD_DRAFT);
+      if (raw) {
+        const draft = JSON.parse(raw) as GuestCardCreateReq;
+        if (typeof draft?.messageText === 'string') {
+          setMessage(draft.messageText.slice(0, maxLen));
+        }
+        // draft.imageUrl이 현재 아이콘에 있으면 해당 아이콘 선택
+        if (draft?.imageUrl) {
+          const match = icons.find((it) => it.src === draft.imageUrl);
+          if (match) setSelectedId(match.id);
+        }
+      }
+    } catch {
+      // 무시
+    } finally {
+      restoredRef.current = true;
+    }
+  }, [icons, maxLen]);
+
+  // 드래프트 자동 저장 (message/selectedId 변경 시)
+  useEffect(() => {
+    const icon = icons.find((it) => it.id === selectedId);
+    const draft: GuestCardCreateReq = {
+      messageText: message.trim(),
+      imageUrl: icon?.src ?? undefined,
+    };
+    try {
+      sessionStorage.setItem(SS_GUEST_CARD_DRAFT, JSON.stringify(draft));
+    } catch {
+      // 세션 용량 초과 등은 무시
+    }
+  }, [message, selectedId, icons]);
+
   const handleSubmit = () => {
     if (disabled) return;
 
-    // 닉네임, 이미지 경로 가져오기
-    const nickname = sessionStorage.getItem(SS_GUEST_NN) || '익명';
+    // 현재 상태를 GuestCardCreateReq 형태로 세션 드래프트에 보관
     const icon = icons.find((it) => it.id === selectedId);
-
-    // 🎯 저장할 구조: birthdayCardId / message / nickname / imageUrl
-    const newCard = {
-      birthdayCardId: crypto?.randomUUID?.() ?? Date.now(),
-      message: message.trim(),
-      nickname,
-      imageUrl: icon?.src || '',
+    const draft: GuestCardCreateReq = {
+      messageText: message.trim(),
+      imageUrl: icon?.src ?? undefined,
     };
 
-    // 기존 목록 불러오기
-    const STORAGE_KEY = 'birthday_cards';
-    const prevList = (() => {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : [];
-      } catch {
-        return [];
-      }
-    })();
-
-    // 새 항목 추가 (최신순)
-    const nextList = [newCard, ...prevList].slice(0, 200);
-
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextList));
+      sessionStorage.setItem(SS_GUEST_CARD_DRAFT, JSON.stringify(draft));
     } catch (e) {
-      console.error('⚠️ 저장 실패', e);
+      console.error('⚠️ draft 저장 실패', e);
     }
 
-    console.log(newCard);
+    // TODO: createGuestCard(draft) 호출로 서버 저장 연동
     setDoneOpen(true);
   };
-
 
   return (
     <AppLayout
@@ -147,24 +176,26 @@ export default function WriteMessagePage() {
         </div>
 
         {/* 아이콘 그리드 */}
-        <div className="mt-5 grid grid-cols-3 gap-x-6 gap-y-4">
-          {icons.map((it) => {
-            const active = selectedId === it.id;
-            return (
-              <button
-                key={it.id}
-                type="button"
-                onClick={() => setSelectedId(it.id)}
-                className={[
-                  'flex h-20 w-20 items-center justify-center rounded-[12px] transition',
-                  active ? 'ring-1 ring-[#FF8B8B] bg-white' : 'ring-1 ring-neutral-200 bg-white/60 hover:bg-white',
-                ].join(' ')}
-                aria-pressed={active}
-              >
-                <img src={it.src} alt={it.alt} className="h-12 w-auto object-contain" loading="lazy" />
-              </button>
-            );
-          })}
+        <div className="mt-5">
+          <div className="grid grid-cols-3 gap-x-6 gap-y-4">
+            {icons.map((it) => {
+              const active = selectedId === it.id;
+              return (
+                <button
+                  key={it.id}
+                  type="button"
+                  onClick={() => setSelectedId(it.id)}
+                  className={[
+                    'flex h-20 w-20 items-center justify-center rounded-[12px] transition',
+                    active ? 'ring-1 ring-[#FF8B8B] bg-white' : 'ring-1 ring-neutral-200 bg-white/60 hover:bg-white',
+                  ].join(' ')}
+                  aria-pressed={active}
+                >
+                  <img src={it.src} alt={it.alt} className="h-12 w-auto object-contain" loading="lazy" />
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* 완료 모달 */}
@@ -181,7 +212,6 @@ export default function WriteMessagePage() {
           onClose={() => setDoneOpen(false)}
         />
       </div>
-
     </AppLayout>
   );
 }
