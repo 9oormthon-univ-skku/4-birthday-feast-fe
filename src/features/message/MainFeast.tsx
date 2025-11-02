@@ -61,7 +61,7 @@ const MainFeast: FC<MainFeastProps> = ({
 
 
       {/* 👤 host = LCP 우선 */}
-      <div className="absolute left-1/2 z-40 -translate-x-1/2 -translate-y-[83%] w-[46%]">
+      <picture className="absolute left-1/2 z-40 -translate-x-1/2 -translate-y-[83%] w-[46%]">
         <img
           src={HOST_SRC}
           alt="host"
@@ -70,7 +70,7 @@ const MainFeast: FC<MainFeastProps> = ({
           loading="eager"
           fetchPriority="high"
           sizes="(max-width: 520px) 46vw, 240px"
-          className="w-full h-auto"
+          className="block w-full"
         />
         {!hideQuizButton && (<div className="absolute left-0 top-1/2 -translate-x-[55%] -translate-y-1/2">
           <PlayQuizButton
@@ -79,7 +79,7 @@ const MainFeast: FC<MainFeastProps> = ({
             ariaLabel="퀴즈 플레이 버튼"
           />
         </div>)}
-      </div>
+      </picture>
 
       {/* 🎂 main-cake = 우선순위 내림 */}
       <img
