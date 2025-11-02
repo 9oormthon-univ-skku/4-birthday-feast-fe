@@ -68,7 +68,7 @@ export default function BottomSheet({
     <>
       {/* 닫혀 있고 + 애니메이션 중 아님 → 외부 헤드 (드래그 업으로 열기) */}
       {!open && !isAnimating && (
-        <div className="fixed inset-x-0 bottom-0 z-1000 pointer-events-none" aria-hidden="true">
+        <div className="fixed inset-x-0 bottom-0 z-1000 pointer-events-none">
           <div
             className="pointer-events-auto relative mx-0 w-full rounded-t-2xl bg-white shadow-[0_-4px_4px_rgba(0,0,0,0.05)]"
             style={{ height: `${peekHeight}px`, paddingBottom: 'env(safe-area-inset-bottom)' }}
