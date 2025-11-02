@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { Drawer } from '../../ui/CustomDrawer';
 import { useQueryClient } from '@tanstack/react-query';
-import { qk } from '@/lib/queryKeys';
+import { qk } from '@/app/queryKeys';
 import type { UserMeResponse } from '@/apis/user';
 import { useBirthdayMode } from '@/app/ModeContext';
 import type { MotionProps, PanInfo } from 'framer-motion';

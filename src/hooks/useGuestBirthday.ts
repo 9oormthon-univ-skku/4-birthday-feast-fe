@@ -1,7 +1,7 @@
 // src/hooks/useGuestBirthday.ts
 import { useQuery, useQueryClient, type UseQueryOptions, type UseQueryResult } from '@tanstack/react-query';
 import { getGuestBirthday, type GuestBirthdayRes } from '@/apis/guest';
-import { qk } from '@/lib/queryKeys';
+import { qk } from '@/app/queryKeys';
 
 /** 게스트 생일상 조회 훅 */
 export function useGuestBirthday(
