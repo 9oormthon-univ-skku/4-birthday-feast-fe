@@ -9,6 +9,9 @@ import { QuizQuestion } from '@/apis/quiz';
 import { useQuizById } from '@/hooks/useQuizById';
 import { useGuestQuizById } from '@/hooks/useGuestQuizById';
 import { SS_GUEST_NN } from '@/apis/guest';
+// 퀴즈 전송 api 연결 
+import { submitGuestQuiz } from '@/apis/guest';
+import { useRef } from 'react';
 
 export default function PlayQuizPage() {
   const navigate = useNavigate();
@@ -25,15 +28,24 @@ export default function PlayQuizPage() {
     questions: guestQuestions,
     isLoading: guestLoading,
     isError: guestIsError,
+    quizId: guestQuizId,
   } = useGuestQuizById({
     enabled: isGuest,
   });
+  // const guestQuizId = 1; // 테스트용 하드코딩 
 
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [index, setIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<(boolean | null)[]>([]);
   const [finished, setFinished] = useState(false);
   const [showAnswers, setShowAnswers] = useState(false);
+
+  const [serverScore, setServerScore] = useState<number | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  // finished 이후 중복 전송 방지
+  const hasSubmittedRef = useRef(false);
 
   // 표시용 닉네임 (게스트)
   const [nickName, setNickName] = useState<string>('익명');
@@ -90,6 +102,51 @@ export default function PlayQuizPage() {
     if (index < total - 1) setIndex((i) => i + 1);
     else setFinished(true);
   };
+
+  useEffect(() => {
+    if (!isGuest) return;
+    if (!finished) return;
+    if (!guestQuizId) return;
+    if (hasSubmittedRef.current) return;    // 중복 방지
+    if (questions.length === 0) return;
+
+    // null 답안을 가진 문제가 있으면 전송 생략(안전)
+    const hasNull = userAnswers.some((v) => v === null);
+    if (hasNull) return;
+
+    hasSubmittedRef.current = true; // 바로 세팅해서 중복 방지
+    setSubmitting(true);
+    setSubmitError(null);
+
+    (async () => {
+      try {
+        // 엔드포인트가 단건 payload만 받으므로 문항별로 모두 전송
+        const payloads = questions.map((q, i) => ({
+          questionId: q.questionId,
+          answer: Boolean(userAnswers[i]),
+        }));
+        // 전부 병렬 전송 (순차 전송 원하면 for...of + await)
+        const results = await Promise.all(
+          payloads.map((p) => submitGuestQuiz(guestQuizId, p))
+        );
+
+        // 마지막 응답에 score, ranking 등이 들어오는 스펙이라면 score만 저장
+        const last = results[results.length - 1];
+        if (last && typeof last.score === 'number') {
+          setServerScore(last.score);
+        }
+        // 랭킹은 기존 QuizRankList가 자체 조회한다면 생략
+
+      } catch (e) {
+        setSubmitError('퀴즈 제출 중 오류가 발생했어요.🥲\n잠시 후 다시 시도해주세요.');
+        // 다시 제출 가능하도록 가드 해제(원치 않으면 제거)
+        hasSubmittedRef.current = false;
+      } finally {
+        setSubmitting(false);
+      }
+    })();
+  }, [finished, isGuest, guestQuizId, questions, userAnswers]);
+
 
   const correctCount =
     total === 0
@@ -197,6 +254,12 @@ export default function PlayQuizPage() {
               <p className="my-1 text-2xl font-normal font-['KoreanSWGIG3'] text-[#A0A0A0]">
                 {total}문제 중 <span className="text-[#FF8B8B]">{correctCount}</span>문제 맞췄어요!
               </p>
+              {submitting && (
+                <p className="text-sm text-[#A0A0A0]">점수/랭킹 반영 중…</p>
+              )}
+              {submitError && (
+                <p className="text-sm text-[#FF8B8B]">{submitError}</p>
+              )}
             </div>
           )}
 

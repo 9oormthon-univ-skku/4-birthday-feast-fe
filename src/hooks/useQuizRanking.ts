@@ -16,6 +16,7 @@ export type RankItem = {
 };
 
 /** 폴백용 더미 데이터 (서버 반환 구조와 동일) */
+// 폴백 데이터 추후 삭제 !!! 
 const FALLBACK_ITEMS_SERVER: QuizRankingItem[] = [
   { rank: 1, guestQuizId: 1001, nickName: '김땡땡님', correctCount: 15, totalCount: 20 },
   { rank: 2, guestQuizId: 1002, nickName: '어쩌구저쩌구님', correctCount: 13, totalCount: 20 },
@@ -106,7 +107,8 @@ export function useQuizRanking(options: UseQuizRankingOptions = {}) {
         : await getQuizRanking(effectiveQuizId);
 
       const mapped = mapToRankItems(data ?? []);
-      setItems(mapped.length > 0 ? mapped : FALLBACK_ITEMS);
+      setItems(mapped.length > 0 ? mapped : FALLBACK_ITEMS); // 추후 폴백 삭제
+      // setItems(mapped);
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('❌ quiz ranking fetch failed', err);
