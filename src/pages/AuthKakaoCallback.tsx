@@ -2,7 +2,7 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { setAccessToken } from "@/lib/authToken";
+import { setAccessToken } from "@/utils/authToken";
 import { kakaoLogin } from "@/apis/auth";
 import { setAuthSessionUserId } from "@/stores/authStorage";
 

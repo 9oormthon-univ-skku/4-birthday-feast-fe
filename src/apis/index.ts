@@ -1,7 +1,7 @@
 // src/apis/index.ts
 
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
-import { getAccessToken, setAccessToken, clearAccessToken } from "@/lib/authToken";
+import { getAccessToken, setAccessToken, clearAccessToken } from "@/utils/authToken";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
@@ -17,9 +17,9 @@ export const refreshClient = axios.create({
 
 declare module "axios" {
   interface AxiosRequestConfig {
-    _retry?: boolean;
-    _guest?: boolean;         // ✅ 게스트 요청 플래그
-    _noAuthRedirect?: boolean; // (옵션) 강제 리다이렉트 방지 플래그
+    _retry?: boolean; // 재시도(재발급 후 1회) 여부 플래그
+    _guest?: boolean;     // 게스트 요청임을 명시: 재발급/리다이렉트 관여 금지
+    _noAuthRedirect?: boolean; // (옵션) 자동 로그인 페이지 이동 막기
   }
 }
 
