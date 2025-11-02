@@ -13,8 +13,8 @@ import {
   SS_GUEST_NN,
 } from "@/apis/guest";
 
-const LS_WELCOME = "bh.visitor.welcomeShownDate";
-const PLAY_PROMPT_SEEN_KEY = "bh.visitor.hasSeenPlayPrompt"; // 퀴즈 프롬프트 노출 여부(기기 단위)
+const LS_WELCOME = "bh.guest.welcomeShownDate";
+const PLAY_PROMPT_SEEN_KEY = "bh.guest.hasSeenPlayPrompt"; // 퀴즈 프롬프트 노출 여부(기기 단위)
 
 /** 메인 경로 판별 */
 function useIsOnMain() {
@@ -256,26 +256,26 @@ export default function VisitorOnboardingGate({
   };
 
   // 차단 화면(온보딩 중단 UI)
-  if (accessBlocked) {
-    return (
-      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/50 px-6 text-center">
-        <div className="mx-auto w-full max-w-[420px] rounded-2xl bg-white border border-[#ffe0e0] p-6 shadow-lg">
-          <h2 className="mb-2 text-xl font-bold text-[#FF8B8B]">접속이 제한되었어요🥲</h2>
-          <p className="mb-4 text-sm text-[#666] whitespace-pre-line">
-            {blockedReason || "생일상에 접속할 수 없습니다."}
-          </p>
-          <div className="mt-2 flex items-center justify-center">
-            <button
-              className="rounded-xl bg-[#FF8B8B] px-4 py-2 text-sm text-white"
-              onClick={() => nav("/", { replace: true })}
-            >
-              홈으로
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // if (accessBlocked) {
+  //   return (
+  //     <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/50 px-6 text-center">
+  //       <div className="mx-auto w-full max-w-[420px] rounded-2xl bg-white border border-[#ffe0e0] p-6 shadow-lg">
+  //         <h2 className="mb-2 text-xl font-bold text-[#FF8B8B]">접속이 제한되었어요🥲</h2>
+  //         <p className="mb-4 text-sm text-[#666] whitespace-pre-line">
+  //           {blockedReason || "생일상에 접속할 수 없습니다."}
+  //         </p>
+  //         <div className="mt-2 flex items-center justify-center">
+  //           <button
+  //             className="rounded-xl bg-[#FF8B8B] px-4 py-2 text-sm text-white"
+  //             onClick={() => nav("/", { replace: true })}
+  //           >
+  //             홈으로
+  //           </button>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <>

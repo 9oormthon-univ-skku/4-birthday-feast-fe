@@ -3,7 +3,7 @@ import { apiClient } from "./index";
 
 export const SS_GUEST_AT = "bh.guest.accessToken";
 export const SS_GUEST_RT = "bh.guest.refreshToken";
-export const SS_GUEST_NN = "bh.visitor.nickname";
+export const SS_GUEST_NN = "bh.guest.nickname";
 
 export type GuestAuthReq = { code: string; nickname: string };
 export type GuestAuthRes = {
