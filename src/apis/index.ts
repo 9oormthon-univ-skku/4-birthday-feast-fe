@@ -2,6 +2,8 @@
 
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { getAccessToken, setAccessToken, clearAccessToken } from "@/utils/authToken";
+import { SS_GUEST_AT } from "./guest";
+import { reissueAccessToken } from "./auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
@@ -33,7 +35,7 @@ apiClient.interceptors.request.use((config) => {
 });
 
 // ------ 게스트 컨텍스트 감지 유틸 (순환참조 방지: 상수 직접 사용) ------
-const GUEST_AT_KEY = "bh.guest.accessToken";
+// const GUEST_AT_KEY = "bh.guest.accessToken"; // 중복 상수 삭제 
 function isGuestContext(): boolean {
   try {
     // 1) 링크에 ?code=... 가 있거나
@@ -41,7 +43,7 @@ function isGuestContext(): boolean {
       typeof window !== "undefined" &&
       !!new URLSearchParams(window.location.search).get("code");
     // 2) 게스트 AT가 로컬에 있으면 게스트 컨텍스트로 간주
-    const hasGuestAT = !!localStorage.getItem(GUEST_AT_KEY);
+    const hasGuestAT = !!localStorage.getItem(SS_GUEST_AT);
     return hasCode || hasGuestAT;
   } catch {
     return false;
@@ -110,8 +112,7 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const res = await refreshClient.post("/api/auth-user/reissue", null);
-        const { accessToken } = res.data as { accessToken: string };
+        const { accessToken } = await reissueAccessToken();
 
         setAccessToken(accessToken);
         apiClient.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
