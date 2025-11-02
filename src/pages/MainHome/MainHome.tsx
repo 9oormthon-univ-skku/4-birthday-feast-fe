@@ -1,12 +1,5 @@
-// src/pages/MainHome/MainHome.tsx
 import React, { useRef, useState } from 'react';
-import {
-  useNavigate,
-  useSearchParams,
-  useLoaderData,
-  useLocation,
-  type LoaderFunctionArgs,
-} from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import Header from '../../ui/Header';
 import FooterButton from '@/ui/FooterButton';
@@ -23,73 +16,46 @@ import QuizRankList from '@/features/quiz/QuizRankList';
 import CapturePreview from '@/features/home/CapturePreview';
 import BottomSheet from './BottomSheet';
 
+import { qk } from '@/apis/queryKeys';
 import { getUserMe, type UserMeResponse } from '@/apis/user';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useBirthdayCards } from '@/hooks/useBirthdayCards';
-
-// loader 추가 
-type MainHomeLoaderData = {
-  guestName: string;      // ?name=에서 파싱 (게스트일 때만 의미)
-  meName: string | null;  // 서버에서 가져온 내 이름 (호스트일 때만 사용)
-};
-
-export async function loader({ request }: LoaderFunctionArgs) {
-  const url = new URL(request.url);
-  const guestName = (url.searchParams.get('name') || '').trim();
-
-  let meName: string | null = null;
-  try {
-    const me: UserMeResponse = await getUserMe();
-    meName = (me?.name || '').trim() || null;
-  } catch {
-    // 401/403/기타 에러는 여기서 무시 (게스트일 수도 있으므로 리다이렉트 X)
-  }
-
-  return {
-    guestName,
-    meName,
-  } satisfies MainHomeLoaderData;
-}
 
 const MainHome: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const queryClient = useQueryClient();
   const [qs] = useSearchParams();
 
-  // 👇 모드 판별은 반드시 여기서만
-  const { isHost, isGuest } = useBirthdayMode();
+  const [drawerOpen, setDrawerOpen] = useState(false); // 메뉴 오픈 상태 관리 
+  const [isIconView, setIsIconView] = useState(true); // 생일 메시지 아이콘 뷰(테이블에 올리기) 상태 관리 (아이콘 뷰 | 리스트 뷰)
 
-  // 👇 loader가 넘긴 원재료
-  const { guestName, meName } = useLoaderData() as MainHomeLoaderData;
+  const { isHost, isGuest } = useBirthdayMode(); // 생일자 | 게스트 상태 관리 
 
-  // 최종 표시 이름: 모드에 따라 선택
-  const displayName =
-    (isGuest ? (guestName || qs.get('name')?.trim() || '') : meName || '') || '사용자';
-
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [isIconView, setIsIconView] = useState(true);
-
-  const captureRef = useRef<HTMLDivElement | null>(null);
+  const captureRef = useRef<HTMLDivElement | null>(null); // 캡쳐 기능을 위한 ref
   const [shotUrl, setShotUrl] = useState<string | null>(null);
 
-  // 카드 목록은 기존 훅 유지
-  const {
-    data: cards = [],
-    isLoading: cardsLoading,
-    error: cardsError,
-  } = useBirthdayCards();
+  const { data: me } = useQuery<UserMeResponse>({
+    queryKey: qk.auth.me,
+    queryFn: getUserMe,
+    enabled: isHost,              // 게스트면 호출 안 함
+    staleTime: 5 * 60 * 1000,     // 5분 동안 신선 처리 (깜빡임/재요청 줄이기)
+    placeholderData: (prev) => prev, // 이전 캐시 유지 (있다면)
+    initialData: () => queryClient.getQueryData<UserMeResponse>(qk.auth.me), // 이미 프리패치된 값 사용
+  });
+
+  const { data: cards = [], isLoading: cardsLoading, error: cardsError } = useBirthdayCards();
+
+  const nameFromQS = (isGuest ? (qs.get('name')?.trim() || '') : '').trim();
+  const displayName = (isGuest ? nameFromQS : me?.name?.trim()) || '사용자';
 
   return (
     <div className="relative flex h-screen w-screen flex-col bg-[#FFF4DF]">
-      <Header
-        onDrawerOpenChange={setDrawerOpen}
-        showBrush={isHost}
-        title={
-          <>
-            <span className="text-[#FF8B8B]">{displayName}</span>
-            <span className="text-[#A0A0A0]">님의 생일한상</span>
-          </>
-        }
-      />
+      {/* Header는 UserLayout에서 모드/유저 컨텍스트가 제공되므로 그대로 사용 */}
+      <Header onDrawerOpenChange={setDrawerOpen} showBrush={isHost}
+        title={<>
+          <span className="text-[#FF8B8B]">{displayName}</span>
+          <span className="text-[#A0A0A0]">님의 생일한상</span>
+        </>} />
 
       {/* 상단 컨트롤 바 */}
       <div className="z-100 mx-auto my-4 flex w-[90%] max-w-[468px] items-center justify-between gap-3">
@@ -119,8 +85,7 @@ const MainHome: React.FC = () => {
           </div>
         ) : (
           <div className="mx-auto w-full max-w-[520px] px-4 pb-3">
-            <MainList
-              columns={4}
+            <MainList columns={4}
               cards={cards}
               isLoading={cardsLoading}
               error={cardsError}

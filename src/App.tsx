@@ -2,7 +2,7 @@
 import { createBrowserRouter, RouterProvider, redirect } from 'react-router-dom';
 import Login from './pages/LoginPage';
 import AuthKakaoCallback from './pages/AuthKakaoCallback';
-import MainHome, { loader as mainHomeLoader } from './pages/MainHome/MainHome';
+import MainHome from './pages/MainHome/MainHome';
 import TeamAboutPage from './pages/MenuPages/TeamAboutPage';
 import ContactPage from './pages/MenuPages/ContactPage';
 import QuizPage from './pages/MenuPages/QuizPage';
@@ -17,7 +17,6 @@ import ThemeSettingsPage from './pages/MenuPages/ThemeSettingsPage';
 import BirthdayMessageRoute from './routes/BirthdayMessageRoute';
 import AppShell from './app/AppShell';
 import { getStoredUserId } from '@/stores/authStorage';
-import { queryClient } from './main';
 
 // /u, /main 진입 시 내 홈으로 돌리기
 async function redirectToMyHome() {
@@ -54,7 +53,7 @@ const router = createBrowserRouter([
     element: <AppShell />, // 모든 하위 페이지 경로를 감싸 host | guest 관리
     children: [
       { index: true, loader: () => redirect('main') },
-      { path: 'main', element: <MainHome />, loader: mainHomeLoader },
+      { path: 'main', element: <MainHome /> },
       { path: 'history', element: <HistoryPage /> },
       { path: 'visibility', element: <VisibilityPage /> },
       { path: 'account', element: <AccountSettingsPage /> },
