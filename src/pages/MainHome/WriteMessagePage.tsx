@@ -1,13 +1,17 @@
 // 게스트 전용 메시지 입력 페이지 (API 이미지 + 로컬 폴백) 
-// 추후 로컬 폴백 삭제 (api 있어야 createpayload 작성 가능)
+// 추후 로컬 폴백 이미지 삭제 (api 있어야 create payload 작성 가능함..)
 
 // TODO: createGuestCard 추가하기
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { GuestCardCreateReq, SS_GUEST_NN, getGuestImages, type GuestImage } from '@/apis/guest';
+import {
+  GuestCardCreateReq,
+  SS_GUEST_NN, createGuestCard, // 닉네임은 백엔드 auth로직으로 처리 
+  getGuestImages, type GuestImage
+} from '@/apis/guest';
 import AppLayout from '@/ui/AppLayout';
 import Modal from '@/ui/Modal';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 // 더미 에셋 (폴백)
 import food1 from '@/assets/images/food-1.svg';
@@ -27,12 +31,12 @@ export default function WriteMessagePage() {
   const navigate = useNavigate();
   const [message, setMessage] = useState('');
   const [selectedId, setSelectedId] = useState<string>('food-1');
-  const [doneOpen, setDoneOpen] = useState(false);
+  const [doneOpen, setDoneOpen] = useState(false); // 메시지 전송 완료 모달
+  const [errorOpen, setErrorOpen] = useState<string | null>(null);
 
   const maxLen = 300;
-  const disabled = message.trim().length === 0;
 
-  // 1) 로컬 폴백 아이콘
+  // 1) 로컬 폴백 아이콘 (추후 삭제!)
   const fallbackIcons: IconItem[] = useMemo(
     () => [
       { id: 'food-1', src: food1, alt: '디저트 1' },
@@ -114,6 +118,29 @@ export default function WriteMessagePage() {
     }
   }, [message, selectedId, icons]);
 
+  // 서버 등록 뮤테이션
+  const { mutate, isPending } = useMutation({
+    mutationFn: (body: GuestCardCreateReq) => createGuestCard(body),
+    onSuccess: () => {
+      try {
+        sessionStorage.removeItem(SS_GUEST_CARD_DRAFT);
+      } catch { }
+      setDoneOpen(true);
+    },
+    onError: (err: any) => {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        '일시적인 오류로 생일 메시지를 등록하지 못했어요.';
+      setErrorOpen(msg);
+    },
+  });
+
+  // ✋ 제출 가드: 메시지 + API 이미지가 있어야 함
+  const isApiSelected = apiIcons.some((i) => i.id === selectedId);
+  const disabled = message.trim().length === 0; // 임시, 실제 운영 시 이미지 로컬폴백 삭제, 아래 조건으로 강화하기 
+  // const disabled = message.trim().length === 0 || !isApiSelected || isPending;
+
   const handleSubmit = () => {
     if (disabled) return;
 
@@ -124,14 +151,19 @@ export default function WriteMessagePage() {
       imageUrl: icon?.src ?? undefined,
     };
 
-    try {
-      sessionStorage.setItem(SS_GUEST_CARD_DRAFT, JSON.stringify(draft));
-    } catch (e) {
-      console.error('⚠️ draft 저장 실패', e);
+    // API 이미지가 없으면 방어
+    if (!isApiSelected) {
+      setErrorOpen('이미지를 정상적으로 등록하지 못했습니다.\n네트워크 연결을 확인한 후 다시 시도해주세요.');
+      return;
     }
 
+    try {
+      sessionStorage.setItem(SS_GUEST_CARD_DRAFT, JSON.stringify(draft));
+    } catch { }
+    mutate(draft);
+
     // TODO: createGuestCard(draft) 호출로 서버 저장 연동
-    setDoneOpen(true);
+    // setDoneOpen(true);
   };
 
   return (
@@ -210,6 +242,15 @@ export default function WriteMessagePage() {
             navigate(-1);
           }}
           onClose={() => setDoneOpen(false)}
+        />
+        {/* 에러 모달 */}
+        <Modal
+          open={!!errorOpen}
+          type="alert"
+          message={errorOpen ?? ''}
+          confirmText="확인"
+          onConfirm={() => setErrorOpen(null)}
+          onClose={() => setErrorOpen(null)}
         />
       </div>
     </AppLayout>
