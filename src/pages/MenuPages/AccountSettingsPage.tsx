@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/ui/AppLayout';
 import { updateNickname } from '@/apis/user';
 import NicknameModal from '@/features/auth/NicknameModal';
-// import { useMe } from '@/hooks/useMe';
 import { updateBirthdayVisible } from "@/apis/birthday"; // getBirthdayPeriod 제거
 import { useLogout } from '@/hooks/useLogout';
 import { qk } from '@/apis/queryKeys';

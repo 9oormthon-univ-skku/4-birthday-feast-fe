@@ -4,7 +4,6 @@ import { getStoredUserId } from '@/stores/authStorage';
 import { BirthdayModeProvider } from '@/app/ModeContext';
 import FeastBootstrap from '@/features/feast/FeastBootstrap';
 import OnboardingGate from '@/features/onboarding/OnboardingGate';
-import { useMe } from '@/hooks/useMe';
 import VisitorOnboardingGate from '@/features/visitorOnboarding/VisitorOnboardingGate';
 import { useEffect, useState } from 'react';
 import { isGuestReady } from '@/features/visitorOnboarding/guestReady';
