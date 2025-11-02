@@ -30,7 +30,7 @@ export default function HistoryPage() {
         footerButtonLabel="확인"
         onFooterButtonClick={() => navigate(-1)}
       >
-        <div className="px-8 py-6 text-sm text-gray-500">불러오는 중...</div>
+        <div className="px-8 py-6 text-sm text-gray-500 text-center">불러오는 중...</div>
       </AppLayout>
     );
   }
@@ -72,17 +72,18 @@ export default function HistoryPage() {
       footerButtonLabel="확인"
       onFooterButtonClick={() => navigate(-1)}
     >
-      <div className="px-8 py-4">
+      <div className="px-7 py-6">
         {isEmpty ? (
           <div className="my-10 text-center text-sm text-gray-400">
             아직 지난 생일상이 없어요.
           </div>
         ) : (
-          <ul className="grid grid-cols-2 gap-4 my-5">
+          <ul className="grid grid-cols-2 gap-4">
             {mapped.map((b) => {
               const cardCount = b._cards.length;
               const firstMsg = b._cards[0]?.message ?? '';
-              const dateText = `코드 ${b.code}`;
+              // const dateText = `코드 ${b.code}`; // 추후 수정 필요(api 반환값 필요)
+              const dateText = "2025.08.28"; // 하드코딩 
 
               return (
                 <li
@@ -92,7 +93,7 @@ export default function HistoryPage() {
                   {/* MainFeast 영역 */}
                   <div
                     className="relative w-[90%] mx-auto mt-[5%] bg-[#fff4df] flex items-center justify-center overflow-hidden"
-                    style={{ aspectRatio: '150/220' }}
+                    style={{ aspectRatio: '156/229' }}
                   >
                     <MainFeast
                       hideQuizButton={true}
@@ -103,10 +104,10 @@ export default function HistoryPage() {
 
                   {/* 메타/캡션 */}
                   <div className="px-3 py-2">
-                    <div className="text-xs font-normal font-['KoreanSWGIG3'] text-[#FF8B8B]">
+                    <div className="text-base font-normal font-['KoreanSWGIG3'] text-[#FF8B8B]">
                       {dateText}
                     </div>
-                    <div className="text-[8px] text-[#BFBFBF]">
+                    <div className="text-[11px] text-[#BFBFBF] font-semibold">
                       {cardCount}개의 메시지
                       {firstMsg
                         ? ` · ${firstMsg.slice(0, 28)}${firstMsg.length > 28 ? '…' : ''}`
