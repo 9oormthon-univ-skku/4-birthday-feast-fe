@@ -11,7 +11,7 @@
 
 @font-face {
   font-family: "KoreanSWGIG3";
-  src: url("/fonts/KoreanSWGIG3.otf") format("opentype");
+  src: url("/fonts/KoreanSWGIG3.woff2") format("opentype");
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
