@@ -10,11 +10,21 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#ffffff" />
 
+  <link rel="preconnect" href="https://t1.kakaocdn.net" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
   <link rel="preload" as="image" href="/images/host.png" fetchpriority="high" />
   <link rel="preload" as="image" href="/images/main-cake.png">
 
   <link rel="preload" as="font" type="font/woff2" href="/fonts/PretendardVariable.woff2" crossorigin />
   <link rel="preload" as="font" type="font/woff2" href="/fonts/KoreanSWGIG3.woff2" crossorigin />
+
+  <link rel="preload" as="style" href="/css/optional.css" />
+  <link rel="stylesheet" href="/css/critical.css" />
+  <link rel="stylesheet" href="/css/optional.css" media="print" onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet" href="/css/optional.css">
+  </noscript>
 </head>
 
 <body>
