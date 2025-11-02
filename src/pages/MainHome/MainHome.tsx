@@ -14,7 +14,6 @@ import MainList from '@/features/message/MainList';
 import QuizRankList from '@/features/quiz/QuizRankList';
 
 import CapturePreview from '@/features/home/CapturePreview';
-import VisitorOnboardingGate from '@/features/visitorOnboarding/VisitorOnboardingGate';
 import BottomSheet from './BottomSheet';
 
 import { qk } from '@/apis/queryKeys';

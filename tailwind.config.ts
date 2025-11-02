@@ -10,10 +10,10 @@ const config: Config = {
     extend: {
       fontFamily: {
         pretendard: ["Pretendard", "sans-serif"],
-        korean1: ["KoreanSWGIG1", "sans-serif"],
-        korean2: ["KoreanSWGIG2", "sans-serif"],
+        // korean1: ["KoreanSWGIG1", "sans-serif"],
+        // korean2: ["KoreanSWGIG2", "sans-serif"],
         korean3: ["KoreanSWGIG3", "sans-serif"],
-        korean4: ["KoreanSWGIG4", "sans-serif"],
+        // korean4: ["KoreanSWGIG4", "sans-serif"],
       },
     },
   },
