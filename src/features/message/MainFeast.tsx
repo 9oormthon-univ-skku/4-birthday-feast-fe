@@ -9,16 +9,17 @@ import mainCake from '@/assets/images/main-cake.svg';
 // 내부에서 TableCakes & 카드 데이터 훅 사용
 import TableCakes from '@/features/message/TableCakes';
 import PlayQuizButton from '../quiz/QuizButton';
-import { useBirthdayCards } from '@/hooks/useBirthdayCards';
+import { BirthdayCardLike } from '@/types/birthday';
+// import { useBirthdayCards } from '@/hooks/useBirthdayCards';
 
 export type CakeItem = { id: number | string; src: string; alt?: string };
 
 export type MainFeastProps = {
   className?: string;
+  cards: BirthdayCardLike[];
 };
 
-const MainFeast: FC<MainFeastProps> = ({ className }) => {
-  const { data: cards = [] } = useBirthdayCards();
+const MainFeast: FC<MainFeastProps> = ({ className, cards = [] }) => {
 
   // 카드 하나-> 케이크 하나로 반환 
   const cakes: CakeItem[] = useMemo(() => {

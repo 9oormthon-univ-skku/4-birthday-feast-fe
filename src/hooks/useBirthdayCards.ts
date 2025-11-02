@@ -1,10 +1,12 @@
 // src/features/message/useBirthdayCards.ts
 import { useEffect, useMemo } from "react";
-import type { BirthdayCard } from "@/types/birthday";
+// import type { BirthdayCardLike } from "@/types/birthday";
 import { useFeastThisYear } from "@/hooks/useFeastThisYear";
 import { useBirthdayMode } from "@/app/ModeContext";
 import { useGuestBirthday } from "@/hooks/useGuestBirthday";
 import type { GuestBirthdayCard } from "@/apis/guest";
+import { BirthdayCard } from "@/apis/birthday";
+import { BirthdayCardLike } from "@/types/birthday";
 
 /* ----------------------------------------------------------------------------- 
  * 로컬스토리지 폴백
@@ -32,9 +34,9 @@ function readLocalCards(): LocalCard[] {
 /* ----------------------------------------------------------------------------- 
  * 서버 → BirthdayCard 어댑터
  * ---------------------------------------------------------------------------*/
-type ServerBirthdayCard = BirthdayCard | GuestBirthdayCard;
+export type ServerBirthdayCard = BirthdayCard | GuestBirthdayCard;
 
-function adaptServerCards(list: ServerBirthdayCard[]): BirthdayCard[] {
+function adaptServerCards(list: ServerBirthdayCard[]): BirthdayCardLike[] {
   return list.map((c) => ({
     birthdayCardId: c.birthdayCardId,
     message: c.message,
@@ -43,7 +45,7 @@ function adaptServerCards(list: ServerBirthdayCard[]): BirthdayCard[] {
   }));
 }
 
-function adaptLocalCards(list: LocalCard[]): BirthdayCard[] {
+function adaptLocalCards(list: LocalCard[]): BirthdayCardLike[] {
   return list.map((c) => ({
     birthdayCardId: c.birthdayCardId,
     message: c.message,
@@ -95,7 +97,7 @@ export function useBirthdayCards() {
     return Array.isArray(list) ? (list as ServerBirthdayCard[]) : [];
   }, [isHost, isGuest, hostFeast?.birthdayCards, guestFeast?.birthdayCards]);
 
-  const data: BirthdayCard[] = useMemo(() => {
+  const data: BirthdayCardLike[] = useMemo(() => {
     if (serverCards.length > 0) return adaptServerCards(serverCards);
     return adaptLocalCards(readLocalCards());
   }, [serverCards]);

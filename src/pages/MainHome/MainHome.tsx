@@ -20,6 +20,7 @@ import BottomSheet from './BottomSheet';
 import { qk } from '@/app/queryKeys';
 import { getUserMe, type UserMeResponse } from '@/apis/user';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useBirthdayCards } from '@/hooks/useBirthdayCards';
 
 const MainHome: React.FC = () => {
   const navigate = useNavigate();
@@ -42,6 +43,8 @@ const MainHome: React.FC = () => {
     placeholderData: (prev) => prev, // 이전 캐시 유지 (있다면)
     initialData: () => queryClient.getQueryData<UserMeResponse>(qk.auth.me), // 이미 프리패치된 값 사용
   });
+
+  const { data: cards = [] } = useBirthdayCards();
 
   const nameFromQS = (isGuest ? (qs.get('name')?.trim() || '') : '').trim();
   const displayName = (isGuest ? nameFromQS : me?.name?.trim()) || '사용자';
@@ -79,7 +82,7 @@ const MainHome: React.FC = () => {
       <div ref={captureRef} className={isIconView ? 'mt-auto pt-[95%]' : ''}>
         {isIconView ? (
           <div className="w-full flex justify-center">
-            <MainFeast />
+            <MainFeast cards={cards} />
           </div>
         ) : (
           <div className="mx-auto w-full max-w-[520px] px-4 pb-3">

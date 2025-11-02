@@ -1,4 +1,4 @@
-export type BirthdayCard = {
+export type BirthdayCardLike = {
   birthdayCardId: string | number;
   message: string;
   nickname: string;
@@ -10,7 +10,7 @@ export type BirthdayUser = {
   userId: number;
   birthdayId: number;
   code: "OK" | "PENDING" | "CLOSED";
-  birthdayCards: BirthdayCard[];
+  birthdayCards: BirthdayCardLike[];
 };
 
 // UI에서 재사용할 수 있는 프리젠테이션 타입(케이크 슬롯용)

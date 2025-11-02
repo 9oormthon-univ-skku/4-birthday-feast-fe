@@ -1,13 +1,13 @@
 // src/features/home/MainList.tsx
 import { FC } from 'react';
 import clsx from 'clsx';
-import type { BirthdayCard } from '@/types/birthday';
+import type { BirthdayCardLike } from '@/types/birthday';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useBirthdayCards } from '@/hooks/useBirthdayCards';
 
 type MainListProps = {
   columns?: 2 | 3 | 4;
-  onSelect?: (card: BirthdayCard) => void;
+  onSelect?: (card: BirthdayCardLike) => void;
   className?: string;
 };
 
@@ -40,7 +40,7 @@ const MainList: FC<MainListProps> = ({ columns = 4, onSelect, className }) => {
     return q ? `?${q}` : '';
   };
 
-  const handleClick = (c: BirthdayCard, index: number) => {
+  const handleClick = (c: BirthdayCardLike, index: number) => {
     onSelect?.(c);
 
     const id = (c as any).birthdayCardId ?? (c as any).id ?? '';
