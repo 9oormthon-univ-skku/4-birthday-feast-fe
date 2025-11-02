@@ -1,10 +1,10 @@
 import { FC, memo, useMemo } from 'react';
-import table from '@/assets/images/table.png';
-import lBalloon from '@/assets/images/left-balloon.png';
-import rBalloon from '@/assets/images/right-balloon.png';
+import table from '@/assets/images/table.webp';
+import lBalloon from '@/assets/images/left-balloon.webp';
+import rBalloon from '@/assets/images/right-balloon.webp';
 
-const HOST_SRC = '/images/host.png';
-const MAIN_CAKE_SRC = '/images/main-cake.png';
+const HOST_SRC = '/images/host.webp';
+const MAIN_CAKE_SRC = '/images/main-cake.webp';
 
 import TableCakes from '@/features/message/TableCakes';
 import PlayQuizButton from '../quiz/QuizButton';
