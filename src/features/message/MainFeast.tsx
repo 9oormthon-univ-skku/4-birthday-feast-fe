@@ -10,6 +10,7 @@ import mainCake from '@/assets/images/main-cake.svg';
 import TableCakes from '@/features/message/TableCakes';
 import PlayQuizButton from '../quiz/QuizButton';
 import { BirthdayCardLike } from '@/types/birthday';
+// import { useBirthdayCards } from '@/hooks/useBirthdayCards';
 
 export type CakeItem = { id: number | string; src: string; alt?: string };
 
@@ -20,7 +21,8 @@ export type MainFeastProps = {
 };
 
 const MainFeast: FC<MainFeastProps> = ({ className, cards = [], hideQuizButton = false }) => {
-  // 카드 하나-> 케이크 하나로 반환
+
+  // 카드 하나-> 케이크 하나로 반환 
   const cakes: CakeItem[] = useMemo(() => {
     return cards.map((c: any, idx: number) => ({
       id: c.birthdayCardId ?? `card-${idx}`,
@@ -35,65 +37,36 @@ const MainFeast: FC<MainFeastProps> = ({ className, cards = [], hideQuizButton =
       <img
         src={lBalloon}
         alt=""
-        width={162} height={503}
-        className="absolute left-0 z-30 -translate-y-[73%] w-[31%] h-auto"
-        loading="lazy"
-        decoding="async"
-        aria-hidden="true"
+        className="absolute left-0 z-30 -translate-y-[73%] w-[31%]"
       />
       <img
         src={rBalloon}
         alt=""
-        width={162} height={503}
-        className="absolute right-0 z-30 -translate-y-[75%] w-[34%] h-auto"
-        loading="lazy"
-        decoding="async"
-        aria-hidden="true"
+        className="absolute right-0 z-30 -translate-y-[75%] w-[34%]"
       />
 
-      {/* 호스트 / 퀴즈 버튼 (⚠️ LCP 후보) */}
+      {/* 호스트 / 퀴즈 버튼 */}
       <div className="absolute left-1/2 z-40 -translate-x-1/2 -translate-y-[83%] w-[46%]">
-        <img
-          src={host}
-          alt="host"
-          width={175} height={382}
-          className="w-full h-auto"
-          loading="lazy"
-          decoding="async"
-          aria-hidden="true"
-        />
-        {!hideQuizButton && (
-          <div className="absolute left-0 top-1/2 -translate-x-[55%] -translate-y-1/2">
-            <PlayQuizButton
-              variant="inline"
-              imgSizeClassName="h-17 w-21"
-              ariaLabel="퀴즈 플레이 버튼"
-            />
-          </div>
-        )}
+        <img src={host} alt="host" className="w-full" />
+        {!hideQuizButton && (<div className="absolute left-0 top-1/2 -translate-x-[55%] -translate-y-1/2">
+          <PlayQuizButton
+            variant="inline"
+            imgSizeClassName="h-17 w-21"
+            ariaLabel="퀴즈 플레이 버튼"
+          />
+        </div>)}
       </div>
 
       <img
         src={mainCake}
-        alt="cake"
-        width={196} height={214}
-        className="absolute left-1/2 z-50 h-auto -translate-x-1/2 -translate-y-[60%] w-[50%]
-                  drop-shadow-[0_8px_8px_rgba(0,0,0,0.15)]"
-        loading="lazy"
-        decoding="async"
-        aria-hidden="true"
+        alt=""
+        className="absolute left-1/2 z-50 -translate-x-1/2 -translate-y-[60%] 
+        w-[50%] drop-shadow-[0_8px_8px_rgba(0,0,0,0.15)]"
       />
 
       {/* 테이블 + 케이크들 */}
       <div className="relative h-full w-full">
-        <img
-          src={table}
-          alt="table"
-          loading="lazy"
-          decoding="async"
-          width={473} height={333}
-          className="z-10 h-auto w-full"
-        />
+        <img src={table} alt="table" className="z-10 h-auto w-full" />
         <TableCakes items={cakes} />
       </div>
     </div>
