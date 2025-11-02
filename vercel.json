@@ -1,12 +1,16 @@
 {
-  "rewrites": [
-    { "source": "/robots.txt", "destination": "/robots.txt" },
-    { "source": "/manifest.json", "destination": "/manifest.json" },
-    { "source": "/favicon.svg", "destination": "/favicon.svg" },
-
-    { "source": "/images/(.*)", "destination": "/images/$1" },
-    { "source": "/fonts/(.*)", "destination": "/fonts/$1" },
-
-    { "source": "/(.*)", "destination": "/" }
+  "routes": [
+    { "handle": "filesystem" },   
+    { "src": "/(.*)", "dest": "/" } 
+  ],
+  "headers": [
+    {
+      "source": "/images/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/fonts/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    }
   ]
 }

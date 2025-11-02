@@ -35,7 +35,7 @@ export default function AppShell() {
   }, [isShareView]);
 
   // ✅ host가 자기 페이지 볼 때만 /api-user/me 호출 (초기 체인에서 제거)
-  const { me, loading, error } = useMe({ enabled: !isShareView && !!isMyPage });
+  // const { me, loading, error } = useMe({ enabled: !isShareView && !!isMyPage });
 
   // (선택) idle에 프리페치: host인데 내 페이지가 아니면 화면 그린 뒤 백그라운드 호출
   useEffect(() => {
