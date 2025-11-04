@@ -44,6 +44,10 @@ export default function PlayQuizPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const [rankEnabled, setRankEnabled] = useState(false);
+  const [rankRefreshToken, setRankRefreshToken] = useState<number>(0);
+
+
   // finished 이후 중복 전송 방지
   const hasSubmittedRef = useRef(false);
 
@@ -117,16 +121,15 @@ export default function PlayQuizPage() {
     hasSubmittedRef.current = true; // 가드: 바로 잠금
     setSubmitting(true);
     setSubmitError(null);
+    setRankEnabled(false);   // 제출 중에는 랭킹 off 🔒
 
     (async () => {
       try {
-        // ✅ 한번에 몰아서 보낼 payload (리스트)
         const payload: GuestQuizSubmitReq[] = questions.map((q, i) => ({
           questionId: q.questionId,
           answer: Boolean(userAnswers[i]),
         }));
 
-        // ✅ 단일 호출
         const res: GuestQuizSubmitRes = await submitGuestQuiz(guestQuizId, payload);
 
         // 서버가 총점/랭킹을 응답한다면 여기서 반영
@@ -134,13 +137,13 @@ export default function PlayQuizPage() {
           setServerScore((res as any).score);
         }
 
-        // 필요 시 랭킹/메시지 등 추가 필드 처리
-        // e.g., if ((res as any).ranking) { ... }
+        // ✅ 제출 성공: 이제 랭킹 조회 ON + 강제 refetch 트리거
+        setRankEnabled(true);
+        setRankRefreshToken(Date.now());
 
       } catch (e: any) {
         setSubmitError('퀴즈 제출 중 오류가 발생했어요.🥲\n잠시 후 다시 시도해주세요.');
-        // 재시도 허용하려면 가드 해제
-        hasSubmittedRef.current = false;
+        hasSubmittedRef.current = false; // 재시도 허용
       } finally {
         setSubmitting(false);
       }
