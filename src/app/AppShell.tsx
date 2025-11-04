@@ -1,4 +1,3 @@
-// src/routes/UserLayout.tsx
 import { Outlet, useParams, useSearchParams } from 'react-router-dom';
 import { getStoredUserId } from '@/stores/authStorage';
 import { BirthdayModeProvider } from '@/app/ModeContext';
@@ -20,7 +19,7 @@ export default function AppShell() {
   // 초기 모드 결정 (전역 컨텍스트인 BirthdayModeContext에 전달됨)
   const initialMode: 'host' | 'guest' = isShareView ? 'guest' : 'host';
 
-  // ✅ 게스트 온보딩 완료 여부 (세션스토리지 판정)
+  // 게스트 온보딩 완료 여부 (세션스토리지 판정)
   const [guestReady, setGuestReady] = useState(() => isGuestReady());
   useEffect(() => {
     if (!isShareView) return;
@@ -57,15 +56,15 @@ export default function AppShell() {
       {!isShareView && isMyPage && <OnboardingGate />}
 
       {/* guest 온보딩 게이트 */}
-      {isShareView && !guestReady && (
+      {isShareView && (
         <VisitorOnboardingGate
           quizPlayPath={`/u/${userId}/play`}
           onCompleted={() => setGuestReady(true)} // 완료 즉시 진입 허용
         />
       )}
       {/* Outlet렌더 보호 */}
-      {/* {(!isShareView || guestReady) && <Outlet />} */}
-      <Outlet />
+      {(!isShareView || guestReady) && <Outlet />}
+      {/* <Outlet /> */}
     </BirthdayModeProvider>
   );
 }
