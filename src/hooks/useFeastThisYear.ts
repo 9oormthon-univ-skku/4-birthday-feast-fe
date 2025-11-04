@@ -68,6 +68,8 @@ export function useFeastThisYear() {
       if (res.code) writeLS(LS_LAST_CODE, res.code);
       return res;
     },
+    staleTime: 10 * 60 * 1000,  // 🎂 10분
+    gcTime: 60 * 60 * 1000,     // 🎂 1시간
     initialData: () => {
       if (cachedBid == null) return undefined;
       const fromCache = queryClient.getQueryData(qk.birthdays.thisYearBy(cachedBid));
@@ -82,7 +84,7 @@ export function useFeastThisYear() {
       if (cachedBid == null) return undefined;
       return queryClient.getQueryState(qk.birthdays.thisYearBy(cachedBid))?.dataUpdatedAt;
     },
-    staleTime: 60 * 1000,
+    // staleTime: 60 * 1000,
     // onError: (err) => { // v4 레거시 방식 
     //   notifyError("올해 생일상 정보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.", err);
     // },

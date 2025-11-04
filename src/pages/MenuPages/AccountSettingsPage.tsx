@@ -190,13 +190,13 @@ export default function AccountSettingsPage() {
           </button>
 
           {/* 회원탈퇴 */}
-          <button
+          {/* <button
             type="button"
             onClick={handleWithdraw}
             className="w-full px-3 text-left text-base text-[#A0A0A0] font-semibold hover:text-[#FF8B8B] transition"
           >
             회원탈퇴
-          </button>
+          </button> */}
         </section>
       </div>
 
