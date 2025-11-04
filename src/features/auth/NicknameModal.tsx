@@ -1,6 +1,7 @@
 import React from "react";
 import Modal from "@/ui/Modal";
 import { useBirthdayMode } from "@/app/ModeContext";
+import { useLocation } from "react-router-dom";
 
 type NicknameModalProps = {
   open: boolean;
@@ -16,11 +17,37 @@ export default function NicknameModal({
   onClose,
 }: NicknameModalProps) {
   const { isGuest } = useBirthdayMode();
-  let message = "사용하실 닉네임을 등록해주세요";
+  const location = useLocation();
+
+  // URL 쿼리에서 name 파라미터 추출 (디코딩 포함)
+  const searchParams = new URLSearchParams(location.search);
+  const hostName = searchParams.get("name")
+    ? decodeURIComponent(searchParams.get("name")!)
+    : "";
+
+  // 기본 문구
+  let message: React.ReactNode = "사용하실 닉네임을 등록해주세요";
   let helperText = "";
+
+  // 게스트일 경우 문구 변경
   if (isGuest) {
-    message = "친구에게 표시될 닉네임을\n입력해주세요🤗"
-    helperText = "한 번 설정한 닉네임은 수정할 수 없습니다"
+    if (hostName) {
+      message = (
+        <>
+          <span className="text-[#FF8B8B] font-bold">{hostName}</span>
+          님에게 표시될 <span className="font-bold">닉네임</span>을<br />
+          입력해주세요🤗
+        </>
+      );
+    } else {
+      message = (
+        <>
+          친구에게 표시될 <span className="font-bold">닉네임</span>을<br />
+          입력해주세요🤗
+        </>
+      );
+    }
+    helperText = "한 번 설정한 닉네임은 수정할 수 없습니다";
   }
 
   return (

@@ -10,7 +10,8 @@ import { qk } from '@/apis/queryKeys';
 import type { UserMeResponse } from '@/apis/user';
 import { useQueryClient } from '@tanstack/react-query';
 import { GoPersonFill } from 'react-icons/go';
-import { LS_LAST_BID } from '@/hooks/useFeastThisYear';
+import { LS_LAST_BIRTHDAY } from '@/stores/authStorage';
+// import { LS_LAST_BID } from '@/hooks/useFeastThisYear'; [레거시]
 
 export default function AccountSettingsPage() {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ export default function AccountSettingsPage() {
     const next = !publicAll;
     setPublicAll(next);
 
-    const idRaw = localStorage.getItem(LS_LAST_BID);
+    const idRaw = localStorage.getItem(LS_LAST_BIRTHDAY);
     if (!idRaw) {
       alert("생일상 ID를 찾을 수 없습니다.");
       return;
@@ -189,13 +190,13 @@ export default function AccountSettingsPage() {
           </button>
 
           {/* 회원탈퇴 */}
-          <button
+          {/* <button
             type="button"
             onClick={handleWithdraw}
             className="w-full px-3 text-left text-base text-[#A0A0A0] font-semibold hover:text-[#FF8B8B] transition"
           >
             회원탈퇴
-          </button>
+          </button> */}
         </section>
       </div>
 

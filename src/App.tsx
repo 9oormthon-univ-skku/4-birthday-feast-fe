@@ -17,6 +17,8 @@ import ThemeSettingsPage from './pages/MenuPages/ThemeSettingsPage';
 import BirthdayMessageRoute from './routes/BirthdayMessageRoute';
 import AppShell from './app/AppShell';
 import { getStoredUserId } from '@/stores/authStorage';
+import { mainHomeLoader } from './routes/loaders/mainHomeLoader';
+import { queryClient } from './apis/queryClient';
 
 // /u, /main 진입 시 내 홈으로 돌리기
 async function redirectToMyHome() {
@@ -53,7 +55,7 @@ const router = createBrowserRouter([
     element: <AppShell />, // 모든 하위 페이지 경로를 감싸 host | guest 관리
     children: [
       { index: true, loader: () => redirect('main') },
-      { path: 'main', element: <MainHome /> },
+      { path: 'main', element: <MainHome />, loader: () => mainHomeLoader(queryClient), },
       { path: 'history', element: <HistoryPage /> },
       { path: 'visibility', element: <VisibilityPage /> },
       { path: 'account', element: <AccountSettingsPage /> },

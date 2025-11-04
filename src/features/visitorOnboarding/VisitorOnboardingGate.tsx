@@ -13,7 +13,8 @@ import {
   SS_GUEST_NN,
 } from "@/apis/guest";
 
-const LS_WELCOME = "bh.guest.welcomeShownDate";
+// ✅ 세션스토리지 키 (날짜 → 인덱스값 저장으로 변경)
+const SS_WELCOME = "bh.guest.welcomeShown"; // "1" 저장만 판단
 const PLAY_PROMPT_SEEN_KEY = "bh.guest.hasSeenPlayPrompt"; // 퀴즈 프롬프트 노출 여부(기기 단위)
 
 /** 메인 경로 판별 */
@@ -51,7 +52,6 @@ export default function VisitorOnboardingGate({
   const { search } = loc;
 
   const isOnMain = useIsOnMain();
-  const today = new Date().toISOString().slice(0, 10);
 
   const [sessionNickname, setSessionNickname] = useState<string | null>(() => {
     try {
@@ -115,12 +115,15 @@ export default function VisitorOnboardingGate({
     setShowNickname(!(sessionNickname && sessionNickname.trim()));
   }, [isOnMain, sessionNickname, accessBlocked]);
 
-  // 닉네임이 있고, 오늘 환영 모달을 아직 안봤다면 자동으로 환영 모달 오픈
+  // ✅ 닉네임이 있고, 세션에 환영 모달 표시 기록(SS_WELCOME)이 없으면 환영 모달 오픈
   useEffect(() => {
     if (!isOnMain || !sessionNickname || accessBlocked) return;
-    const lastShown = sessionStorage.getItem(LS_WELCOME);
-    if (lastShown !== today) setShowWelcome(true);
-  }, [isOnMain, sessionNickname, today, accessBlocked]);
+    const shown = sessionStorage.getItem(SS_WELCOME);
+    console.log('[VisitorOnboardingGate] auto-open check', {
+      isOnMain, sessionNickname, accessBlocked, shown
+    });
+    if (!shown) setShowWelcome(true);
+  }, [isOnMain, sessionNickname, accessBlocked]);
 
   // 환영 모달이 열려 있을 땐 프롬프트 자동 오픈 금지
   useEffect(() => {
@@ -221,8 +224,9 @@ export default function VisitorOnboardingGate({
 
     if (accessBlocked) return;
 
-    const lastShown = sessionStorage.getItem(LS_WELCOME);
-    if (lastShown !== today) {
+    // ✅ 세션에 환영 모달 기록이 없으면 오픈
+    const shown = sessionStorage.getItem(SS_WELCOME);
+    if (!shown) {
       setShowWelcome(true);
     } else if (isOnMain && !hasSeenPlayPrompt) {
       setShowPlayPrompt(true);
@@ -234,7 +238,8 @@ export default function VisitorOnboardingGate({
 
   const handleWelcomeClose = () => {
     try {
-      sessionStorage.setItem(LS_WELCOME, today);
+      // ✅ 날짜 대신 인덱스값으로 표시 기록
+      sessionStorage.setItem(SS_WELCOME, "1");
     } catch { }
     setShowWelcome(false);
     if (isOnMain && sessionNickname && !hasSeenPlayPrompt && !accessBlocked) {

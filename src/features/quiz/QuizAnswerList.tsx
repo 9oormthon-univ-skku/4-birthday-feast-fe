@@ -59,7 +59,7 @@ export default function QuizAnswerList({
                 {/* 원형 O/X 배지 */}
                 <div className="shrink-0">
                   {/* 실제 정답 O/X를 표시 */}
-                  {q.content ? (
+                  {q.answer ? (
                     <div
                       className="grid h-11 w-11 place-items-center rounded-full"
                       aria-label="정답"

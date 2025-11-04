@@ -1,8 +1,8 @@
 // src/features/feast/useFeastThisYear.ts
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createBirthday, getThisYearBirthday } from "@/apis/birthday";
-import { qk } from "../apis/queryKeys";
+import { qk } from "@/apis/queryKeys";
 import { LS_LAST_BIRTHDAY } from "@/stores/authStorage";
 
 // export const LS_LAST_BID = "bh.lastBirthdayId"; [레거시]
@@ -36,6 +36,20 @@ function writeLS(key: string, value?: string) {
   } catch { }
 }
 
+/** 에러 알림(콘솔 + alert). 환경/SSR 안전 처리 */
+function notifyError(message: string, err?: unknown) {
+  try {
+    // 상세는 콘솔에 남기고, 사용자에겐 간단히 알림
+    // eslint-disable-next-line no-console
+    console.error(`[useFeastThisYear] ${message}`, err);
+    if (typeof window !== "undefined" && typeof window.alert === "function") {
+      window.alert(message);
+    }
+  } catch {
+    /* no-op */
+  }
+}
+
 export function useFeastThisYear() {
   const queryClient = useQueryClient();
   const prefetchOnceRef = useRef(false);
@@ -54,6 +68,8 @@ export function useFeastThisYear() {
       if (res.code) writeLS(LS_LAST_CODE, res.code);
       return res;
     },
+    staleTime: 10 * 60 * 1000,  // 🎂 10분
+    gcTime: 60 * 60 * 1000,     // 🎂 1시간
     initialData: () => {
       if (cachedBid == null) return undefined;
       const fromCache = queryClient.getQueryData(qk.birthdays.thisYearBy(cachedBid));
@@ -68,8 +84,21 @@ export function useFeastThisYear() {
       if (cachedBid == null) return undefined;
       return queryClient.getQueryState(qk.birthdays.thisYearBy(cachedBid))?.dataUpdatedAt;
     },
-    staleTime: 60 * 1000,
+    // staleTime: 60 * 1000,
+    // onError: (err) => { // v4 레거시 방식 
+    //   notifyError("올해 생일상 정보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.", err);
+    // },
   });
+  // ✅ v5 방식: 결과를 보고 사이드이펙트로 에러 처리
+  useEffect(() => {
+    if (thisYearQuery.isError) {
+      notifyError(
+        "올해 생일상 정보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.",
+        thisYearQuery.error
+      );
+    }
+  }, [thisYearQuery.isError, thisYearQuery.error]);
+
 
   // createBirthday 뮤테이션
   const createMutation = useMutation({
@@ -85,10 +114,13 @@ export function useFeastThisYear() {
       }
       return created;
     },
+    onError: (err) => {
+      notifyError("생일상 생성에 실패했어요. 잠시 후 다시 시도해 주세요.", err);
+    },
   });
 
   /** 올해 데이터 존재 유무 체크 */
-  async function findExistingThisYear() {
+  async function findExistingThisYear(): Promise<FindThisYearResult> {
     const bidStr = readLS(LS_LAST_BIRTHDAY);
     const bid = bidStr != null ? Number(bidStr) : undefined;
     if (bid == null || !Number.isFinite(bid)) return { exists: false };
@@ -104,7 +136,8 @@ export function useFeastThisYear() {
         },
       });
       return { exists: true, pickedId: thisYear.birthdayId, code: thisYear.code };
-    } catch {
+    } catch (err) {
+      // 조용히 존재하지 않음으로 처리(UX상 과도한 경고 방지)
       return { exists: false, pickedId: bid };
     }
   }
@@ -113,8 +146,14 @@ export function useFeastThisYear() {
   async function ensureThisYearCreated(): Promise<{ alreadyExists: boolean }> {
     const check = await findExistingThisYear();
     if (check.exists) return { alreadyExists: true };
-    await createMutation.mutateAsync();
-    return { alreadyExists: false };
+    try {
+      await createMutation.mutateAsync();
+      return { alreadyExists: false };
+    } catch (err) {
+      // onError에서 alert했지만 호출자 입장에서도 한 번 더 보장
+      notifyError("생일상 생성 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.", err);
+      throw err;
+    }
   }
 
   /** 조용한 프리페치(최초 1회) */
@@ -137,7 +176,9 @@ export function useFeastThisYear() {
         },
         staleTime: 60 * 1000,
       });
-    } catch { }
+    } catch {
+      // "조용한" 프리패치: 실패시 알림 없음
+    }
   }
 
   /** 강제 갱신 */
@@ -145,8 +186,12 @@ export function useFeastThisYear() {
     const bidStr = readLS(LS_LAST_BIRTHDAY);
     const bid = bidStr != null ? Number(bidStr) : undefined;
     if (bid == null || !Number.isFinite(bid)) return;
-    await queryClient.invalidateQueries({ queryKey: qk.birthdays.thisYearBy(bid) });
-    await queryClient.refetchQueries({ queryKey: qk.birthdays.thisYearBy(bid) });
+    try {
+      await queryClient.invalidateQueries({ queryKey: qk.birthdays.thisYearBy(bid) });
+      await queryClient.refetchQueries({ queryKey: qk.birthdays.thisYearBy(bid) });
+    } catch (err) {
+      notifyError("생일상 정보를 새로고침하지 못했어요. 잠시 후 다시 시도해 주세요.", err);
+    }
   }
 
   // 렌더용 데이터 매핑(이미 캐시에 있으면 즉시 카드 사용 가능)

@@ -1,15 +1,18 @@
-import React, { useMemo } from 'react';
+// src/features/quiz/QuizRankList.tsx
+import React, { useEffect, useMemo } from 'react';
 import clsx from 'clsx';
 import { useQuizRanking } from '@/hooks/useQuizRanking';
 import { GoPersonFill } from "react-icons/go";
 
 type Props = {
   className?: string;
-  /** 스크롤 높이 지정(기본 max-h-[68vh]) */
   heightClassName?: string;
-  /** “오답보기” 버튼 클릭 시 부모에 알림 */
   onShowAnswers?: () => void;
   nickName?: string;
+  /** ❗️외부에서 fetch 타이밍 제어 */
+  enabled?: boolean;
+  /** ❗️값이 바뀌면 refetch 트리거 (e.g. Date.now()) */
+  refreshToken?: number | string;
 };
 
 export default function QuizRankList({
@@ -17,9 +20,16 @@ export default function QuizRankList({
   heightClassName = 'max-h-[68vh]',
   onShowAnswers,
   nickName,
+  enabled = true,
+  refreshToken,
 }: Props) {
-  const { items, isLoading, isError } = useQuizRanking({
-  });
+  const { items, isLoading, isError, refetch } = useQuizRanking({ enabled });
+
+  // refreshToken 변경 시 강제 재조회
+  useEffect(() => {
+    if (!enabled) return;
+    if (refreshToken !== undefined) refetch();
+  }, [enabled, refreshToken, refetch]);
 
   const displayItems = useMemo(() => items, [items]);
 
@@ -29,8 +39,8 @@ export default function QuizRankList({
         {/* 상태 표시 */}
         <div className="mb-2 flex items-center gap-2 text-xs">
           {isLoading && <span className="animate-pulse text-[#FF8B8B]">랭킹을 불러오는 중…</span>}
-          {isError && <span className="text-[#FF8B8B]">네트워크 오류로 예시 데이터를 표시합니다.</span>}
-          {!isLoading && !isError && (items.length == 0) && <span className="text-[#FF8B8B]">아직 랭킹 데이터가 없습니다.</span>}
+          {isError && <span className="text-[#FF8B8B]">랭킹을 불러오지 못했어요.🥲</span>}
+          {!isLoading && !isError && (items.length === 0) && <span className="text-[#FF8B8B]">아직 랭킹 데이터가 없습니다.</span>}
         </div>
 
         {items.length > 0 &&
@@ -40,7 +50,6 @@ export default function QuizRankList({
                 key={`${it.guestQuizId ?? 'fallback'}-${it.rank}-${it.name}`}
                 className="flex items-center justify-between py-2"
               >
-                {/* Left: 순위 + 아바타 + 이름/점수 */}
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="w-5 text-right text-sm font-bold text-[#FF8B8B] tabular-nums">
                     {it.rank}
@@ -56,20 +65,19 @@ export default function QuizRankList({
                   </div>
                 </div>
 
-                {/* Right: 오답보기 버튼 */}
-                {onShowAnswers && nickName === it.name && (<button
-                  type="button"
-                  className="shrink-0 rounded-full bg-[#FF8B8B] mx-2 px-3 py-1 text-xs font-semibold text-white shadow-sm active:scale-95 transition"
-                  onClick={() => {
-                    onShowAnswers?.();
-                  }}
-                >
-                  오답보기
-                </button>)}
+                {onShowAnswers && nickName === it.name && (
+                  <button
+                    type="button"
+                    className="shrink-0 rounded-full bg-[#FF8B8B] mx-2 px-3 py-1 text-xs font-semibold text-white shadow-sm active:scale-95 transition"
+                    onClick={() => onShowAnswers?.()}
+                  >
+                    오답보기
+                  </button>
+                )}
               </li>
             ))}
           </ul>}
       </div>
-    </div >
+    </div>
   );
 }
