@@ -7,6 +7,7 @@ import WelcomeModal from "@/features/home/WelcomeModal";
 import { useFeastThisYear } from "@/hooks/useFeastThisYear";
 import HostSkipInfoModal from "./HostSkipInfoModal";
 import { useMe } from "@/hooks/useMe";              // ✅ 추가
+import { LS_LAST_QUIZ } from "@/stores/authStorage";
 // (qk, UserMeResponse, useQueryClient 는 더이상 불필요하면 제거)
 
 const SS_HOST_WELCOME_SHOWN = "bh.host.welcomeShown";
@@ -31,6 +32,26 @@ export default function OnboardingGate(): React.ReactElement | null {
       localStorage.setItem(LS_QUIZ_PROMPT_SHOWN, v ? "1" : "0");
     } catch { }
   }, []);
+
+  // ✨ 로컬스토리지의 LS_LAST_QUIZ 존재 여부를 상태로 보관
+  const [hasLastQuiz, setHasLastQuiz] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(LS_LAST_QUIZ) != null;
+    } catch {
+      return false;
+    }
+  });
+
+  // ✨ storage 이벤트로 외부(다른 탭/화면)에서 변경돼도 반영
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === LS_LAST_QUIZ) {
+        setHasLastQuiz(e.newValue != null);
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
   // ---------------------------
 
   const isOnMain = useMemo(
@@ -42,7 +63,7 @@ export default function OnboardingGate(): React.ReactElement | null {
   const [showQuiz, setShowQuiz] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
 
-  // ✅ 여기서 me를 비차단으로 가져오도록 변경
+  // 여기서 me를 비차단으로 가져오도록 변경
   //    - 초기 렌더를 블로킹하지 않음
   //    - 데이터가 오면 모달 내 닉네임만 자연스럽게 업데이트됨
   const { me } = useMe({
@@ -71,15 +92,15 @@ export default function OnboardingGate(): React.ReactElement | null {
       return;
     }
 
-    // 환영 모달은 이미 본 상태 → 퀴즈 프롬프트 (로컬 기준 한 번만)
-    if (!hasSeenQuizPrompt) {
+    // ✨ 퀴즈 프롬프트는 '아직 퀴즈가 없고' + '한 번도 물어본 적 없을 때'만
+    if (!hasLastQuiz && !hasSeenQuizPrompt) {
       setShowQuiz(true);
       return;
     }
 
     // 모두 종료 상태
     setShowQuiz(false);
-  }, [isOnMain, hasSeenQuizPrompt]);
+  }, [isOnMain, hasSeenQuizPrompt, hasLastQuiz]);
 
   // 메인 경로가 아니면 모든 모달 닫기
   useEffect(() => {
@@ -106,7 +127,11 @@ export default function OnboardingGate(): React.ReactElement | null {
 
     // 3) 모달 닫고, 필요 시 퀴즈 프롬프트 노출
     setShowWelcome(false);
-    if (!hasSeenQuizPrompt) setShowQuiz(true);
+
+    // ✨ 닫은 뒤에도 동일한 조건 적용
+    if (!hasLastQuiz && !hasSeenQuizPrompt) {
+      setShowQuiz(true);
+    }
   };
 
   const handleQuizMake = () => {
@@ -133,7 +158,7 @@ export default function OnboardingGate(): React.ReactElement | null {
       <WelcomeModal
         open={showWelcome}
         isHost={true}
-        nickname={me?.name ?? ""}   // ✅ me가 늦게 와도 빈 문자열로 안전
+        nickname={me?.name ?? ""}   // me가 늦게 와도 빈 문자열로 안전
         onClose={handleWelcomeClose}
       />
       <QuizPromptModal open={showQuiz} onMake={handleQuizMake} onLater={handleQuizLater} />
