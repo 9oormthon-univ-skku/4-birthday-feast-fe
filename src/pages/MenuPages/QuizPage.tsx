@@ -168,12 +168,12 @@ export default function QuizPage() {
               <li key={q.questionId} className="flex items-stretch gap-3 h-12">
                 <span className="w-1.5 rounded-full bg-[#FF8B8B]" />
                 <div className="flex flex-1 items-center justify-between rounded-sm bg-[#F5F5F5] px-4 py-3 text-base text-[#3E3E3E]">
-                  {!editMode ? (
-                    <span>
-                      <b className="mr-2 text-[#FF8B8B]">{q.sequence}.</b>
-                      {q.content}
-                    </span>
-                  ) : (
+                  {/* {!editMode ? ( */}
+                  <span>
+                    <b className="mr-2 text-[#FF8B8B]">{q.sequence}.</b>
+                    {q.content}
+                  </span>
+                  {/* ) : (
                     <label className="flex-1">
                       <span className="sr-only">{q.sequence}번 문항</span>
                       <div className="flex items-center gap-2">
@@ -186,14 +186,14 @@ export default function QuizPage() {
                         />
                       </div>
                     </label>
-                  )}
+                  )} */}
                 </div>
 
                 {editMode && (
                   <div className="ml-3 flex items-center gap-2">
                     <button
                       aria-label={answers[i] ? '정답(O)로 설정' : '정답(X)로 설정'}
-                      onClick={() => toggleAnswer(i)}
+                      // onClick={() => toggleAnswer(i)}
                       className="flex items-center justify-center"
                       title={answers[i] ? '정답 O' : '정답 X'}
                     >
