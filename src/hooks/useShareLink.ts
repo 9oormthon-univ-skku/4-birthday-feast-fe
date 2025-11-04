@@ -2,11 +2,11 @@
 import { useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { getStoredUserId } from "@/stores/authStorage";
+import { getStoredUserId, LS_LAST_QUIZ } from "@/stores/authStorage";
 import { qk } from "@/apis/queryKeys";
 import type { UserMeResponse } from "@/apis/user";
 
-const LS_LAST_QUIZ_ID = "bh.lastQuizId";
+// const LS_LAST_QUIZ_ID = "bh.lastQuizId";
 
 /**
  * 공유용 링크 생성 훅 (B안 라우팅)
@@ -32,7 +32,7 @@ export function useShareLink(code: string | undefined | null) {
     // quizId는 로컬스토리지에서 로드 (없으면 추가 안 함)
     let quizId: string | null = null;
     try {
-      quizId = localStorage.getItem(LS_LAST_QUIZ_ID);
+      quizId = localStorage.getItem(LS_LAST_QUIZ);
     } catch {
       // private mode 등 예외는 무시
     }
