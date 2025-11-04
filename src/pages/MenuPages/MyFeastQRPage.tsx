@@ -30,15 +30,58 @@ export default function MyFeastQRPage() {
     }
   };
 
-  const onDownload = () => {
+  // const onDownload = () => {
+  //   if (!qrPng) return;
+  //   const a = document.createElement("a");
+  //   a.href = qrPng;
+  //   a.download = "my-birthday-qr.png";
+  //   document.body.appendChild(a);
+  //   a.click();
+  //   a.remove();
+  // };
+  // 교체용 onDownload (TypeScript)
+  const onDownload = async () => {
     if (!qrPng) return;
-    const a = document.createElement("a");
-    a.href = qrPng;
-    a.download = "my-birthday-qr.png";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+
+    try {
+      // 1) QR 이미지 fetch → Blob
+      const res = await fetch(qrPng, { mode: 'cors', cache: 'no-store' });
+      if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+      const blob = await res.blob();
+
+      // 2) Blob → Object URL
+      const blobUrl = URL.createObjectURL(blob);
+      const filename = 'my-birthday-qr.png';
+
+      // 3) 브라우저가 a[download] 지원하면 다운로드 시도
+      const supportsDownload = 'download' in HTMLAnchorElement.prototype;
+
+      if (supportsDownload) {
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        // 사파리 대응: DOM에 붙였다가 클릭
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        // 4) 리소스 정리 (약간 늦게 revoke)
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+        return;
+      }
+
+      // 3-폴백) a[download] 미지원 브라우저: 새 탭/창으로 열기
+      // (사용자가 "길게 누르기 → 저장" 하거나 브라우저가 저장 다이얼로그 띄움)
+      window.open(blobUrl, '_blank', 'noopener,noreferrer');
+
+      // 4) 리소스 정리
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10_000);
+    } catch (err) {
+      // 마지막 폴백: 원본 URL이라도 열어주기
+      window.open(qrPng, '_blank', 'noopener,noreferrer');
+    }
   };
+
 
   const disabled = loading;
 
