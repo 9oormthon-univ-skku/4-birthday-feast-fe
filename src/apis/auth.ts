@@ -4,6 +4,8 @@ import { apiClient, refreshClient } from "@/apis";
 export type KakaoLoginResponse = {
   userId: number | string;
   authToken: { accessToken: string; tokenType: string; expiresIn: number };
+  birthdayId: number | string;
+  quizId: number | string;
 };
 
 // 엑세스 토큰 재발급 응답

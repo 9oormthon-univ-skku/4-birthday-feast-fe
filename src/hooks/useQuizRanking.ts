@@ -4,8 +4,9 @@ import { useLocation, useParams } from 'react-router-dom';
 import { useBirthdayMode } from '@/app/ModeContext';
 import { getQuizRanking, type QuizRankingItem } from '@/apis/quiz';
 import { getGuestQuizRanking, GuestQuizRankingItem } from '@/apis/guest';
+import { LS_LAST_QUIZ } from '@/stores/authStorage';
 
-const LS_LAST_QUIZ_ID = 'bh.lastQuizId';
+// const LS_LAST_QUIZ_ID = 'bh.lastQuizId'; [레거시]
 
 /** UI 표시용 타입 */
 export type RankItem = {
@@ -50,7 +51,7 @@ type UseQuizRankingOptions = {
    * 외부에서 quizId를 강제 지정하고 싶을 때 사용.
    * 미지정 시:
    *  - guest: useParams().quizId 사용
-   *  - host : localStorage('bh.lastQuizId') 사용
+   *  - host : localStorage('bh.user.lastQuizId') 사용
    */
   quizId?: number | string;
   /** 자동 패칭 on/off (기본 true) */
@@ -81,7 +82,7 @@ export function useQuizRanking(options: UseQuizRankingOptions = {}) {
     }
     // 호스트: 로컬스토리지에서 가져옴
     if (isHost) {
-      const stored = localStorage.getItem(LS_LAST_QUIZ_ID)?.trim();
+      const stored = localStorage.getItem(LS_LAST_QUIZ)?.trim();
       return stored || undefined;
     }
   }, [quizId, isGuest, location.search]); //params.quizId,

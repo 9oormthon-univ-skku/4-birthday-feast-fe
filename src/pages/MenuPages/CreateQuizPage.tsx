@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import AppLayout from "@/ui/AppLayout";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { createQuiz } from "@/apis/quiz";
-import { LS_LAST_BID } from "@/hooks/useFeastThisYear";
+// import { LS_LAST_BID } from "@/hooks/useFeastThisYear"; [레거시]
+import { LS_LAST_BIRTHDAY } from "@/stores/authStorage";
 
 type QuizQuestion = {
   questionId: string;
@@ -65,7 +66,7 @@ function normalizeSequence(list: QuizQuestion[]): QuizQuestion[] {
 
 function readLastBirthdayId(): string | number | undefined {
   try {
-    const raw = localStorage.getItem(LS_LAST_BID);
+    const raw = localStorage.getItem(LS_LAST_BIRTHDAY);
     if (!raw) return undefined;
     const n = Number(raw);
     return Number.isFinite(n) ? n : (raw as string);
@@ -85,7 +86,7 @@ export default function CreateQuizPage() {
   const [birthdayId, setBirthdayId] = useState<string | number | undefined>(undefined);
   const [submitting, setSubmitting] = useState(false);
 
-  /** 1) birthdayId 결정 (LS_LAST_BID) */
+  /** 1) birthdayId 결정 (LS_LAST_BIRTHDAY) */
   useEffect(() => {
     const lsBirthday = readLastBirthdayId();
     // console.log(lsBirthday);

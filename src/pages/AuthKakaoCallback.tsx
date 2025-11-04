@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { setAccessToken } from "@/utils/authToken";
 import { kakaoLogin } from "@/apis/auth";
-import { setAuthSessionUserId } from "@/stores/authStorage";
+import { LS_LAST_BIRTHDAY, LS_LAST_QUIZ, setAuthSessionUserId } from "@/stores/authStorage";
 
 export default function AuthKakaoCallback() {
   const nav = useNavigate();
@@ -41,6 +41,10 @@ export default function AuthKakaoCallback() {
 
         // ⬇️ userId 저장(신규)
         setAuthSessionUserId(data.userId);
+
+        // 🎂 birthdayId, quizId 저장 
+        localStorage.setItem(LS_LAST_BIRTHDAY, String(data.birthdayId));
+        localStorage.setItem(LS_LAST_QUIZ, String(data.quizId));
 
         // ⬇️ 이동 경로 변경: /u/:userId/main
         nav(`/u/${data.userId}/main`, { replace: true });

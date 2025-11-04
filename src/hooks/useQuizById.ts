@@ -2,10 +2,11 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getQuiz, type Quiz, type QuizQuestion } from '@/apis/quiz';
+import { LS_LAST_QUIZ } from '@/stores/authStorage';
 
 // ---------- 로컬 스토리지 ----------
 const STORAGE_KEY = 'bh.quiz.ox.draft';
-const LS_LAST_QUIZ_ID = 'bh.lastQuizId';
+// const LS_LAST_QUIZ_ID = 'bh.lastQuizId'; [레거시]
 
 // 서버 성공 결과를 로컬에 캐시(단, 폴백엔 사용하지 않음)
 // function saveToStorage(data: Quiz) {
@@ -16,7 +17,7 @@ const LS_LAST_QUIZ_ID = 'bh.lastQuizId';
 
 function readLastQuizId(): string | number | undefined {
   try {
-    const raw = localStorage.getItem(LS_LAST_QUIZ_ID);
+    const raw = localStorage.getItem(LS_LAST_QUIZ);
     if (!raw) return undefined;
     const n = Number(raw);
     return Number.isFinite(n) ? n : (raw as string);
@@ -55,8 +56,8 @@ type UseQuizResult = {
 
 /**
  * 서버 퀴즈 단건 조회 훅 (로컬 폴백 제거)
- * - quizId는 내부에서 로컬(LS_LAST_QUIZ_ID)에서 읽습니다.
- * - 서버 성공 시 normalize + 로컬 캐시(STORAGE_KEY, LS_LAST_QUIZ_ID)만 수행
+ * - quizId는 내부에서 로컬(LS_LAST_QUIZ)에서 읽습니다.
+ * - 서버 성공 시 normalize + 로컬 캐시(STORAGE_KEY, LS_LAST_QUIZ)만 수행
  * - 서버 실패 또는 quizId 없음 시 data=null 유지
  */
 export function useQuizById(options?: UseQuizOptions): UseQuizResult {
@@ -75,7 +76,7 @@ export function useQuizById(options?: UseQuizOptions): UseQuizResult {
       if (persistLocalOnSuccess) {
         // saveToStorage(packed);
         try {
-          localStorage.setItem(LS_LAST_QUIZ_ID, String(q.quizId));
+          localStorage.setItem(LS_LAST_QUIZ, String(q.quizId));
         } catch { }
       }
       return packed;
