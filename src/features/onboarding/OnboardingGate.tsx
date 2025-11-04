@@ -36,7 +36,9 @@ export default function OnboardingGate(): React.ReactElement | null {
   // ✨ 로컬스토리지의 LS_LAST_QUIZ 존재 여부를 상태로 보관
   const [hasLastQuiz, setHasLastQuiz] = useState<boolean>(() => {
     try {
-      return localStorage.getItem(LS_LAST_QUIZ) != null;
+      const v = localStorage.getItem(LS_LAST_QUIZ);
+      // 값이 null, 빈 문자열, 'null', 'undefined' 중 하나면 false
+      return v != null && v.trim() !== "" && v !== "null" && v !== "undefined";
     } catch {
       return false;
     }
