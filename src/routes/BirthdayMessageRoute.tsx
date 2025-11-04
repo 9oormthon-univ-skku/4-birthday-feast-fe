@@ -1,9 +1,10 @@
 // src/routes/BirthdayMessageRoute.tsx
+// 메시지 상세 보기 페이지 index 이동을 관리
 import { useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getStoredUserId } from '@/stores/authStorage';
 import { useBirthdayCards } from '@/hooks/useBirthdayCards';
-import BirthdayMessagePage from '@/pages/MainHome/MessagePage';
+import MessagePage from '@/pages/MainHome/MessagePage';
 
 export default function BirthdayMessageRoute() {
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ export default function BirthdayMessageRoute() {
   };
 
   return (
-    <BirthdayMessagePage
+    <MessagePage
       cards={cards}
       initialIndex={safeInitialIndex}
       onBack={() => navigate(-1)}

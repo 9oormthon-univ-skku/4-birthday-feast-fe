@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/ui/AppLayout';
 import MainFeast from '@/features/message/MainFeast';
 import { useAllBirthdays } from '@/hooks/useAllBirthdays';
+import { BirthdayCardLike } from '@/types/birthday';
+import MessagePage from '../MainHome/MessagePage';
 
 export default function HistoryPage() {
   const navigate = useNavigate();
@@ -14,6 +16,17 @@ export default function HistoryPage() {
     error,
     refetch,
   } = useAllBirthdays();
+  // ✅ 메시지 뷰 로컬 상태
+  const [viewer, setViewer] = useState<{
+    open: boolean;
+    cards: BirthdayCardLike[];
+    initialIndex: number;
+  }>({ open: false, cards: [], initialIndex: 0 });
+
+  const openMessages = (cards: BirthdayCardLike[], initialIndex = 0) =>
+    setViewer({ open: true, cards, initialIndex });
+
+  const closeMessages = () => setViewer(v => ({ ...v, open: false }));
 
   if (isLoading) {
     return (
@@ -58,6 +71,18 @@ export default function HistoryPage() {
   }
   const isEmpty = mapped.length === 0;
 
+  // ✅ 메시지 페이지를 라우팅 없이 바로 렌더
+  if (viewer.open) {
+    return (
+      <MessagePage // 🎂 추가 
+        cards={viewer.cards}
+        initialIndex={viewer.initialIndex}
+        onClose={closeMessages}   // 뒤로/푸터 모두 닫기 동작
+      />
+    );
+  }
+
+
   return (
     <AppLayout
       showBack
@@ -81,13 +106,16 @@ export default function HistoryPage() {
           <ul className="grid grid-cols-2 gap-4">
             {mapped.map((b) => {
               const cardCount = b._cards.length;
-              const firstMsg = b._cards[0]?.message ?? '';
+              // const firstMsg = b._cards[0]?.message ?? '';
               // const dateText = `코드 ${b.code}`; // 추후 수정 필요(api 반환값 필요)
               const dateText = "2025.08.28"; // 하드코딩 
 
               return (
                 <li
                   key={String(b.birthdayId)}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openMessages(b._cards, 0)} //  바로 오픈
                   className="rounded-xs bg-white shadow-[0px_0px_1.9083333015441895px_0px_rgba(0,0,0,0.50)] overflow-hidden"
                 >
                   {/* MainFeast 영역 */}
@@ -111,9 +139,9 @@ export default function HistoryPage() {
                     </div>
                     <div className="text-[11px] text-[#BFBFBF] font-semibold">
                       {cardCount}개의 메시지
-                      {firstMsg
+                      {/* {firstMsg
                         ? ` · ${firstMsg.slice(0, 28)}${firstMsg.length > 28 ? '…' : ''}`
-                        : ''}
+                        : ''} */}
                     </div>
                   </div>
                 </li>

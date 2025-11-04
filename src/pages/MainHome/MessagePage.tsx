@@ -3,18 +3,21 @@ import React, { useMemo, useState } from 'react';
 import food6 from '@/assets/images/food-6.svg';
 import AppLayout from '@/ui/AppLayout';
 import { useNavigate } from 'react-router-dom';
-import type { BirthdayCard } from '@/types/birthday';
-import { GuestBirthdayCard } from '@/apis/guest';
+// import { GuestBirthdayCard } from '@/apis/guest';
+// import { BirthdayCard } from '@/apis/birthday';
+import { BirthdayCardLike } from '@/types/birthday';
 
-export default function BirthdayMessagePage({
+export default function MessagePage({
   cards,
   initialIndex = 0,
   onBack,
+  onClose, // 🎂 추가
   loop = true,
 }: {
-  cards: BirthdayCard[] | GuestBirthdayCard[];
+  cards: BirthdayCardLike[]
   initialIndex?: number;
   onBack?: () => void;
+  onClose?: () => void;  // 🎂 추가
   loop?: boolean;
 }) {
   const navigate = useNavigate();
@@ -50,7 +53,8 @@ export default function BirthdayMessagePage({
     <AppLayout
       title={<span className="text-[#FF8B8B]">생일 메세지</span>}
       showBack
-      onBack={onBack}
+      // onBack={onBack} [레거시]
+      onBack={onBack ?? onClose ?? (() => navigate(-1))} // 🎂 우선순위: onBack → onClose → navigate(-1)
       showMenu={false}
       showBrush={false}
       footerButtonLabel="처음으로"
