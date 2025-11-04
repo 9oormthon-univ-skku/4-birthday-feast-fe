@@ -8,7 +8,7 @@ import { useBirthdayMode } from '@/app/ModeContext';
 import { QuizQuestion } from '@/apis/quiz';
 import { useQuizById } from '@/hooks/useQuizById';
 import { useGuestQuizById } from '@/hooks/useGuestQuizById';
-import { SS_GUEST_NN } from '@/apis/guest';
+import { type GuestQuizSubmitReq, type GuestQuizSubmitRes, SS_GUEST_NN } from '@/apis/guest';
 // 퀴즈 전송 api 연결 
 import { submitGuestQuiz } from '@/apis/guest';
 import { useRef } from 'react';
@@ -107,39 +107,39 @@ export default function PlayQuizPage() {
     if (!isGuest) return;
     if (!finished) return;
     if (!guestQuizId) return;
-    if (hasSubmittedRef.current) return;    // 중복 방지
+    if (hasSubmittedRef.current) return;      // 중복 방지
     if (questions.length === 0) return;
 
-    // null 답안을 가진 문제가 있으면 전송 생략(안전)
+    // null 답안이 있으면(미응답) 전송하지 않음
     const hasNull = userAnswers.some((v) => v === null);
     if (hasNull) return;
 
-    hasSubmittedRef.current = true; // 바로 세팅해서 중복 방지
+    hasSubmittedRef.current = true; // 가드: 바로 잠금
     setSubmitting(true);
     setSubmitError(null);
 
     (async () => {
       try {
-        // 엔드포인트가 단건 payload만 받으므로 문항별로 모두 전송
-        const payloads = questions.map((q, i) => ({
+        // ✅ 한번에 몰아서 보낼 payload (리스트)
+        const payload: GuestQuizSubmitReq[] = questions.map((q, i) => ({
           questionId: q.questionId,
           answer: Boolean(userAnswers[i]),
         }));
-        // 전부 병렬 전송 (순차 전송 원하면 for...of + await)
-        const results = await Promise.all(
-          payloads.map((p) => submitGuestQuiz(guestQuizId, p))
-        );
 
-        // 마지막 응답에 score, ranking 등이 들어오는 스펙이라면 score만 저장
-        const last = results[results.length - 1];
-        if (last && typeof last.score === 'number') {
-          setServerScore(last.score);
+        // ✅ 단일 호출
+        const res: GuestQuizSubmitRes = await submitGuestQuiz(guestQuizId, payload);
+
+        // 서버가 총점/랭킹을 응답한다면 여기서 반영
+        if (typeof (res as any)?.score === 'number') {
+          setServerScore((res as any).score);
         }
-        // 랭킹은 기존 QuizRankList가 자체 조회한다면 생략
 
-      } catch (e) {
+        // 필요 시 랭킹/메시지 등 추가 필드 처리
+        // e.g., if ((res as any).ranking) { ... }
+
+      } catch (e: any) {
         setSubmitError('퀴즈 제출 중 오류가 발생했어요.🥲\n잠시 후 다시 시도해주세요.');
-        // 다시 제출 가능하도록 가드 해제(원치 않으면 제거)
+        // 재시도 허용하려면 가드 해제
         hasSubmittedRef.current = false;
       } finally {
         setSubmitting(false);

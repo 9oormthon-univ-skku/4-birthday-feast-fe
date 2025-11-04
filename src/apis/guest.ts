@@ -146,7 +146,7 @@ export async function getGuestQuizRanking(
 /** [POST] 게스트 퀴즈 제출 */
 export async function submitGuestQuiz(
   quizId: number | string,
-  body: GuestQuizSubmitReq
+  body: GuestQuizSubmitReq[]
 ): Promise<GuestQuizSubmitRes> {
   const { data } = await apiClient.post<GuestQuizSubmitRes>(
     `/api-guest/quiz/submit/${quizId}`,
