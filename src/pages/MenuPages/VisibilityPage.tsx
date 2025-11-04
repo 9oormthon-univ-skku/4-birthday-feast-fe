@@ -3,7 +3,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import AppLayout from '@/ui/AppLayout';
 import { getBirthdayPeriod, type BirthdayPeriod } from "@/apis/birthday";
 import { useNavigate } from 'react-router-dom';
-import { LS_LAST_BID } from '@/hooks/useFeastThisYear';
+import { LS_LAST_BIRTHDAY } from '@/stores/authStorage';
+// import { LS_LAST_BID } from '@/hooks/useFeastThisYear'; [레거시]
 
 const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일'];
 
@@ -74,7 +75,7 @@ export default function VisibilityPage() {
   });
 
   useEffect(() => {
-    const idRaw = localStorage.getItem(LS_LAST_BID);
+    const idRaw = localStorage.getItem(LS_LAST_BIRTHDAY);
 
     // 로컬스토리지 미존재 → 폴백 세팅
     if (!idRaw) {
