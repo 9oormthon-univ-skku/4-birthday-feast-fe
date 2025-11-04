@@ -11,7 +11,7 @@ import { LS_LAST_QUIZ } from "@/stores/authStorage";
 // (qk, UserMeResponse, useQueryClient 는 더이상 불필요하면 제거)
 
 const SS_HOST_WELCOME_SHOWN = "bh.host.welcomeShown";
-const LS_QUIZ_PROMPT_SHOWN = "bh.quiz.prompt.shown"; // "1" | "0"
+const SS_QUIZ_PROMPT_SHOWN = "bh.quiz.prompt.shown"; // "1" | "0"
 
 export default function OnboardingGate(): React.ReactElement | null {
   const nav = useNavigate();
@@ -21,7 +21,7 @@ export default function OnboardingGate(): React.ReactElement | null {
   // ----- 온보딩 로컬 상태 -----
   const [hasSeenQuizPrompt, setHasSeenQuizPromptState] = useState<boolean>(() => {
     try {
-      return localStorage.getItem(LS_QUIZ_PROMPT_SHOWN) === "1";
+      return sessionStorage.getItem(SS_QUIZ_PROMPT_SHOWN) === "1";
     } catch {
       return false;
     }
@@ -29,7 +29,7 @@ export default function OnboardingGate(): React.ReactElement | null {
   const setHasSeenQuizPrompt = useCallback((v: boolean) => {
     setHasSeenQuizPromptState(v);
     try {
-      localStorage.setItem(LS_QUIZ_PROMPT_SHOWN, v ? "1" : "0");
+      sessionStorage.setItem(SS_QUIZ_PROMPT_SHOWN, v ? "1" : "0");
     } catch { }
   }, []);
 
