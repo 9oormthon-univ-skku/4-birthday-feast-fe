@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createBirthday, getThisYearBirthday } from "@/apis/birthday";
-import { qk } from "../apis/queryKeys";
+import { qk } from "@/apis/queryKeys";
 import { LS_LAST_BIRTHDAY } from "@/stores/authStorage";
 
 // export const LS_LAST_BID = "bh.lastBirthdayId"; [레거시]

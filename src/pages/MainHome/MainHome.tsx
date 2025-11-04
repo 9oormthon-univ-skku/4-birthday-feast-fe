@@ -20,6 +20,7 @@ import { qk } from '@/apis/queryKeys';
 import { getUserMe, type UserMeResponse } from '@/apis/user';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useBirthdayCards } from '@/hooks/useBirthdayCards';
+import { useFeastThisYear } from '@/hooks/useFeastThisYear';
 
 const MainHome: React.FC = () => {
   const navigate = useNavigate();
