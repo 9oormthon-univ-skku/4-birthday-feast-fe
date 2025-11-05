@@ -2,8 +2,12 @@
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { postLogout } from "@/apis/auth";
-import { clearAccessToken } from "@/utils/authToken";
-import { clearAuthUserId } from "@/stores/authStorage";
+import { clearAccessToken } from "@/stores/authToken";
+import {
+  clearAuthUserId,
+  clearLastBirthdayId,
+  clearLastQuizId,
+} from "@/stores/authStorage";
 import { qk } from "@/apis/queryKeys";
 
 export function useLogout() {
@@ -27,6 +31,10 @@ export function useLogout() {
       try {
         clearAccessToken();
         clearAuthUserId();
+        clearLastBirthdayId(); // ✅ 추가
+        clearLastQuizId();     // ✅ 추가
+
+        // (중복 방어용 레거시 키가 있다면 유지)
         localStorage.removeItem("bh.auth.accessToken");
       } catch { }
 

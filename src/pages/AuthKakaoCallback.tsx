@@ -2,9 +2,13 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { setAccessToken } from "@/utils/authToken";
+import { setAccessToken } from "@/stores/authToken";
 import { kakaoLogin } from "@/apis/auth";
-import { LS_LAST_BIRTHDAY, LS_LAST_QUIZ, setAuthSessionUserId } from "@/stores/authStorage";
+import {
+  setAuthSessionUserId,
+  setLastBirthdayId,
+  setLastQuizId,
+} from "@/stores/authStorage";
 
 export default function AuthKakaoCallback() {
   const nav = useNavigate();
@@ -37,20 +41,16 @@ export default function AuthKakaoCallback() {
         const data = await kakaoLogin(code);
 
         // ⬇️ 토큰 저장(기존 로직 유지)
-        setAccessToken(data?.authToken?.accessToken || "");
+        setAccessToken(data?.authToken?.accessToken || null);
 
-        // ⬇️ userId 저장(신규)
-        setAuthSessionUserId(data.userId);
+        // ⬇️ userId 저장
+        setAuthSessionUserId(data.userId ?? null);
 
-        // 🎂 birthdayId, quizId 저장 (안전 처리)
-        if (data?.birthdayId != null) {
-          localStorage.setItem(LS_LAST_BIRTHDAY, String(data.birthdayId));
-        }
-        if (data?.quizId != null) {
-          localStorage.setItem(LS_LAST_QUIZ, String(data.quizId));
-        }
+        // 🎂 birthdayId / quizId 저장 (null이면 자동 remove)
+        setLastBirthdayId(data?.birthdayId ?? null);
+        setLastQuizId(data?.quizId ?? null);
 
-        // ⬇️ 이동 경로 변경: /u/:userId/main
+        // ⬇️ 이동 경로: /u/:userId/main
         nav(`/u/${data.userId}/main`, { replace: true });
       } catch (e) {
         if (axios.isAxiosError(e) && e.response) {

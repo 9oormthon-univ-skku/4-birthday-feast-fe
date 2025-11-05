@@ -1,7 +1,7 @@
 // src/apis/index.ts
 
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
-import { getAccessToken, setAccessToken, clearAccessToken } from "@/utils/authToken";
+import { getAccessToken, setAccessToken, clearAccessToken } from "@/stores/authToken";
 import { SS_GUEST_AT } from "./guest";
 import { reissueAccessToken } from "./auth";
 
