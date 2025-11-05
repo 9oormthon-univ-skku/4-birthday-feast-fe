@@ -61,6 +61,7 @@ export default function AuthKakaoCallback() {
               : JSON.stringify(e.response.data ?? {}, null, 2);
 
           console.error("☁️ kakao-login failed:", status, body);
+          alert(`카카오 로그인 실패\n${status}${body}`);
           nav(
             `/login?error=${status}&desc=${encodeURIComponent(
               body.slice(0, 200)

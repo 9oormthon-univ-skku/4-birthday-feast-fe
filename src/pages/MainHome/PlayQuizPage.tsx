@@ -143,6 +143,7 @@ export default function PlayQuizPage() {
 
       } catch (e: any) {
         setSubmitError('퀴즈 제출 중 오류가 발생했어요.🥲\n잠시 후 다시 시도해주세요.');
+        alert(`퀴즈 제출 실패\n${e}`);
         hasSubmittedRef.current = false; // 재시도 허용
       } finally {
         setSubmitting(false);

@@ -6,14 +6,13 @@ import { LS_LAST_QUIZ } from '@/stores/authStorage';
 
 // ---------- 로컬 스토리지 ----------
 const STORAGE_KEY = 'bh.quiz.ox.draft';
-// const LS_LAST_QUIZ_ID = 'bh.lastQuizId'; [레거시]
 
-// 서버 성공 결과를 로컬에 캐시(단, 폴백엔 사용하지 않음)
-// function saveToStorage(data: Quiz) {
-//   try {
-//     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-//   } catch { }
-// }
+// 시퀀스 정렬/보정
+function normalize(questions: QuizQuestion[]): QuizQuestion[] {
+  return (questions || [])
+    .map((q, i) => ({ ...q, sequence: q.sequence ?? i + 1 }))
+    .sort((a, b) => a.sequence - b.sequence);
+}
 
 function readLastQuizId(): string | number | undefined {
   try {
@@ -24,13 +23,6 @@ function readLastQuizId(): string | number | undefined {
   } catch {
     return undefined;
   }
-}
-
-// 시퀀스 정렬/보정
-function normalize(questions: QuizQuestion[]): QuizQuestion[] {
-  return (questions || [])
-    .map((q, i) => ({ ...q, sequence: q.sequence ?? i + 1 }))
-    .sort((a, b) => a.sequence - b.sequence);
 }
 
 // 쿼리 키 빌더
@@ -45,20 +37,15 @@ type UseQuizOptions = {
 
 type UseQuizResult = {
   data: Quiz | null;
-  /** 데이터 출처 (서버만 사용하거나 비어 있음) */
   source: 'server' | 'empty';
   isLoading: boolean;
   isError: boolean;
   error: unknown;
-  /** 마지막 퀴즈 ID(로컬에서 읽어온 값) */
   lastQuizId?: string | number;
 };
 
 /**
- * 서버 퀴즈 단건 조회 훅 (로컬 폴백 제거)
- * - quizId는 내부에서 로컬(LS_LAST_QUIZ)에서 읽습니다.
- * - 서버 성공 시 normalize + 로컬 캐시(STORAGE_KEY, LS_LAST_QUIZ)만 수행
- * - 서버 실패 또는 quizId 없음 시 data=null 유지
+ * 서버 퀴즈 단건 조회 훅 (에러 안전 처리)
  */
 export function useQuizById(options?: UseQuizOptions): UseQuizResult {
   const { persistLocalOnSuccess = true } = options || {};
@@ -70,16 +57,26 @@ export function useQuizById(options?: UseQuizOptions): UseQuizResult {
     queryKey: enabled ? qkQuizById(lastQuizId as string | number) : ['quiz', 'noop'],
     enabled,
     queryFn: async () => {
-      const q = await getQuiz(lastQuizId as string | number);
-      const packed: Quiz = { ...q, questions: normalize(q.questions || []) };
+      try {
+        const q = await getQuiz(lastQuizId as string | number);
+        const packed: Quiz = { ...q, questions: normalize(q.questions || []) };
 
-      if (persistLocalOnSuccess) {
-        // saveToStorage(packed);
-        try {
-          localStorage.setItem(LS_LAST_QUIZ, String(q.quizId));
-        } catch { }
+        if (persistLocalOnSuccess) {
+          try {
+            localStorage.setItem(LS_LAST_QUIZ, String(q.quizId));
+          } catch {
+            // 로컬 쓰기 실패는 무시
+          }
+        }
+
+        return packed;
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('❌ getQuiz failed:', err);
+        alert(`퀴즈 불러오기 실패\n${err}`);
+        // react-query로 에러 전파 (쿼리 상태가 isError로 전환됨)
+        throw err;
       }
-      return packed;
     },
     retry: 1,
   });

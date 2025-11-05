@@ -23,6 +23,7 @@ export function useLogout() {
         // 서버 실패해도 로컬 정리는 진행
         // eslint-disable-next-line no-console
         console.error("서버 로그아웃 실패:", err);
+        alert(`서버 로그아웃 실패\n${err}`)
       }
       return true;
     },

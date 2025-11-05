@@ -46,7 +46,7 @@ export default function AccountSettingsPage() {
       await updateBirthdayVisible(birthdayId, next);
     } catch (e) {
       console.error(e);
-      alert("공개여부 변경 중 오류가 발생했습니다.");
+      alert(`공개여부 변경 중 오류가 발생했습니다.\n${e}`);
       // 실패 시 UI 롤백
       setPublicAll(!next);
     } finally {
@@ -61,6 +61,7 @@ export default function AccountSettingsPage() {
       await logout(); // 서버 로그아웃 + 토큰 삭제 + /login 이동
     } catch (e) {
       console.error(e);
+      alert(`로그아웃 중 오류가 발생했습니다.\n${e}`);
     } finally {
       setLoggingOut(false);
     }

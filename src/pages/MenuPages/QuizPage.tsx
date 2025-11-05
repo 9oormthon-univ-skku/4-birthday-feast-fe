@@ -83,7 +83,7 @@ export default function QuizPage() {
       }
     } catch (err) {
       console.error('❌ 서버 문항 삭제 실패', err);
-      alert('문항 삭제 중 오류가 발생했어요.');
+      alert(`문항 삭제 중 오류가 발생했어요.\n${err}`);
       return;
     }
 

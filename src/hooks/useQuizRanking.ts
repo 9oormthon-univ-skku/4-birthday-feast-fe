@@ -87,6 +87,7 @@ export function useQuizRanking(options: UseQuizRankingOptions = {}) {
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('❌ quiz ranking fetch failed', err);
+      alert(`퀴즈 랭킹을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.\n${err}`);
       setIsError(true);
       setItems([]); // 폴백 없음
     } finally {

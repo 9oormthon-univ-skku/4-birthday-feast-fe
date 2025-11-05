@@ -193,7 +193,7 @@ export default function CreateQuizPage() {
       nav(`/main?quizId=${created.quizId}`);
     } catch (e: any) {
       console.error(e);
-      alert("퀴즈 저장에 실패했어요. 잠시 후 다시 시도해주세요.");
+      alert(`퀴즈 저장에 실패했어요. 잠시 후 다시 시도해주세요.\n${e}`);
     } finally {
       setSubmitting(false);
     }

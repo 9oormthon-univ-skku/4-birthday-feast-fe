@@ -179,9 +179,9 @@ export default function VisitorOnboardingGate({
         const status = e?.response?.status;
         // 401/403/404/410 등 접근 불가로 간주 → 온보딩 강제 중단
         if ([401, 403, 404, 410, 400].includes(status)) {
-          stopOnboarding("생일상에 접속 가능한 기간이 아닙니다.\n나중에 다시 시도해주세요!");
+          stopOnboarding("☁️ 생일상에 접속 가능한 기간이 아닙니다.\n나중에 다시 시도해주세요!");
         } else {
-          stopOnboarding("생일상 접속에 문제가 발생했습니다.\n나중에 다시 시도해주세요!");
+          stopOnboarding("☁️ 생일상 접속에 문제가 발생했습니다.\n나중에 다시 시도해주세요!");
         }
         return;
       } finally {
@@ -210,6 +210,7 @@ export default function VisitorOnboardingGate({
         await guestLogin({ code: urlCode, nickname: trimmed });
       } catch (e: any) {
         console.error("guestLogin(on submit) failed:", e);
+        alert(`게스트 로그인 실패\n${e}`);
         const status = e?.response?.status;
         if ([401, 403, 404, 410].includes(status)) {
           stopOnboarding("☁️ 생일상에 접속 가능한 기간이 아닙니다.\n나중에 다시 시도해주세요!");

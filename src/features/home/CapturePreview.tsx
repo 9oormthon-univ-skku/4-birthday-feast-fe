@@ -72,6 +72,7 @@ export default function CapturePreview({
       }
     } catch (e) {
       console.error("Card capture failed, fallback to src download.", e);
+      alert(`이미지 저장 실패\n${e}`)
     } finally {
       alert("이미지를 저장했어요.");
       onClose(); // 완료 후 모달 닫기
@@ -97,6 +98,7 @@ export default function CapturePreview({
       }
     } catch (e) {
       console.error(e);
+      alert(`이미지 주소 복사 실패\n${e}`);
     } finally {
       onClose(); // 완료 후 모달 닫기
     }

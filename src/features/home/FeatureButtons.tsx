@@ -2,7 +2,7 @@
 import React from "react";
 import { toPng } from "html-to-image";
 import { useShareLink } from "@/hooks/useShareLink";
-import { useAuth } from "@/hooks/useAuth";
+// import { useAuth } from "@/hooks/useAuth";
 import { useFeastThisYear } from "@/hooks/useFeastThisYear";
 
 type TargetRef =
@@ -29,7 +29,7 @@ export default function FeatureButtons({
   onCaptured,
   autoDownload = false,
 }: Props) {
-  const auth = useAuth();
+  // const auth = useAuth();
   const { data: feast, loading } = useFeastThisYear(); // { userId, birthdayId, code, birthdayCards }
   const shareDisabled = loading;
 
@@ -73,7 +73,7 @@ export default function FeatureButtons({
       }
     } catch (e) {
       console.error(e);
-      alert("이미지 저장 중 오류가 발생했습니다.");
+      alert(`이미지 저장 중 오류가 발생했습니다.\n${e}`);
     }
   };
 
