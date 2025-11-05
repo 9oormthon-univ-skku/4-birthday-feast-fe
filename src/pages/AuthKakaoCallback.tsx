@@ -42,9 +42,13 @@ export default function AuthKakaoCallback() {
         // ⬇️ userId 저장(신규)
         setAuthSessionUserId(data.userId);
 
-        // 🎂 birthdayId, quizId 저장 
-        localStorage.setItem(LS_LAST_BIRTHDAY, String(data.birthdayId));
-        localStorage.setItem(LS_LAST_QUIZ, String(data.quizId));
+        // 🎂 birthdayId, quizId 저장 (안전 처리)
+        if (data?.birthdayId != null) {
+          localStorage.setItem(LS_LAST_BIRTHDAY, String(data.birthdayId));
+        }
+        if (data?.quizId != null) {
+          localStorage.setItem(LS_LAST_QUIZ, String(data.quizId));
+        }
 
         // ⬇️ 이동 경로 변경: /u/:userId/main
         nav(`/u/${data.userId}/main`, { replace: true });
