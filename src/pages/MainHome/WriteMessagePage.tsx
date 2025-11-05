@@ -4,8 +4,8 @@
 // TODO: createGuestCard 추가하기
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  GuestCardCreateReq,
-  SS_GUEST_NN, createGuestCard, // 닉네임은 백엔드 auth로직으로 처리 
+  type GuestCardCreateReq, createGuestCard,
+  SS_GUEST_NN,  // 닉네임은 백엔드 auth로직으로 처리 
   getGuestImages, type GuestImage
 } from '@/apis/guest';
 import AppLayout from '@/ui/AppLayout';
@@ -36,7 +36,7 @@ export default function WriteMessagePage() {
 
   const maxLen = 300;
 
-  // 1) 로컬 폴백 아이콘 (추후 삭제!)
+  // 1) 로컬 폴백 아이콘 (추후 수정!, UI 표시용)
   const fallbackIcons: IconItem[] = useMemo(
     () => [
       { id: 'food-1', src: food1, alt: '디저트 1' },

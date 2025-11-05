@@ -8,9 +8,8 @@ const MAIN_CAKE_SRC = '/images/main-cake.webp';
 
 import TableCakes from '@/features/message/TableCakes';
 import PlayQuizButton from '../quiz/QuizButton';
-import { BirthdayCardLike } from '@/types/birthday';
-
-export type CakeItem = { id: number | string; src: string; alt?: string };
+import { BirthdayCardLike, CakeItem } from '@/types/birthday';
+import { cardsToCakes } from '@/utils/cardsToCakes';
 
 export type MainFeastProps = {
   className?: string;
@@ -23,13 +22,11 @@ const MainFeast: FC<MainFeastProps> = ({
   cards = [],
   hideQuizButton = false,
 }) => {
-  const cakes: CakeItem[] = useMemo(() => {
-    return cards.map((c: any, idx: number) => ({
-      id: c.birthdayCardId ?? `card-${idx}`,
-      src: c.imageUrl,
-      alt: c.nickname,
-    }));
-  }, [cards]);
+  // cards를 cakes로 변환 
+  const cakes: CakeItem[] = useMemo(
+    () => cardsToCakes(cards),
+    [cards]
+  );
 
   return (
     // <div className={`relative w-full max-w-[520px] ${className}`}>

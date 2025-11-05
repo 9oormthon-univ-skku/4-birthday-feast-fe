@@ -2,7 +2,7 @@
 import { apiClient } from "@/apis";
 
 // ---------- 타입 ----------
-export type BirthdayCard = {
+export type BirthdayCard = { // 게스트, UI렌더에서 재사용
   birthdayCardId: number | string;
   message: string;
   nickname: string;

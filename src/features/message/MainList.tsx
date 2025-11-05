@@ -1,14 +1,13 @@
 // src/features/home/MainList.tsx
-import { FC } from 'react';
+import { FC, useMemo } from 'react';
 import clsx from 'clsx';
-import type { BirthdayCardLike } from '@/types/birthday';
+import type { BirthdayCardLike, CakeItem } from '@/types/birthday';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
-// import { useBirthdayCards } from '@/hooks/useBirthdayCards';
+import { cardsToCakes } from '@/utils/cardsToCakes';
 
 type MainListProps = {
   cards: BirthdayCardLike[];
   columns?: 2 | 3 | 4;
-  onSelect?: (card: BirthdayCardLike) => void;
   className?: string;
   isLoading?: boolean;
   error?: unknown;
@@ -17,7 +16,7 @@ type MainListProps = {
 const colClass = (n: 2 | 3 | 4) =>
   ({ 2: 'grid-cols-2', 3: 'grid-cols-3', 4: 'grid-cols-4' }[n]);
 
-const MainList: FC<MainListProps> = ({ columns = 4, onSelect, className, cards, isLoading, error }) => {
+const MainList: FC<MainListProps> = ({ columns = 4, className, cards, isLoading, error }) => {
   // const { data, isLoading, error } = useBirthdayCards();
   const navigate = useNavigate();
   const location = useLocation();
@@ -43,10 +42,9 @@ const MainList: FC<MainListProps> = ({ columns = 4, onSelect, className, cards, 
     return q ? `?${q}` : '';
   };
 
-  const handleClick = (c: BirthdayCardLike, index: number) => {
-    onSelect?.(c);
+  const handleClick = (c: CakeItem, index: number) => {
 
-    const id = (c as any).birthdayCardId ?? (c as any).id ?? '';
+    const id = c.messageId;
 
     if (userId) {
       navigate(
@@ -65,6 +63,12 @@ const MainList: FC<MainListProps> = ({ columns = 4, onSelect, className, cards, 
     }
   };
 
+  // cards를 cakes로 변환 
+  const cakes: CakeItem[] = useMemo(
+    () => cardsToCakes(cards),
+    [cards]
+  );
+
   return (
     <ul
       className={clsx(
@@ -74,8 +78,8 @@ const MainList: FC<MainListProps> = ({ columns = 4, onSelect, className, cards, 
       )}
       role="list"
     >
-      {cards.map((c, idx) => (
-        <li key={(c as any).birthdayCardId ?? (c as any).id ?? `${c.nickname}-${c.imageUrl}`}>
+      {cakes.map((c, idx) => (
+        <li key={c.messageId}>
           <button
             type="button"
             onClick={() => handleClick(c, idx)}
@@ -84,7 +88,7 @@ const MainList: FC<MainListProps> = ({ columns = 4, onSelect, className, cards, 
             {/* 원형 썸네일 */}
             <div className="flex h-15 w-15 items-center justify-center rounded-full bg-[#FFFDF9]">
               <img
-                src={c.imageUrl}
+                src={c.src}
                 alt={c.nickname ?? '디저트'}
                 loading="lazy"
                 className="h-14 mt-2 w-auto object-contain"

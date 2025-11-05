@@ -129,17 +129,17 @@ export default function TableCakes({
               ? { pathname: `/u/${userId}/message`, search: buildSearchWithIndex(globalIndex) }
               : { pathname: '/message', search: buildSearchWithIndex(globalIndex) }; // 폴백
 
-            navigate(dest, { state: { cakeId: cake.id } });
+            navigate(dest, { state: { cakeId: cake.messageId } });
           };
 
           return (
             <button
-              key={`${cake.id}-${globalIndex}`}
+              key={`${cake.messageId}-${globalIndex}`}
               type="button"
               onClick={handleClick}
               style={style}
-              aria-label={cake.alt ?? `cake-${cake.id}`}
-              title={cake.alt ?? `cake-${cake.id}`}
+              aria-label={cake.nickname ?? `cake-${cake.messageId}`}
+              title={cake.nickname ?? `cake-${cake.messageId}`}
               className={[
                 'absolute block bg-transparent p-0 m-0 border-0 outline-none',
                 'cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2',

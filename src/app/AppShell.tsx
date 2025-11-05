@@ -1,11 +1,11 @@
 import { Outlet, useParams, useSearchParams } from 'react-router-dom';
 import { getStoredUserId } from '@/stores/authStorage';
 import { BirthdayModeProvider } from '@/app/ModeContext';
-import FeastBootstrap from '@/features/feast/FeastBootstrap';
+// import FeastBootstrap from '@/features/feast/FeastBootstrap'; [레거시]
 import OnboardingGate from '@/features/onboarding/OnboardingGate';
 import VisitorOnboardingGate from '@/features/visitorOnboarding/VisitorOnboardingGate';
 import { useEffect, useState } from 'react';
-import { isGuestReady } from '@/features/visitorOnboarding/guestReady';
+import { isGuestReady } from '@/utils/guestReady';
 
 export default function AppShell() {
   const { userId } = useParams();
@@ -52,7 +52,7 @@ export default function AppShell() {
       key={`mode-${initialMode}-${code ?? userId ?? 'self'}`}
     >
       {/* host 전용 부트스트랩 */}
-      {!isShareView && <FeastBootstrap enabled={true} />}
+      {/* {!isShareView && <FeastBootstrap enabled={true} />} */}
       {!isShareView && isMyPage && <OnboardingGate />}
 
       {/* guest 온보딩 게이트 */}
