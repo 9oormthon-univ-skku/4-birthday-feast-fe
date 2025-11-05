@@ -3,7 +3,7 @@ import AppLayout from "@/ui/AppLayout";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { createQuiz } from "@/apis/quiz";
 // import { LS_LAST_BID } from "@/hooks/useFeastThisYear"; [레거시]
-import { LS_LAST_BIRTHDAY } from "@/stores/authStorage";
+import { LS_LAST_BIRTHDAY, LS_LAST_QUIZ } from "@/stores/authStorage";
 
 type QuizQuestion = {
   questionId: string;
@@ -184,6 +184,10 @@ export default function CreateQuizPage() {
       };
 
       const created = await createQuiz(payload);
+      // 퀴즈 생성 시 quizId 로컬에 저장
+      try {
+        localStorage.setItem(LS_LAST_QUIZ, String(created.quizId));
+      } catch { }
       clearDraftByKey(draftKeyFor(birthdayId)); // 해당 생일상 초안만 제거
       alert("퀴즈가 저장되었습니다.");
       nav(`/main?quizId=${created.quizId}`);
