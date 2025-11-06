@@ -13,7 +13,7 @@ let memoryQuizId: string | number | null = null;
 /* ────────────────────────────────────────────────
  * USER ID
  * ──────────────────────────────────────────────── */
-export function setAuthSessionUserId(userId: string | number | null) {
+export function setAuthSessionUserId(userId: number | null) {
   memoryUserId = userId;
   if (userId != null) {
     localStorage.setItem(LS_USER_ID, String(userId));
@@ -36,7 +36,7 @@ export function clearAuthUserId() {
 /* ────────────────────────────────────────────────
  * BIRTHDAY ID
  * ──────────────────────────────────────────────── */
-export function setLastBirthdayId(birthdayId: string | number | null) {
+export function setLastBirthdayId(birthdayId: number | null) {
   memoryBirthdayId = birthdayId;
   if (birthdayId != null) {
     localStorage.setItem(LS_LAST_BIRTHDAY, String(birthdayId));
@@ -59,7 +59,7 @@ export function clearLastBirthdayId() {
 /* ────────────────────────────────────────────────
  * QUIZ ID
  * ──────────────────────────────────────────────── */
-export function setLastQuizId(quizId: string | number | null) {
+export function setLastQuizId(quizId: number | null) {
   memoryQuizId = quizId;
   if (quizId != null) {
     localStorage.setItem(LS_LAST_QUIZ, String(quizId));

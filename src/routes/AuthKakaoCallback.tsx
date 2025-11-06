@@ -2,7 +2,6 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { setAccessToken } from "@/stores/authToken";
 import { kakaoLogin } from "@/apis/auth";
 import {
   setAuthSessionUserId,
@@ -38,19 +37,15 @@ export default function AuthKakaoCallback() {
 
     (async () => {
       try {
+        // ✅ 서버가 HttpOnly 쿠키로 토큰 설정 (본문의 토큰은 사용하지 않음)
         const data = await kakaoLogin(code);
 
-        // ⬇️ 토큰 저장(기존 로직 유지)
-        setAccessToken(data?.authToken?.accessToken || null);
-
-        // ⬇️ userId 저장
+        // ✅ 사용자/도메인 상태만 저장
         setAuthSessionUserId(data.userId ?? null);
-
-        // 🎂 birthdayId / quizId 저장 (null이면 자동 remove)
         setLastBirthdayId(data?.birthdayId ?? null);
         setLastQuizId(data?.quizId ?? null);
 
-        // ⬇️ 이동 경로: /u/:userId/main
+        // ✅ 이동: /u/:userId/main
         nav(`/u/${data.userId}/main`, { replace: true });
       } catch (e) {
         if (axios.isAxiosError(e) && e.response) {

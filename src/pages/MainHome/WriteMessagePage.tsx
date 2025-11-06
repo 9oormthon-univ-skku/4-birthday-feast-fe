@@ -108,7 +108,7 @@ export default function WriteMessagePage() {
     const icon = icons.find((it) => it.id === selectedId);
     const draft: GuestCardCreateReq = {
       messageText: message.trim(),
-      imageUrl: icon?.src ?? undefined,
+      imageUrl: icon?.src ?? "",
     };
     try {
       sessionStorage.setItem(SS_GUEST_CARD_DRAFT, JSON.stringify(draft));
@@ -147,7 +147,7 @@ export default function WriteMessagePage() {
     const icon = icons.find((it) => it.id === selectedId);
     const draft: GuestCardCreateReq = {
       messageText: message.trim(),
-      imageUrl: icon?.src ?? undefined,
+      imageUrl: icon?.src ?? "",
     };
 
     // API 이미지가 없으면 방어

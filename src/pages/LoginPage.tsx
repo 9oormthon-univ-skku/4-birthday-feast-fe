@@ -2,8 +2,7 @@ import { useNavigate } from "react-router-dom";
 import kakaoBtn from "@/assets/images/kakao_login_large_wide.png";
 import { useEffect, useState } from "react";
 import Loading from "./LoadingPage";
-import { kakaoAuthorize } from "@/features/auth/kakaoAuthorize";
-// import { kakaoAuthorize } from "@/features/auth/kakaoAuthorize"; // ✅ 추가
+import { kakaoAuthorize } from "@/routes/kakaoAuthorize";
 
 const Login = () => {
   const navigate = useNavigate();

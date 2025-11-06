@@ -1,7 +1,7 @@
 // src/App.tsx
 import { createBrowserRouter, RouterProvider, redirect } from 'react-router-dom';
 import Login from './pages/LoginPage';
-import AuthKakaoCallback from './pages/AuthKakaoCallback';
+import AuthKakaoCallback from './routes/AuthKakaoCallback';
 import MainHome from './pages/MainHome/MainHome';
 import TeamAboutPage from './pages/MenuPages/TeamAboutPage';
 import ContactPage from './pages/MenuPages/ContactPage';
