@@ -1,19 +1,24 @@
+// 인증) 카카오, 로그아웃, 토큰 재발급 등 인증 관련 API
 import { apiClient, refreshClient } from "@/apis";
 
-// 카카오 로그인 응답 
+/** 카카오 소셜 로그인 응답 */
 export type KakaoLoginResponse = {
-  userId: number | string;
-  authToken: { accessToken: string; tokenType: string; expiresIn: number };
-  birthdayId: number | string;
-  quizId: number | string;
+  userId: number;
+  authToken: {
+    accessToken: string;
+    tokenType: string;
+    expiresIn: number
+  };
+  birthdayId: number;
+  quizId: number;
 };
 
-// 엑세스 토큰 재발급 응답
+/** 엑세스 토큰 재발급 응답 */
 export type ReissueResponse = {
   accessToken: string;
+  refreshToken: string;
   tokenType: string;
   expiresIn: number;
-  refreshToken?: string; // 서버가 내려줄 수도 있어 optional
 };
 
 /** 카카오 소셜 로그인 API */

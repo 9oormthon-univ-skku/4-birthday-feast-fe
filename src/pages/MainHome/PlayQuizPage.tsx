@@ -8,10 +8,11 @@ import { useBirthdayMode } from '@/app/ModeContext';
 import { QuizQuestion } from '@/apis/quiz';
 import { useQuizById } from '@/hooks/useQuizById';
 import { useGuestQuizById } from '@/hooks/useGuestQuizById';
-import { type GuestQuizSubmitReq, type GuestQuizSubmitRes, SS_GUEST_NN } from '@/apis/guest';
+import { type GuestQuizSubmitReq, type GuestQuizSubmitRes } from '@/apis/guest';
 // 퀴즈 전송 api 연결 
 import { submitGuestQuiz } from '@/apis/guest';
 import { useRef } from 'react';
+import { SS_GUEST_NN } from '@/apis/apiUtils';
 
 export default function PlayQuizPage() {
   const navigate = useNavigate();

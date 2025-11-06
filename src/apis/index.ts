@@ -1,9 +1,8 @@
 // src/apis/index.ts
-
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { getAccessToken, setAccessToken, clearAccessToken } from "@/stores/authToken";
-import { SS_GUEST_AT } from "./guest";
 import { reissueAccessToken } from "./auth";
+import { SS_GUEST_AT } from "./apiUtils";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
@@ -34,17 +33,10 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// ------ 게스트 컨텍스트 감지 유틸 (순환참조 방지: 상수 직접 사용) ------
-// const GUEST_AT_KEY = "bh.guest.accessToken"; // 중복 상수 삭제 
 function isGuestContext(): boolean {
   try {
-    // 1) 링크에 ?code=... 가 있거나
-    const hasCode =
-      typeof window !== "undefined" &&
-      !!new URLSearchParams(window.location.search).get("code");
-    // 2) 게스트 AT가 로컬에 있으면 게스트 컨텍스트로 간주
-    const hasGuestAT = !!sessionStorage.getItem(SS_GUEST_AT);
-    return hasCode || hasGuestAT;
+    if (typeof window === "undefined") return false;
+    return !!sessionStorage.getItem(SS_GUEST_AT);
   } catch {
     return false;
   }

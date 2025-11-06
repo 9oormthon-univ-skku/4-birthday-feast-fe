@@ -1,7 +1,7 @@
-// src/apis/quiz.ts
+import { RequestOpts, toPathId } from "./apiUtils";
 import { apiClient } from "./index";
 
-/** 공통 타입들 */
+/** 새로 만들 퀴즈 */
 export type QuizCreateQuestionInput = {
   /** 1,2,3... 표시 순서 */
   sequence: number;
@@ -13,64 +13,79 @@ export type QuizCreateQuestionInput = {
 
 export type QuizCreateReq = {
   /** 생일상(호스트)의 birthdayId */
-  birthdayId: number | string;
+  birthdayId: number;
   /** 생성할 문제 리스트 */
   questions: QuizCreateQuestionInput[];
 };
 
-/** 조회/응답에 사용되는 문제 타입 */
+/** 퀴즈 개별 문항 */
 export type QuizQuestion = {
-  questionId: number | string;
+  questionId: number;
   content: string;
   answer: boolean;
   sequence: number;
 };
 
+/** 퀴즈 아이템 */
 export type Quiz = {
-  quizId: number | string;
-  birthdayId: number | string;
+  quizId: number;
+  birthdayId: number;
   questions: QuizQuestion[];
 };
 
 /** 랭킹 아이템 */
 export type QuizRankingItem = {
   rank: number;
-  guestQuizId: number | string;
+  guestQuizId: number;
   nickName: string;
   correctCount: number;
   totalCount: number;
 };
 
 /** POST /api-user/quiz/create  — 퀴즈 생성 */
-export async function createQuiz(body: QuizCreateReq): Promise<Quiz> {
-  const { data } = await apiClient.post<Quiz>("/api-user/quiz/create", body, {
-    headers: { "Content-Type": "application/json;charset=UTF-8" },
-  });
+export async function createQuiz(
+  body: QuizCreateReq,
+  opts?: RequestOpts
+): Promise<Quiz> {
+  const { data } = await apiClient.post<Quiz>(
+    "/api-user/quiz/create",
+    body,
+    { signal: opts?.signal }
+  );
   return data;
 }
 
 /** GET /api-user/quiz/get/{quizId} — 퀴즈 조회 */
-export async function getQuiz(quizId: number | string): Promise<Quiz> {
-  const { data } = await apiClient.get<Quiz>(`/api-user/quiz/get/${quizId}`, {
-    headers: { Accept: "application/json;charset=UTF-8" },
-  });
+export async function getQuiz(
+  quizId: number,
+  opts?: RequestOpts
+): Promise<Quiz> {
+  const { data } = await apiClient.get<Quiz>(
+    `/api-user/quiz/get/${toPathId(quizId)}`,
+    { signal: opts?.signal }
+  );
   return data;
 }
 
 /** DELETE /api-user/quiz/delete/{questionId} — 특정 문항 삭제 */
 export async function deleteQuizQuestion(
-  questionId: number | string
+  questionId: number,
+  opts?: RequestOpts
 ): Promise<void> {
-  await apiClient.delete(`/api-user/quiz/delete/${questionId}`);
+  await apiClient.delete<void>(
+    `/api-user/quiz/delete/${toPathId(questionId)}`,
+    { signal: opts?.signal }
+  );
 }
 
 /** GET /api-user/quiz/get/ranking/{quizId} — 퀴즈 랭킹 조회 */
 export async function getQuizRanking(
-  quizId: number | string
+  quizId: number,
+  opts?: RequestOpts
 ): Promise<QuizRankingItem[]> {
   const { data } = await apiClient.get<QuizRankingItem[]>(
-    `/api-user/quiz/get/ranking/${quizId}`,
-    { headers: { Accept: "application/json;charset=UTF-8" } }
+    `/api-user/quiz/get/ranking/${toPathId(quizId)}`,
+    { signal: opts?.signal }
   );
   return data;
 }

@@ -12,8 +12,10 @@ export type UserMeResponse = {
  * [GET] /api-user/me 로그인한 사용자 정보 조회 API
  * @returns UserMeResponse
  */
-export async function getUserMe(): Promise<UserMeResponse> {
-  const res = await apiClient.get<UserMeResponse>("/api-user/me");
+export async function getUserMe(opts?: { signal?: AbortSignal }): Promise<UserMeResponse> {
+  const res = await apiClient.get<UserMeResponse>("/api-user/me", {
+    signal: opts?.signal,
+  });
   return res.data;
 }
 

@@ -5,7 +5,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   type GuestCardCreateReq, createGuestCard,
-  SS_GUEST_NN,  // 닉네임은 백엔드 auth로직으로 처리 
   getGuestImages, type GuestImage
 } from '@/apis/guest';
 import AppLayout from '@/ui/AppLayout';

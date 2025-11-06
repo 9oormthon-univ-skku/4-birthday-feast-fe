@@ -9,7 +9,7 @@ export const qk = {
   // 생일/생일상(Host & Guest)
   birthdays: {
     allMine: ['birthdays', 'mine', 'all'] as const,  // GET /api-user/birthday/get/all
-    thisYearBy: (birthdayId: number | string) =>
+    thisYearBy: (birthdayId: number) =>
       ['birthday', birthdayId, 'thisYear'] as const, // GET /api-user/birthday/get/this-year/{birthdayId}
     guest: ['guest', 'birthday'] as const,           // GET /api-guest/birthday
   },

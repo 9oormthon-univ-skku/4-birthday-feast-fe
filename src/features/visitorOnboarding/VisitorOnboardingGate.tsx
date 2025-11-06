@@ -4,14 +4,9 @@ import VisitorQuizPromptModal from "./VisitorQuizPromptModal";
 import VisitorSkipInfoModal from "./VisitorSkipInfoModal";
 import NicknameModal from "@/features/auth/NicknameModal";
 import WelcomeModal from "@/features/home/WelcomeModal";
+import { SS_GUEST_AT, SS_GUEST_NN, SS_GUEST_RT } from "@/apis/apiUtils";
+import { guestLogin } from "@/apis/guest";
 
-// 🔐 게스트 인증 API
-import {
-  guestLogin,
-  SS_GUEST_AT,
-  SS_GUEST_RT,
-  SS_GUEST_NN,
-} from "@/apis/guest";
 
 // ✅ 세션스토리지 키 (날짜 → 인덱스값 저장으로 변경)
 const SS_WELCOME = "bh.guest.welcomeShown"; // "1" 저장만 판단
