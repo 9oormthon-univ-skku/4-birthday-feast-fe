@@ -43,7 +43,7 @@ function notifyError(message: string, err?: unknown) {
     // eslint-disable-next-line no-console
     console.error(`[useFeastThisYear] ${message}`, err);
     if (typeof window !== "undefined" && typeof window.alert === "function") {
-      window.alert(message);
+      // window.alert(message);
     }
   } catch {
     /* no-op */
