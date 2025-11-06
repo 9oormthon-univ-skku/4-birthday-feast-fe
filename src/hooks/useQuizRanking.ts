@@ -4,14 +4,14 @@ import { useLocation } from 'react-router-dom';
 import { useBirthdayMode } from '@/app/ModeContext';
 import { getQuizRanking, type QuizRankingItem } from '@/apis/quiz';
 import { getGuestQuizRanking, type GuestQuizRankingItem } from '@/apis/guest';
-import { LS_LAST_QUIZ } from '@/stores/authStorage';
+import { getEffectiveQuizId } from '@/utils/getEffectiveQuizId';
 
 /** UI 표시용 타입 */
 export type RankItem = {
   rank: number;
   name: string;
   score: string; // "정답/전체" e.g. "13/20"
-  guestQuizId?: number | string;
+  guestQuizId?: number;
 };
 
 /** 서버 응답 -> UI 표시용 매핑 */
@@ -27,78 +27,49 @@ function mapToRankItems(list: QuizRankingItem[] | GuestQuizRankingItem[]): RankI
     }));
 }
 
-type UseQuizRankingOptions = {
-  /**
-   * 외부에서 quizId를 강제 지정하고 싶을 때 사용.
-   * 미지정 시:
-   *  - guest: 쿼리스트링 ?quizId=... 사용
-   *  - host : localStorage('bh.user.lastQuizId') 사용
-   */
-  quizId?: number | string;
-  /** 자동 패칭 on/off (기본 true) */
-  enabled?: boolean;
-};
-
-export function useQuizRanking(options: UseQuizRankingOptions = {}) {
-  const { quizId, enabled = true } = options;
+export function useQuizRanking() {
   const { isGuest, isHost } = useBirthdayMode();
   const location = useLocation();
 
-  // 모드/옵션에 따라 quizId 결정
-  const effectiveQuizId = useMemo<string | undefined>(() => {
-    if (quizId != null) return String(quizId).trim();
-
-    if (isGuest) {
-      const sp = new URLSearchParams(location.search);
-      const fromQuery = sp.get('quizId')?.trim();
-      if (fromQuery) return fromQuery;
-      return undefined;
-    }
-
-    if (isHost) {
-      const stored = localStorage.getItem(LS_LAST_QUIZ)?.trim();
-      return stored || undefined;
-    }
-
-    return undefined;
-  }, [quizId, isGuest, isHost, location.search]);
+  // 모드/옵션에 따라 quizId 결정 (항상 number | undefined로 수렴)
+  const effectiveQuizId = useMemo(() => {
+    const mode = isGuest ? "guest" : isHost ? "host" : undefined;
+    return getEffectiveQuizId(mode, location.search);
+  }, [isGuest, isHost, location.search]);
 
   const [items, setItems] = useState<RankItem[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isError, setIsError] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
 
   const fetchRanking = useCallback(async () => {
-    if (!enabled) return;
-
     if (!effectiveQuizId) {
       // quizId가 없으면 빈 배열 (표시 없음)
       setItems([]);
-      return;
+      return; // 없으면 return, 뒤 api 호출하지 않음 (에러 방지)
     }
-
     setIsLoading(true);
     setIsError(false);
     try {
       const data = isGuest
-        ? await getGuestQuizRanking(effectiveQuizId)
-        : await getQuizRanking(effectiveQuizId);
-
+        ? await getGuestQuizRanking(effectiveQuizId) // number 보장
+        : await getQuizRanking(effectiveQuizId);     // number 보장
       setItems(mapToRankItems(data ?? []));
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('❌ quiz ranking fetch failed', err);
       alert(`퀴즈 랭킹을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.\n${err}`);
       setIsError(true);
-      setItems([]); // 폴백 없음
+      setItems([]);
     } finally {
       setIsLoading(false);
     }
-  }, [effectiveQuizId, enabled, isGuest]);
+  }, [effectiveQuizId, isGuest]);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!effectiveQuizId) return;
     fetchRanking();
-  }, [fetchRanking, enabled]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveQuizId]);
 
   return {
     quizId: effectiveQuizId,
