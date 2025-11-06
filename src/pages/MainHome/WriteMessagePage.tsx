@@ -10,7 +10,7 @@ import {
 import AppLayout from '@/ui/AppLayout';
 import Modal from '@/ui/Modal';
 import { useNavigate } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 // 더미 에셋 (폴백)
 import food1 from '@/assets/images/food-1.svg';
@@ -19,6 +19,7 @@ import food3 from '@/assets/images/food-3.svg';
 import food4 from '@/assets/images/food-4.svg';
 import food5 from '@/assets/images/food-5.svg';
 import food6 from '@/assets/images/food-6.svg';
+import { qk } from '@/apis/queryKeys';
 
 // 세션스토리지 드래프트 키
 const SS_GUEST_CARD_DRAFT = 'bh.guest.cardDraft';
@@ -28,6 +29,8 @@ type IconItem = { id: string; src: string; alt: string };
 
 export default function WriteMessagePage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
   const [message, setMessage] = useState('');
   const [selectedId, setSelectedId] = useState<string>('food-1');
   const [doneOpen, setDoneOpen] = useState(false); // 메시지 전송 완료 모달
@@ -120,10 +123,17 @@ export default function WriteMessagePage() {
   // 서버 등록 뮤테이션
   const { mutate, isPending } = useMutation({
     mutationFn: (body: GuestCardCreateReq) => createGuestCard(body),
-    onSuccess: () => {
-      try {
-        sessionStorage.removeItem(SS_GUEST_CARD_DRAFT);
-      } catch { }
+
+    onSuccess: async (created) => {
+      try { sessionStorage.removeItem(SS_GUEST_CARD_DRAFT); } catch { }
+
+      // 1) 넓게: 'birthday' 관련 전부 무효화 (thisYearBy 포함)
+      await queryClient.invalidateQueries({ queryKey: ['birthday'], exact: false });
+
+      // 2) 게스트 뷰도 함께 무효화
+      await queryClient.invalidateQueries({ queryKey: qk.birthdays.guest, exact: false });
+      // 또는 await queryClient.invalidateQueries({ queryKey: ['guest', 'birthday'], exact: false });
+
       setDoneOpen(true);
     },
     onError: (err: any) => {
