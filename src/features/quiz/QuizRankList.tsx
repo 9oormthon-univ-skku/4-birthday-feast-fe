@@ -23,7 +23,7 @@ export default function QuizRankList({
   enabled = true,
   refreshToken,
 }: Props) {
-  const { items, isLoading, isError, refetch } = useQuizRanking();
+  const { items, isLoading, isError, refetch } = useQuizRanking({ enabled });
 
   // refreshToken 변경 시 강제 재조회
   useEffect(() => {

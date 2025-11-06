@@ -27,11 +27,11 @@ function mapToRankItems(list: QuizRankingItem[] | GuestQuizRankingItem[]): RankI
     }));
 }
 
-export function useQuizRanking() {
+export function useQuizRanking(opts: { enabled?: boolean } = {}) {
+  const { enabled = true } = opts;
   const { isGuest, isHost } = useBirthdayMode();
   const location = useLocation();
 
-  // 모드/옵션에 따라 quizId 결정 (항상 number | undefined로 수렴)
   const effectiveQuizId = useMemo(() => {
     const mode = isGuest ? "guest" : isHost ? "host" : undefined;
     return getEffectiveQuizId(mode, location.search);
@@ -42,34 +42,31 @@ export function useQuizRanking() {
   const [isError, setIsError] = useState(false);
 
   const fetchRanking = useCallback(async () => {
-    if (!effectiveQuizId) {
-      // quizId가 없으면 빈 배열 (표시 없음)
-      setItems([]);
-      return; // 없으면 return, 뒤 api 호출하지 않음 (에러 방지)
-    }
+    if (!enabled) return;
+    if (!effectiveQuizId) { setItems([]); return; }
+
     setIsLoading(true);
     setIsError(false);
     try {
       const data = isGuest
-        ? await getGuestQuizRanking(effectiveQuizId) // number 보장
-        : await getQuizRanking(effectiveQuizId);     // number 보장
+        ? await getGuestQuizRanking(effectiveQuizId)
+        : await getQuizRanking(effectiveQuizId);
       setItems(mapToRankItems(data ?? []));
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error('❌ quiz ranking fetch failed', err);
-      alert(`퀴즈 랭킹을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.\n${err}`);
       setIsError(true);
       setItems([]);
     } finally {
       setIsLoading(false);
     }
-  }, [effectiveQuizId, isGuest]);
+  }, [effectiveQuizId, isGuest, enabled]);
 
   useEffect(() => {
+    if (!enabled) return;
     if (!effectiveQuizId) return;
     fetchRanking();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveQuizId]);
+  }, [effectiveQuizId, enabled]);
 
   return {
     quizId: effectiveQuizId,

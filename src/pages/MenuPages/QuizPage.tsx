@@ -1,11 +1,11 @@
-// src/pages/QuizPage.tsx
 import { useEffect, useState } from 'react';
 import Header from '@/ui/Header';
 import Modal from '@/ui/Modal';
 import { deleteQuizQuestion, QuizQuestion } from '@/apis/quiz';
 import OIcon from '@/assets/images/OIcon.svg';
 import XIcon from '@/assets/images/XIcon.svg';
-import { useQuizById } from '@/hooks/useQuizById';
+// ✅ 통합 훅으로 교체
+import { useQuizByIdUnified } from '@/hooks/useQuizByIdUnified';
 
 // 시퀀스 정렬/보정 (편집/삭제 후 순번 정돈용)
 function normalize(questions: QuizQuestion[]): QuizQuestion[] {
@@ -15,8 +15,8 @@ function normalize(questions: QuizQuestion[]): QuizQuestion[] {
 }
 
 export default function QuizPage() {
-  // 서버만 사용 (훅 내부에서 lastQuizId를 읽고 서버 조회, 폴백 없음)
-  const { data: packed, isLoading, isError } = useQuizById();
+  // ✅ 서버만 사용 (훅 내부에서 quizId 결정)
+  const { data, isLoading: quizLoading, isError: quizError } = useQuizByIdUnified();
 
   // 삭제 확인 모달 상태
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -26,20 +26,20 @@ export default function QuizPage() {
   const [editConfirmOpen, setEditConfirmOpen] = useState(false);
 
   // 페이지 로컬 상태 (렌더용)
-  const [meta, setMeta] = useState<{ quizId: number | string | null; birthdayId?: number | string }>({
+  const [meta, setMeta] = useState<{ quizId: number | null; birthdayId?: number }>({
     quizId: null,
     birthdayId: undefined,
   });
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [answers, setAnswers] = useState<boolean[]>([]);
 
-  // 훅 데이터가 준비되면 내부 상태에 반영
+  // ✅ 훅 데이터가 준비되면 내부 상태에 반영
   useEffect(() => {
-    if (!packed) return;
-    setMeta({ quizId: packed.quizId, birthdayId: (packed as any).birthdayId });
-    setQuestions(packed.questions);
-    setAnswers(packed.questions.map((it) => it.answer));
-  }, [packed]);
+    if (!data) return;
+    setMeta({ quizId: data.quizId, birthdayId: data.birthdayId });
+    setQuestions(data.questions);
+    setAnswers(data.questions.map((it) => it.answer));
+  }, [data]);
 
   // 삭제 버튼 클릭 시 모달 오픈
   const askRemoveQuestion = (index: number) => {
@@ -69,14 +69,14 @@ export default function QuizPage() {
     });
   };
 
-  // 서버 삭제 + 로컬 상태 반영 (로컬 스토리지 사용 X)
+  // 서버 삭제 + 로컬 상태 반영
   const removeQuestion = async (index: number) => {
     const target = questions[index];
     if (!target) return;
 
     try {
       if (typeof target.questionId === 'number' || /^[0-9]+$/.test(String(target.questionId))) {
-        await deleteQuizQuestion(target.questionId);
+        await deleteQuizQuestion(target.questionId as number);
         console.log(`[QuizPage] Deleted questionId=${target.questionId} from server`);
       } else {
         console.log(`[QuizPage] Skipped server delete for non-numeric questionId=${target.questionId}`);
@@ -102,7 +102,6 @@ export default function QuizPage() {
   // 편집 완료 (로컬 저장 제거, 서버 저장 플로우는 별도)
   const handleToggleEditMode = () => {
     if (editMode) {
-      // 여기서 서버 저장을 붙일 예정이면 API 호출 위치
       setQuestions((prev) => normalize(prev));
       setEditMode(false);
       return;
@@ -117,7 +116,7 @@ export default function QuizPage() {
   const cancelStartEdit = () => setEditConfirmOpen(false);
 
   // ----- 렌더 -----
-  if (isLoading) {
+  if (quizLoading) {
     return (
       <div className="min-h-screen bg-white">
         <Header showBack showMenu={false} showBrush={false} title={<span className="text-[#FF8B8B]">생일 퀴즈</span>} />
@@ -129,15 +128,23 @@ export default function QuizPage() {
     );
   }
 
-  if (isError || !packed) {
+  if (quizError || !data) {
     return (
       <div className="min-h-screen bg-white">
         <Header showBack showMenu={false} showBrush={false} title={<span className="text-[#FF8B8B]">생일 퀴즈</span>} />
-        <main className="px-4 pb-6">
-          <div className="mb-4 h-[1px] bg-[#EFD9C6]" />
-          <div className="py-12 text-center text-red-500">퀴즈를 불러오지 못했어요.</div>
-        </main>
-      </div>
+        <section className="py-20 text-center">
+          <h3 className="text-xl text-[#FF8B8B] font-['KoreanSWGIG3']">퀴즈를 불러오지 못했어요.</h3>
+          {quizError ? (  // 유효한 ID 값이 있어서 요청을 했으나 불러오지 못함
+            <p className="mt-2 text-sm text-[#A0A0A0]">
+              네트워크 연결을 확인해주세요.
+            </p>
+          ) : (
+            <p className="mt-2 text-sm text-[#A0A0A0]">
+              홈에서 퀴즈를 등록해주세요.
+            </p>
+          )}
+        </section >
+      </div >
     );
   }
 
@@ -160,7 +167,7 @@ export default function QuizPage() {
       />
 
       <main className="px-8 py-4 pt-8 font-['Pretendard']">
-        {(packed.questions?.length ?? 0) === 0 ? (
+        {(data.questions?.length ?? 0) === 0 ? (
           <div className="py-12 text-center text-[#6b6b6b]">퀴즈가 없습니다.</div>
         ) : (
           <ul className="space-y-5">

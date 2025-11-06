@@ -1,39 +1,23 @@
-import { useEffect, useState } from 'react';
+// src/pages/PlayQuizPage.tsx (예시 경로)
+import { useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import AppLayout from '@/ui/AppLayout';
 import QuizRankList from '@/features/quiz/QuizRankList';
 import QuizPlay from '@/features/quiz/QuizPlay';
 import QuizAnswerList from '@/features/quiz/QuizAnswerList';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { useBirthdayMode } from '@/app/ModeContext';
 import { QuizQuestion } from '@/apis/quiz';
-import { useQuizById } from '@/hooks/useQuizById';
-import { useGuestQuizById } from '@/hooks/useGuestQuizById';
-import { type GuestQuizSubmitReq, type GuestQuizSubmitRes } from '@/apis/guest';
-// 퀴즈 전송 api 연결 
-import { submitGuestQuiz } from '@/apis/guest';
-import { useRef } from 'react';
-import { SS_GUEST_NN } from '@/apis/apiUtils';
+import { submitGuestQuiz, type GuestQuizSubmitReq, type GuestQuizSubmitRes } from '@/apis/guest';
+import { SS_GUEST_NN } from '@/apis/apiUtils'; // 기존 경로 유지
+import { useQuizByIdUnified } from '@/hooks/useQuizByIdUnified';
 
 export default function PlayQuizPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isHost, isGuest } = useBirthdayMode();
 
-  // 🎂 호스트 전용: host일 때만 네트워크/효과 활성화
-  const { data: hostQuiz, isLoading: hostLoading, isError: hostError } = useQuizById({
-    enabled: isHost,
-  });
-
-  // 🎂 게스트 전용: guest일 때만 네트워크/효과 활성화
-  const {
-    questions: guestQuestions,
-    isLoading: guestLoading,
-    isError: guestIsError,
-    quizId: guestQuizId,
-  } = useGuestQuizById({
-    enabled: isGuest,
-  });
-  // const guestQuizId = 1; // 테스트용 하드코딩 
+  // 통합 훅: 게스트/호스트 자동 분기 + quizId/질문/상태 제공
+  const { data, isLoading, isError, quizId } = useQuizByIdUnified();
 
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [index, setIndex] = useState(0);
@@ -47,7 +31,11 @@ export default function PlayQuizPage() {
 
   const [rankEnabled, setRankEnabled] = useState(false);
   const [rankRefreshToken, setRankRefreshToken] = useState<number>(0);
-
+  // 질문 세팅/리셋 시 랭킹 OFF
+  useEffect(() => {
+    // ...
+    setRankEnabled(false);            // ⬅️ 초기엔 OFF
+  }, [data]);
 
   // finished 이후 중복 전송 방지
   const hasSubmittedRef = useRef(false);
@@ -73,27 +61,18 @@ export default function PlayQuizPage() {
     return () => window.removeEventListener('storage', onStorage);
   }, []);
 
-  // 역할에 따라 질문 세팅
+  // 통합 데이터 기반으로 질문 세팅/리셋
   useEffect(() => {
-    if (isHost && hostQuiz?.questions) {
-      const qs = hostQuiz.questions;
-      setQuestions(qs);
-      setUserAnswers(Array(qs.length).fill(null));
-      setIndex(0);
-      setFinished(false);
-      setShowAnswers(false);
-      return;
-    }
-    if (isGuest) {
-      const qs = guestQuestions || [];
-      setQuestions(qs);
-      setUserAnswers(Array(qs.length).fill(null));
-      setIndex(0);
-      setFinished(false);
-      setShowAnswers(false);
-      return;
-    }
-  }, [isHost, hostQuiz, isGuest, guestQuestions]);
+    const qs = data?.questions ?? [];
+    setQuestions(qs);
+    setUserAnswers(Array(qs.length).fill(null));
+    setIndex(0);
+    setFinished(false);
+    setShowAnswers(false);
+    setServerScore(null);
+    setSubmitError(null);
+    hasSubmittedRef.current = false;
+  }, [data]);
 
   const total = questions.length;
   const current = questions[index];
@@ -108,21 +87,22 @@ export default function PlayQuizPage() {
     else setFinished(true);
   };
 
+  // 게스트일 때만 제출 로직 동작
   useEffect(() => {
     if (!isGuest) return;
     if (!finished) return;
-    if (!guestQuizId) return;
-    if (hasSubmittedRef.current) return;      // 중복 방지
+    if (!quizId) return;
+    if (hasSubmittedRef.current) return;
     if (questions.length === 0) return;
 
     // null 답안이 있으면(미응답) 전송하지 않음
     const hasNull = userAnswers.some((v) => v === null);
     if (hasNull) return;
 
-    hasSubmittedRef.current = true; // 가드: 바로 잠금
+    hasSubmittedRef.current = true; // 가드
     setSubmitting(true);
     setSubmitError(null);
-    setRankEnabled(false);   // 제출 중에는 랭킹 off 🔒
+    setRankEnabled(false);            // 제출 중엔 랭킹 OFF
 
     (async () => {
       try {
@@ -131,27 +111,23 @@ export default function PlayQuizPage() {
           answer: Boolean(userAnswers[i]),
         }));
 
-        const res: GuestQuizSubmitRes = await submitGuestQuiz(guestQuizId, payload);
+        const res: GuestQuizSubmitRes = await submitGuestQuiz(quizId, payload);
 
-        // 서버가 총점/랭킹을 응답한다면 여기서 반영
         if (typeof (res as any)?.score === 'number') {
           setServerScore((res as any).score);
+          // ✅ 제출 성공: 랭킹 ON + 강제 refetch 트리거
+          setRankEnabled(true);
+          setRankRefreshToken(Date.now());
         }
-
-        // ✅ 제출 성공: 이제 랭킹 조회 ON + 강제 refetch 트리거
-        setRankEnabled(true);
-        setRankRefreshToken(Date.now());
-
       } catch (e: any) {
-        setSubmitError('퀴즈 제출 중 오류가 발생했어요.🥲\n잠시 후 다시 시도해주세요.');
-        alert(`퀴즈 제출 실패\n${e}`);
-        hasSubmittedRef.current = false; // 재시도 허용
+        setSubmitError(`퀴즈 제출 중 오류가 발생했어요.🥲\n잠시 후 다시 시도해주세요.\n${e}`);
+        // 재시도 허용
+        hasSubmittedRef.current = false;
       } finally {
         setSubmitting(false);
       }
     })();
-  }, [finished, isGuest, guestQuizId, questions, userAnswers]);
-
+  }, [finished, isGuest, quizId, questions, userAnswers]);
 
   const correctCount =
     total === 0
@@ -180,11 +156,8 @@ export default function PlayQuizPage() {
     <span className="text-[#FF8B8B]">생일 퀴즈</span>
   );
 
-  // 로딩/에러 안내 ui
-  const loading = (isHost && hostLoading) || (isGuest && guestLoading);
-  const isError = (isHost && hostError) || (isGuest && guestIsError);
-
-  if (loading && total === 0) {
+  // 로딩/에러 안내 ui (통합)
+  if (isLoading && total === 0) {
     return (
       <AppLayout showBack showMenu={false} showBrush={false} title={headerTitle}
         footerButtonLabel={'처음으로'} onFooterButtonClick={footerAction}>
@@ -280,6 +253,8 @@ export default function PlayQuizPage() {
               heightClassName="max-h-[70vh]"
               onShowAnswers={goAnswers}
               nickName={nickName}
+              enabled={rankEnabled}
+              refreshToken={rankRefreshToken}
             />
           )}
         </>
