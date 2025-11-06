@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { postLogout } from "@/apis/auth";
-// import { clearAccessToken } from "@/stores/authToken";
+import { clearAccessToken } from "@/stores/authToken";
 import {
   clearAuthUserId,
   clearLastBirthdayId,
@@ -30,10 +30,10 @@ export function useLogout() {
     onSettled: async () => {
       // 1) 로컬 세션/스토리지 정리
       try {
-        // clearAccessToken();
+        clearAccessToken();
         clearAuthUserId();
-        clearLastBirthdayId(); // ✅ 추가
-        clearLastQuizId();     // ✅ 추가
+        clearLastBirthdayId();
+        clearLastQuizId();
 
         // (중복 방어용 레거시 키가 있다면 유지)
         localStorage.removeItem("bh.auth.accessToken");
