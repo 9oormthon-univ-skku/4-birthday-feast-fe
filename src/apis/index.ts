@@ -3,6 +3,7 @@ import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { SS_GUEST_AT } from "./apiUtils";
 import { getAccessToken, setAccessToken } from "@/stores/authToken";
 import { reissueAccessToken } from "./auth";
+import { ensureAccessToken } from "./tokenBootstrap";
 // import { reissueAccessToken } from "./auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
@@ -25,12 +26,23 @@ declare module "axios" {
   }
 }
 
-// 🔑 요청 전: 메모리 AT가 있으면 Authorization 헤더 주입
-apiClient.interceptors.request.use((config) => {
-  const token = getAccessToken();
-  if (token && !config._guest) {
-    config.headers.Authorization = `Bearer ${token}`;
+// 🔑 요청 인터셉터 보강
+apiClient.interceptors.request.use(async (config) => {
+  const url = config.url || "";
+
+  // 게스트/리프레시/비보호 엔드포인트는 우회 조건 필요하면 여기서 분기
+  const skip =
+    config._guest ||
+    url.includes("/api/auth-user/reissue") ||
+    url.includes("/public/");
+
+  if (!skip && !getAccessToken()) {
+    // 첫 요청 전에 토큰 확보를 보장
+    await ensureAccessToken();
   }
+
+  const at = getAccessToken();
+  if (at) config.headers?.set?.("Authorization", `Bearer ${at}`);
   return config;
 });
 
