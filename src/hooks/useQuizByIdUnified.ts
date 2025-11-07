@@ -6,7 +6,7 @@ import { useBirthdayMode } from '@/app/ModeContext';
 import { getQuiz, type Quiz, type QuizQuestion } from '@/apis/quiz';
 import { getGuestQuiz, type GuestQuizGetRes } from '@/apis/guest';
 import { getEffectiveQuizId } from '@/utils/getEffectiveQuizId';
-import { LS_LAST_QUIZ } from '@/stores/authStorage';
+import { LS_LAST_QUIZ } from '@/stores/userStorage';
 
 /** 공통 반환 데이터 (게스트/호스트 통합) */
 export type UnifiedQuiz = {

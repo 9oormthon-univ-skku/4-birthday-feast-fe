@@ -1,4 +1,3 @@
-// src/features/auth/authStorage.ts
 export const LS_USER_ID = "bh.user.id";
 export const LS_LAST_BIRTHDAY = "bh.user.lastBirthdayId";
 export const LS_LAST_QUIZ = "bh.user.lastQuizId";

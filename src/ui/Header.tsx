@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DrawerMenu from '../pages/MainHome/DrawerMenu';
-import { getStoredUserId } from '@/stores/authStorage';
+import { getStoredUserId } from '@/stores/userStorage';
 
 export type HeaderProps = {
   title?: React.ReactNode;

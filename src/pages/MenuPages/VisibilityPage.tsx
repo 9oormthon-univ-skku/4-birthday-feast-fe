@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import AppLayout from '@/ui/AppLayout';
 import { getBirthdayPeriod, type BirthdayPeriod } from "@/apis/birthday";
 import { useNavigate } from 'react-router-dom';
-import { getLastBirthdayId } from '@/stores/authStorage';
+import { getLastBirthdayId } from '@/stores/userStorage';
 import { toNumOrUndef } from '@/utils/toNumOrUndef';
 // import { LS_LAST_BID } from '@/hooks/useFeastThisYear'; [레거시]
 

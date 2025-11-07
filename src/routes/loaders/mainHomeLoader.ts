@@ -2,7 +2,7 @@
 import { qk } from '@/apis/queryKeys';
 import { getThisYearBirthday } from '@/apis/birthday';
 import type { QueryClient } from '@tanstack/react-query';
-import { getLastBirthdayId } from '@/stores/authStorage';
+import { getLastBirthdayId } from '@/stores/userStorage';
 
 export async function mainHomeLoader(queryClient: QueryClient) {
   const raw = getLastBirthdayId();

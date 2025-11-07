@@ -7,7 +7,7 @@ import WelcomeModal from "@/features/home/WelcomeModal";
 import { useFeastThisYear } from "@/hooks/useFeastThisYear";
 import HostSkipInfoModal from "./HostSkipInfoModal";
 import { useMe } from "@/hooks/useMe";              // ✅ 추가
-import { LS_LAST_QUIZ } from "@/stores/authStorage";
+import { getLastQuizId, LS_LAST_QUIZ } from "@/stores/userStorage";
 // (qk, UserMeResponse, useQueryClient 는 더이상 불필요하면 제거)
 
 const SS_HOST_WELCOME_SHOWN = "bh.host.welcomeShown";
@@ -36,7 +36,7 @@ export default function OnboardingGate(): React.ReactElement | null {
   // ✨ 로컬스토리지의 LS_LAST_QUIZ 존재 여부를 상태로 보관
   const [hasLastQuiz, setHasLastQuiz] = useState<boolean>(() => {
     try {
-      const v = localStorage.getItem(LS_LAST_QUIZ);
+      const v = getLastQuizId();
       // 값이 null, 빈 문자열, 'null', 'undefined' 중 하나면 false
       return v != null && v.trim() !== "" && v !== "null" && v !== "undefined";
     } catch {

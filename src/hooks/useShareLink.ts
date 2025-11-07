@@ -2,7 +2,7 @@
 import { useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { getLastQuizId, getStoredUserId } from "@/stores/authStorage";
+import { getLastQuizId, getStoredUserId } from "@/stores/userStorage";
 import { qk } from "@/apis/queryKeys";
 import type { UserMeResponse } from "@/apis/user";
 import { toPathId } from "@/apis/apiUtils";

@@ -10,7 +10,7 @@ import { qk } from '@/apis/queryKeys';
 import type { UserMeResponse } from '@/apis/user';
 import { useQueryClient } from '@tanstack/react-query';
 import { GoPersonFill } from 'react-icons/go';
-import { getLastBirthdayId } from '@/stores/authStorage';
+import { getLastBirthdayId } from '@/stores/userStorage';
 import { toNumOrUndef } from '@/utils/toNumOrUndef';
 // import { LS_LAST_BID } from '@/hooks/useFeastThisYear'; [레거시]
 

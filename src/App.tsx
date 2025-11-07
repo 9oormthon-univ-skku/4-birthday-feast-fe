@@ -16,7 +16,7 @@ import PlayQuizPage from './pages/MainHome/PlayQuizPage';
 import ThemeSettingsPage from './pages/MenuPages/ThemeSettingsPage';
 import BirthdayMessageRoute from './routes/BirthdayMessageRoute';
 import AppShell from './app/AppShell';
-import { getStoredUserId } from '@/stores/authStorage';
+import { getStoredUserId } from '@/stores/userStorage';
 import { mainHomeLoader } from './routes/loaders/mainHomeLoader';
 import { queryClient } from './apis/queryClient';
 

@@ -6,7 +6,7 @@ import {
   type QuizCreateQuestionInput,
   type QuizCreateReq,
 } from "@/apis/quiz";
-import { getLastBirthdayId, setLastQuizId } from "@/stores/authStorage";
+import { getLastBirthdayId, setLastQuizId } from "@/stores/userStorage";
 import { toNumOrUndef } from "@/utils/toNumOrUndef";
 
 // -------------------- 타입 --------------------

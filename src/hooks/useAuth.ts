@@ -2,8 +2,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { qk } from "../apis/queryKeys";
-
-export const TOKEN_KEY = "bh.auth.accessToken" as const;
+import { clearAccessToken, getAccessToken, setAccessToken } from "@/stores/authToken";
+import { ACCESS_TOKEN_KEY } from "@/stores/authToken";
+// export const TOKEN_KEY = "bh.auth.accessToken" as const;
 
 export type AuthState = {
   token: string | null;
@@ -12,22 +13,22 @@ export type AuthState = {
   logout: () => void;
 };
 
-function readToken(): string | null {
-  try {
-    return localStorage.getItem(TOKEN_KEY);
-  } catch {
-    return null;
-  }
-}
+// function readToken(): string | null {
+//   try {
+//     return localStorage.getItem(TOKEN_KEY);
+//   } catch {
+//     return null;
+//   }
+// }
 
 export function useAuth(): AuthState {
   const queryClient = useQueryClient();
-  const [token, setToken] = useState<string | null>(() => readToken());
+  const [token, setToken] = useState<string | null>(() => getAccessToken());
 
   // 스토리지 동기화 (다른 탭)
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
-      if (e.key === TOKEN_KEY) {
+      if (e.key === ACCESS_TOKEN_KEY) {
         setToken(e.newValue);
         // ⬇️ 전역 캐시에 반영
         queryClient.setQueryData(qk.auth.token, e.newValue ?? null);
@@ -51,7 +52,7 @@ export function useAuth(): AuthState {
       if (!next) {
         throw new Error("login(token) requires a non-empty token string");
       }
-      localStorage.setItem(TOKEN_KEY, next);
+      setAccessToken(next);
       setToken(next);
 
       // Query 캐시 반영 + /me 재검증
@@ -64,10 +65,10 @@ export function useAuth(): AuthState {
   );
 
   const logout = useCallback(() => {
-    localStorage.removeItem(TOKEN_KEY);
+    clearAccessToken();
     setToken(null);
 
-    // ⬇️ Query 캐시 정리 (유저 스코프 중심)
+    // Query 캐시 정리 (유저 스코프 중심)
     queryClient.setQueryData(qk.auth.token, null);
     queryClient.cancelQueries();
 

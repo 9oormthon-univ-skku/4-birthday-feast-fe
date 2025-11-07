@@ -1,5 +1,5 @@
 import { Outlet, useParams, useSearchParams } from 'react-router-dom';
-import { getStoredUserId } from '@/stores/authStorage';
+import { getStoredUserId } from '@/stores/userStorage';
 import { BirthdayModeProvider } from '@/app/ModeContext';
 // import FeastBootstrap from '@/features/feast/FeastBootstrap'; [레거시]
 import OnboardingGate from '@/features/onboarding/OnboardingGate';

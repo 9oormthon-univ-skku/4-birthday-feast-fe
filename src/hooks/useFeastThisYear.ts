@@ -3,23 +3,10 @@ import { useEffect, useMemo, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createBirthday, getThisYearBirthday } from "@/apis/birthday";
 import { qk } from "@/apis/queryKeys";
-import { LS_LAST_BIRTHDAY } from "@/stores/authStorage";
+import { getLastBirthdayId, LS_LAST_BIRTHDAY, setLastBirthdayId } from "@/stores/userStorage";
 
 // export const LS_LAST_BID = "bh.lastBirthdayId"; [레거시]
 const LS_LAST_CODE = "bh.lastBirthdayCode";
-
-export type FeastData = {
-  userId?: number | string;
-  birthdayId?: number | string;
-  code?: string;
-  birthdayCards?: any[];
-};
-
-export type FindThisYearResult = {
-  exists: boolean;
-  pickedId?: number | string;
-  code?: string;
-};
 
 function readLS(key: string): string | undefined {
   try {
@@ -35,6 +22,20 @@ function writeLS(key: string, value?: string) {
     else localStorage.setItem(key, value);
   } catch { }
 }
+
+
+export type FeastData = {
+  userId?: number | string;
+  birthdayId?: number | string;
+  code?: string;
+  birthdayCards?: any[];
+};
+
+export type FindThisYearResult = {
+  exists: boolean;
+  pickedId?: number | string;
+  code?: string;
+};
 
 /** 에러 알림(콘솔 + alert). 환경/SSR 안전 처리 */
 function notifyError(message: string, err?: unknown) {
@@ -54,17 +55,17 @@ export function useFeastThisYear() {
   const prefetchOnceRef = useRef(false);
 
   // 로컬스토리지 캐시값(초기 깜빡임 방지용)
-  const cachedBidStr = readLS(LS_LAST_BIRTHDAY);
+  const cachedBidStr = getLastBirthdayId();
   const cachedBid = cachedBidStr != null ? Number(cachedBidStr) : undefined; // number | undefined
-  const cachedCode = readLS(LS_LAST_CODE);
+  // const cachedCode = readLS(LS_LAST_CODE);
 
   const thisYearQuery = useQuery({
     queryKey: cachedBid != null ? qk.birthdays.thisYearBy(cachedBid) : ["birthday", "noop"],
     enabled: cachedBid != null,
     queryFn: async () => {
       const res = await getThisYearBirthday(cachedBid as number);
-      writeLS(LS_LAST_BIRTHDAY, String(res.birthdayId));
-      if (res.code) writeLS(LS_LAST_CODE, res.code);
+      setLastBirthdayId(res.birthdayId);
+      // if (res.code) writeLS(LS_LAST_CODE, res.code);
       return res;
     },
     staleTime: 10 * 60 * 1000,  // 🎂 10분
@@ -74,9 +75,9 @@ export function useFeastThisYear() {
       const fromCache = queryClient.getQueryData(qk.birthdays.thisYearBy(cachedBid));
       if (fromCache) return fromCache as any;
 
-      if (cachedCode) {
-        return { birthdayId: cachedBid, code: cachedCode, birthdayCards: [] } as any;
-      }
+      // if (cachedCode) {
+      //   return { birthdayId: cachedBid, code: cachedCode, birthdayCards: [] } as any;
+      // }
       return undefined;
     },
     initialDataUpdatedAt: () => {
@@ -103,8 +104,8 @@ export function useFeastThisYear() {
   const createMutation = useMutation({
     mutationFn: async () => {
       const created = await createBirthday(); // created.birthdayId: number 가정
-      writeLS(LS_LAST_BIRTHDAY, String(created.birthdayId));
-      if (created.code) writeLS(LS_LAST_CODE, created.code);
+      setLastBirthdayId(created.birthdayId);
+      // if (created.code) writeLS(LS_LAST_CODE, created.code);
 
       queryClient.setQueryData(qk.birthdays.thisYearBy(created.birthdayId), created);
 
@@ -120,7 +121,7 @@ export function useFeastThisYear() {
 
   /** 올해 데이터 존재 유무 체크 */
   async function findExistingThisYear(): Promise<FindThisYearResult> {
-    const bidStr = readLS(LS_LAST_BIRTHDAY);
+    const bidStr = getLastBirthdayId();
     const bid = bidStr != null ? Number(bidStr) : undefined;
     if (bid == null || !Number.isFinite(bid)) return { exists: false };
 
@@ -129,8 +130,8 @@ export function useFeastThisYear() {
         queryKey: qk.birthdays.thisYearBy(bid),
         queryFn: async () => {
           const res = await getThisYearBirthday(bid);
-          writeLS(LS_LAST_BIRTHDAY, String(res.birthdayId));
-          if (res.code) writeLS(LS_LAST_CODE, res.code);
+          setLastBirthdayId(res.birthdayId);
+          // if (res.code) writeLS(LS_LAST_CODE, res.code);
           return res;
         },
       });
@@ -160,7 +161,7 @@ export function useFeastThisYear() {
     if (prefetchOnceRef.current) return;
     prefetchOnceRef.current = true;
 
-    const bidStr = readLS(LS_LAST_BIRTHDAY);
+    const bidStr = getLastBirthdayId();
     const bid = bidStr != null ? Number(bidStr) : undefined;
     if (bid == null || !Number.isFinite(bid)) return;
 
@@ -169,8 +170,8 @@ export function useFeastThisYear() {
         queryKey: qk.birthdays.thisYearBy(bid),
         queryFn: async () => {
           const res = await getThisYearBirthday(bid);
-          writeLS(LS_LAST_BIRTHDAY, String(res.birthdayId));
-          if (res.code) writeLS(LS_LAST_CODE, res.code);
+          setLastBirthdayId(res.birthdayId);
+          // if (res.code) writeLS(LS_LAST_CODE, res.code);
           return res;
         },
         staleTime: 60 * 1000,
@@ -182,7 +183,7 @@ export function useFeastThisYear() {
 
   /** 강제 갱신 */
   async function reload() {
-    const bidStr = readLS(LS_LAST_BIRTHDAY);
+    const bidStr = getLastBirthdayId();
     const bid = bidStr != null ? Number(bidStr) : undefined;
     if (bid == null || !Number.isFinite(bid)) return;
     try {
@@ -197,8 +198,8 @@ export function useFeastThisYear() {
   const data: FeastData | null = useMemo(() => {
     const r = thisYearQuery.data as any;
     if (!r) {
-      if (cachedBid != null || cachedCode) {
-        return { birthdayId: cachedBid, code: cachedCode, birthdayCards: [] };
+      if (cachedBid != null) {
+        return { birthdayId: cachedBid, };
       }
       return null;
     }
@@ -208,7 +209,7 @@ export function useFeastThisYear() {
       code: r.code,
       birthdayCards: r.birthdayCards ?? [],
     };
-  }, [thisYearQuery.data, cachedBid, cachedCode]);
+  }, [thisYearQuery.data, cachedBid,]);
 
   const creating = createMutation.isPending;
   const loading = thisYearQuery.isFetching || thisYearQuery.isPending;

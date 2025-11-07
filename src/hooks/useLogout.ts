@@ -7,7 +7,7 @@ import {
   clearAuthUserId,
   clearLastBirthdayId,
   clearLastQuizId,
-} from "@/stores/authStorage";
+} from "@/stores/userStorage";
 import { qk } from "@/apis/queryKeys";
 
 export function useLogout() {
@@ -35,8 +35,12 @@ export function useLogout() {
         clearLastBirthdayId();
         clearLastQuizId();
 
-        // (중복 방어용 레거시 키가 있다면 유지)
+        // 레거시 키 삭제 지원
         localStorage.removeItem("bh.auth.accessToken");
+        localStorage.removeItem("bh.lastBirthdayCode");
+        localStorage.removeItem("bh.lastBirthdayId");
+        localStorage.removeItem("bh.lastQuizId");
+
       } catch { }
 
       // 2) 진행 중 쿼리 취소 + 캐시 정리

@@ -1,5 +1,5 @@
 // src/utils/getEffectiveQuizId.ts
-import { LS_LAST_QUIZ } from "@/stores/authStorage";
+import { LS_LAST_QUIZ } from "@/stores/userStorage";
 import { toNumOrUndef } from "@/utils/toNumOrUndef";
 
 /**

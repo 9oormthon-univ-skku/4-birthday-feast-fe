@@ -1,4 +1,4 @@
-const ACCESS_TOKEN_KEY = "bh.auth.accessToken";
+export const ACCESS_TOKEN_KEY = "bh.auth.accessToken";
 
 let memoryToken: string | null = null;
 

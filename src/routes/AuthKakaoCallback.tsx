@@ -8,7 +8,7 @@ import {
   setAuthSessionUserId,
   setLastBirthdayId,
   setLastQuizId,
-} from "@/stores/authStorage";
+} from "@/stores/userStorage";
 
 export default function AuthKakaoCallback() {
   const nav = useNavigate();
