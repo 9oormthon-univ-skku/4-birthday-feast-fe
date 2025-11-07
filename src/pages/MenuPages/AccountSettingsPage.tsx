@@ -10,7 +10,8 @@ import { qk } from '@/apis/queryKeys';
 import type { UserMeResponse } from '@/apis/user';
 import { useQueryClient } from '@tanstack/react-query';
 import { GoPersonFill } from 'react-icons/go';
-import { LS_LAST_BIRTHDAY } from '@/stores/authStorage';
+import { getLastBirthdayId } from '@/stores/authStorage';
+import { toNumOrUndef } from '@/utils/toNumOrUndef';
 // import { LS_LAST_BID } from '@/hooks/useFeastThisYear'; [레거시]
 
 export default function AccountSettingsPage() {
@@ -29,17 +30,25 @@ export default function AccountSettingsPage() {
   const me = queryClient.getQueryData<UserMeResponse>(qk.auth.me) ?? null;
 
   // --- 공개여부 토글 ---
+  // --- 공개여부 토글 ---
   const handleToggleVisible = async () => {
     const next = !publicAll;
     setPublicAll(next);
 
-    const idRaw = localStorage.getItem(LS_LAST_BIRTHDAY);
+    const idRaw = getLastBirthdayId();
     if (!idRaw) {
       alert("생일상 ID를 찾을 수 없습니다.");
+      setPublicAll(!next); // 롤백
       return;
     }
 
-    const birthdayId = /^\d+$/.test(idRaw) ? Number(idRaw) : idRaw;
+    // 안전한 숫자 파서 사용
+    const birthdayId = toNumOrUndef(idRaw);
+    if (birthdayId === undefined) {
+      alert("유효하지 않은 생일상 ID입니다. 다시 로그인해주세요.");
+      setPublicAll(!next); // 롤백
+      return;
+    }
 
     try {
       setLoadingVisible(true);

@@ -2,10 +2,10 @@
 import { qk } from '@/apis/queryKeys';
 import { getThisYearBirthday } from '@/apis/birthday';
 import type { QueryClient } from '@tanstack/react-query';
-import { LS_LAST_BIRTHDAY } from '@/stores/authStorage';
+import { getLastBirthdayId } from '@/stores/authStorage';
 
 export async function mainHomeLoader(queryClient: QueryClient) {
-  const raw = localStorage.getItem(LS_LAST_BIRTHDAY);
+  const raw = getLastBirthdayId();
 
   // 1) 로컬스토리지에 아무 값이 없으면 그냥 종료
   if (!raw) {

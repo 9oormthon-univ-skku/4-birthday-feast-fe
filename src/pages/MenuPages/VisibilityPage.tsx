@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import AppLayout from '@/ui/AppLayout';
 import { getBirthdayPeriod, type BirthdayPeriod } from "@/apis/birthday";
 import { useNavigate } from 'react-router-dom';
-import { LS_LAST_BIRTHDAY } from '@/stores/authStorage';
+import { getLastBirthdayId } from '@/stores/authStorage';
 import { toNumOrUndef } from '@/utils/toNumOrUndef';
 // import { LS_LAST_BID } from '@/hooks/useFeastThisYear'; [레거시]
 
@@ -76,39 +76,36 @@ export default function VisibilityPage() {
   });
 
   useEffect(() => {
-    const idRaw = localStorage.getItem(LS_LAST_BIRTHDAY);
+    const idRaw = getLastBirthdayId();
 
     // 로컬스토리지 미존재 → 폴백 세팅
     if (!idRaw) {
-      const fb = buildFallbackPeriod();
-      setStart(fb.start);
-      setEnd(fb.end);
-      setView({ y: fb.start.getFullYear(), m: fb.start.getMonth() });
-      setErr("저장된 birthdayId가 없어 폴백 기간을 표시합니다.");
-      setLoading(false);
+      applyFallback("저장된 birthdayId가 없어 폴백 기간을 표시합니다.");
       return;
     }
 
     const birthdayId = toNumOrUndef(idRaw);
+
+    // birthdayId가 유효 숫자가 아니면 API 호출하지 않음
+    if (birthdayId === undefined) {
+      applyFallback("유효하지 않은 birthdayId입니다. 폴백 기간을 표시합니다.");
+      return;
+    }
+
     const ac = new AbortController();
 
     (async () => {
       try {
         setLoading(true);
         setErr(null);
-        const data: BirthdayPeriod = await getBirthdayPeriod(birthdayId!, { signal: ac.signal });
+        const data: BirthdayPeriod = await getBirthdayPeriod(birthdayId, { signal: ac.signal });
         const s = parseLocalYMD(data.startTime);
         const e = parseLocalYMD(data.endTime);
         setStart(s);
         setEnd(e);
         setView({ y: s.getFullYear(), m: s.getMonth() }); // 시작일의 월로 이동
       } catch (e: any) {
-        // API 실패 → 폴백 세팅
-        const fb = buildFallbackPeriod();
-        setStart(fb.start);
-        setEnd(fb.end);
-        setView({ y: fb.start.getFullYear(), m: fb.start.getMonth() });
-        setErr(e?.message ?? "공개기간 조회 실패: 폴백 기간을 표시합니다.");
+        applyFallback(e?.message ?? "공개기간 조회 실패: 폴백 기간을 표시합니다.");
       } finally {
         setLoading(false);
       }
@@ -116,6 +113,17 @@ export default function VisibilityPage() {
 
     return () => ac.abort();
   }, []);
+
+  // 👇 깔끔하게 재사용할 폴백 헬퍼
+  function applyFallback(message: string) {
+    const fb = buildFallbackPeriod();
+    setStart(fb.start);
+    setEnd(fb.end);
+    setView({ y: fb.start.getFullYear(), m: fb.start.getMonth() });
+    setErr(message);
+    setLoading(false);
+  }
+
 
   const grid = useMemo(() => buildCalendarGrid(view), [view]);
 

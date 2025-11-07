@@ -31,12 +31,13 @@ export default function PlayQuizPage() {
 
   const [rankEnabled, setRankEnabled] = useState(false);
   const [rankRefreshToken, setRankRefreshToken] = useState<number>(0);
-  // 질문 세팅/리셋 시 랭킹 OFF
+  // 질문 세팅/리셋 시 랭킹 ON/OFF (호스트면 ON, 아니면 OFF)
   useEffect(() => {
-    // ...
-    setRankEnabled(false);            // ⬅️ 초기엔 OFF
-  }, [data]);
-
+    // questions 참조가 바뀔 때만 트리거
+    const qs = data?.questions;
+    if (!qs) return;
+    setRankEnabled(isHost);
+  }, [isHost, data?.questions]);
   // finished 이후 중복 전송 방지
   const hasSubmittedRef = useRef(false);
 

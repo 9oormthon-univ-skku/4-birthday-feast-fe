@@ -1,25 +1,22 @@
 import React, { useEffect, useMemo, useState } from "react";
 import AppLayout from "@/ui/AppLayout";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { createQuiz } from "@/apis/quiz";
-// import { LS_LAST_BID } from "@/hooks/useFeastThisYear"; [레거시]
-import { LS_LAST_BIRTHDAY, LS_LAST_QUIZ } from "@/stores/authStorage";
+import {
+  createQuiz,
+  type QuizCreateQuestionInput,
+  type QuizCreateReq,
+} from "@/apis/quiz";
+import { getLastBirthdayId, setLastQuizId } from "@/stores/authStorage";
+import { toNumOrUndef } from "@/utils/toNumOrUndef";
 
-type QuizQuestion = {
-  questionId: string;
-  content: string;
-  answer: boolean; // true=O, false=X
-  sequence: number;
+// -------------------- 타입 --------------------
+type QuizDraft = QuizCreateReq & {
+  updatedAt: string; // 클라이언트 메타
 };
+type EditableQuestion = QuizCreateQuestionInput & { questionId: string };
 
-type QuizDraft = {
-  quizId: string;
-  birthdayId?: string | number;
-  questions: QuizQuestion[];
-  updatedAt: string;
-};
-
-const BASE_DRAFT_KEY = "bh.quiz.ox.draft"; // 접두어로만 사용
+// -------------------- 상수/유틸 --------------------
+const BASE_DRAFT_KEY = "bh.quiz.ox.draft"; // 생일상별 네임스페이스 접두어
 const MAX_LEN = 100;
 const MIN_QUESTIONS = 1;
 
@@ -27,8 +24,8 @@ function makeId() {
   return `q_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-/** ✅ 생일상별 네임스페이스 키 (birthdayId가 없으면 저장/로드를 건너뜁니다) */
-function draftKeyFor(birthdayId?: string | number) {
+/** ✅ 생일상별 네임스페이스 키 (birthdayId 없으면 저장/로드 스킵) */
+function draftKeyFor(birthdayId?: number) {
   return birthdayId ? `${BASE_DRAFT_KEY}:${birthdayId}` : "";
 }
 
@@ -39,7 +36,12 @@ function loadDraftByKey(key: string): QuizDraft | null {
     const raw = sessionStorage.getItem(key);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (!parsed || !Array.isArray(parsed.questions)) return null;
+    if (
+      !parsed ||
+      typeof parsed.birthdayId !== "number" ||
+      !Array.isArray(parsed.questions)
+    )
+      return null;
     return parsed as QuizDraft;
   } catch {
     return null;
@@ -58,39 +60,56 @@ function clearDraftByKey(key: string) {
   } catch { }
 }
 
-function normalizeSequence(list: QuizQuestion[]): QuizQuestion[] {
+/** 시퀀스 정렬/보정: 편집용(기존 필드 유지) */
+function normalizeSequenceEditable<T extends { sequence: number }>(list: T[]): T[] {
   return list
     .map((q, i) => ({ ...q, sequence: i + 1 }))
     .sort((a, b) => a.sequence - b.sequence);
 }
 
-function readLastBirthdayId(): string | number | undefined {
+/** 시퀀스 정렬/보정: 페이로드/드래프트용(필드 축소) */
+function normalizeSequencePayload(
+  list: EditableQuestion[]
+): QuizCreateQuestionInput[] {
+  return list
+    .map((q, i) => ({
+      sequence: i + 1,
+      content: q.content,
+      answer: q.answer,
+    }))
+    .sort((a, b) => a.sequence - b.sequence);
+}
+
+/** LS에서 birthdayId 안전 파싱 */
+function readLastBirthdayId(): number | undefined {
   try {
-    const raw = localStorage.getItem(LS_LAST_BIRTHDAY);
-    if (!raw) return undefined;
-    const n = Number(raw);
-    return Number.isFinite(n) ? n : (raw as string);
+    const raw = getLastBirthdayId();
+    return toNumOrUndef(raw);
   } catch {
     return undefined;
   }
 }
 
+/** 문항 유효성 */
+function isQuestionValid(q: QuizCreateQuestionInput) {
+  const content = (q.content ?? "").trim();
+  return content.length > 0 && content.length <= MAX_LEN && typeof q.answer === "boolean";
+}
+
+// -------------------- 컴포넌트 --------------------
 export default function CreateQuizPage() {
   const nav = useNavigate();
   const [sp] = useSearchParams();
 
-  const [title, setTitle] = useState<string>("");
-  const [questions, setQuestions] = useState<QuizQuestion[]>([
+  const [birthdayId, setBirthdayId] = useState<number | undefined>(undefined);
+  const [questions, setQuestions] = useState<EditableQuestion[]>([
     { questionId: makeId(), content: "", answer: true, sequence: 1 },
   ]);
-  const [birthdayId, setBirthdayId] = useState<string | number | undefined>(undefined);
   const [submitting, setSubmitting] = useState(false);
 
-  /** 1) birthdayId 결정 (LS_LAST_BIRTHDAY) */
+  /** 1) birthdayId 결정 */
   useEffect(() => {
-    const lsBirthday = readLastBirthdayId();
-    // console.log(lsBirthday);
-    setBirthdayId(lsBirthday ?? undefined);
+    setBirthdayId(readLastBirthdayId());
   }, [sp]);
 
   /** 2) 생일상별 초안 로드 */
@@ -99,8 +118,17 @@ export default function CreateQuizPage() {
     const nsKey = draftKeyFor(birthdayId);
     const d = loadDraftByKey(nsKey);
     if (d) {
-      setQuestions(normalizeSequence(d.questions));
-      // setTitle(d.title ?? "");
+      // 서버 스펙 → 편집 모델로 매핑 (questionId 부여) + 편집용 정렬
+      setQuestions(
+        normalizeSequenceEditable(
+          d.questions.map((q, i) => ({
+            questionId: `q_${i}_${Date.now()}`,
+            content: q.content,
+            answer: q.answer,
+            sequence: q.sequence,
+          }))
+        )
+      );
     }
   }, [birthdayId]);
 
@@ -109,24 +137,25 @@ export default function CreateQuizPage() {
     if (birthdayId === undefined) return; // id 없으면 저장 안 함
     const nsKey = draftKeyFor(birthdayId);
     const draft: QuizDraft = {
-      quizId: "local-quiz",
       birthdayId,
-      questions: normalizeSequence(questions),
+      questions: normalizeSequencePayload(questions), // ✅ 축소/정렬
       updatedAt: new Date().toISOString(),
     };
     saveDraftByKey(nsKey, draft);
   }, [questions, birthdayId]);
 
+  /** 폼 전체 유효성 */
   const allValid = useMemo(() => {
     if (questions.length < MIN_QUESTIONS) return false;
-    return questions.every(
-      (q) => q.content.trim().length > 0 && q.content.length <= MAX_LEN
+    return questions.every((q) =>
+      isQuestionValid({ sequence: q.sequence, content: q.content, answer: q.answer })
     );
   }, [questions]);
 
+  // -------------------- 액션들 --------------------
   const addQuestion = () => {
     setQuestions((prev) =>
-      normalizeSequence([
+      normalizeSequenceEditable([
         ...prev,
         { questionId: makeId(), content: "", answer: true, sequence: prev.length + 1 },
       ])
@@ -134,7 +163,9 @@ export default function CreateQuizPage() {
   };
 
   const removeQuestion = (id: string) => {
-    setQuestions((prev) => normalizeSequence(prev.filter((q) => q.questionId !== id)));
+    setQuestions((prev) =>
+      normalizeSequenceEditable(prev.filter((q) => q.questionId !== id))
+    );
   };
 
   const moveUp = (idx: number) => {
@@ -142,7 +173,7 @@ export default function CreateQuizPage() {
       if (idx <= 0) return prev;
       const next = [...prev];
       [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
-      return normalizeSequence(next);
+      return normalizeSequenceEditable(next);
     });
   };
 
@@ -151,7 +182,7 @@ export default function CreateQuizPage() {
       if (idx >= prev.length - 1) return prev;
       const next = [...prev];
       [next[idx + 1], next[idx]] = [next[idx], next[idx + 1]];
-      return normalizeSequence(next);
+      return normalizeSequenceEditable(next);
     });
   };
 
@@ -164,8 +195,9 @@ export default function CreateQuizPage() {
     setQuestions((prev) => prev.map((q) => (q.questionId === id ? { ...q, answer: value } : q)));
   };
 
-  // 실제 API 호출
+  // -------------------- 실제 API 호출 --------------------
   const handleSave = async () => {
+    if (submitting) return; // ✅ 중복 제출 가드
     if (!birthdayId) {
       alert("생일상 ID를 찾을 수 없어요.");
       return;
@@ -174,20 +206,18 @@ export default function CreateQuizPage() {
 
     setSubmitting(true);
     try {
-      const payload = {
+      const payload: QuizCreateReq = {
         birthdayId,
-        questions: normalizeSequence(questions).map((q) => ({
-          sequence: q.sequence,
-          content: q.content.trim(),
-          answer: q.answer,
-        })),
+        questions: normalizeSequencePayload(questions), // ✅ 서버 스펙 그대로
       };
 
       const created = await createQuiz(payload);
+
       // 퀴즈 생성 시 quizId 로컬에 저장
       try {
-        localStorage.setItem(LS_LAST_QUIZ, String(created.quizId));
+        setLastQuizId(created.quizId ?? null);
       } catch { }
+
       clearDraftByKey(draftKeyFor(birthdayId)); // 해당 생일상 초안만 제거
       alert("퀴즈가 저장되었습니다.");
       nav(`/main?quizId=${created.quizId}`);
@@ -199,6 +229,7 @@ export default function CreateQuizPage() {
     }
   };
 
+  // -------------------- UI --------------------
   const rightExtra = (
     <div className="text-sm text-[#A0A0A0]">퀴즈 개수 : {questions.length}</div>
   );
@@ -222,7 +253,8 @@ export default function CreateQuizPage() {
     >
       <div className="w-full px-8 py-4">
         <p className="text-sm text-[#A0A0A0] mb-4">
-          각 문항은 <span className="text-[#FF8B8B] font-bold">O / X</span> 중 하나의 정답을 선택해 주세요.<br />
+          각 문항은 <span className="text-[#FF8B8B] font-bold">O / X</span> 중 하나의 정답을 선택해 주세요.
+          <br />
           (최대 {MAX_LEN}자)
         </p>
 
@@ -266,16 +298,13 @@ export default function CreateQuizPage() {
                 value={q.content}
                 onChange={(e) => updateContent(q.questionId, e.target.value)}
                 placeholder="퀴즈 내용을 입력하세요"
-                className=" w-full rounded-[5px] border border-gray-200 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#FF8B8B] mb-3"
+                className="w-full rounded-[5px] border border-gray-200 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#FF8B8B] mb-3"
                 disabled={submitting}
               />
 
               <div className="flex justify-between">
-                <div className="flex items-center gap-2s">
-                  <OXToggle
-                    value={q.answer}
-                    onChange={(val) => toggleAnswer(q.questionId, val)}
-                  />
+                <div className="flex items-center gap-2">
+                  <OXToggle value={q.answer} onChange={(val) => toggleAnswer(q.questionId, val)} />
                 </div>
                 <span className="text-sm text-[#A0A0A0] px-2">
                   정답: <span className="font-medium text-[#383838]">{q.answer ? "O" : "X"}</span>
@@ -300,6 +329,7 @@ export default function CreateQuizPage() {
   );
 }
 
+// -------------------- 서브 컴포넌트 --------------------
 function OXToggle({
   value,
   onChange,
@@ -312,7 +342,8 @@ function OXToggle({
       <button
         type="button"
         onClick={() => onChange(true)}
-        className={`px-3 py-1.5 text-sm rounded-full ${value ? "bg-[#FF8B8B] text-white" : "bg-white text-[#A0A0A0]"}`}
+        className={`px-3 py-1.5 text-sm rounded-full ${value ? "bg-[#FF8B8B] text-white" : "bg-white text-[#A0A0A0]"
+          }`}
         aria-pressed={value}
         aria-label="정답 O"
       >
@@ -321,7 +352,8 @@ function OXToggle({
       <button
         type="button"
         onClick={() => onChange(false)}
-        className={`px-3 py-1.5 text-sm rounded-full ${!value ? "bg-[#FF8B8B] text-white" : "bg-white text-[#A0A0A0]"}`}
+        className={`px-3 py-1.5 text-sm rounded-full ${!value ? "bg-[#FF8B8B] text-white" : "bg-white text-[#A0A0A0]"
+          }`}
         aria-pressed={!value}
         aria-label="정답 X"
       >
