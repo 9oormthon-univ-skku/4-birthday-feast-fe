@@ -4,6 +4,7 @@ import AppLayout from '@/ui/AppLayout';
 import { getBirthdayPeriod, type BirthdayPeriod } from "@/apis/birthday";
 import { useNavigate } from 'react-router-dom';
 import { LS_LAST_BIRTHDAY } from '@/stores/authStorage';
+import { toNumOrUndef } from '@/utils/toNumOrUndef';
 // import { LS_LAST_BID } from '@/hooks/useFeastThisYear'; [레거시]
 
 const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일'];
@@ -88,14 +89,14 @@ export default function VisibilityPage() {
       return;
     }
 
-    const birthdayId = /^\d+$/.test(idRaw) ? Number(idRaw) : idRaw;
+    const birthdayId = toNumOrUndef(idRaw);
     const ac = new AbortController();
 
     (async () => {
       try {
         setLoading(true);
         setErr(null);
-        const data: BirthdayPeriod = await getBirthdayPeriod(birthdayId, { signal: ac.signal });
+        const data: BirthdayPeriod = await getBirthdayPeriod(birthdayId!, { signal: ac.signal });
         const s = parseLocalYMD(data.startTime);
         const e = parseLocalYMD(data.endTime);
         setStart(s);

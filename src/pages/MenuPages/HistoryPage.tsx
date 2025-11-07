@@ -126,6 +126,7 @@ export default function HistoryPage() {
                     <div className="!w-full !h-full pt-[80%]">
                       <MainFeast
                         hideQuizButton={true}
+                        hidePager={true}
                         cards={b._cards}
                       />
                     </div>

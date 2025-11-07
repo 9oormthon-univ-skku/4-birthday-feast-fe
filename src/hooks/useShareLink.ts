@@ -2,19 +2,24 @@
 import { useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { getStoredUserId, LS_LAST_QUIZ } from "@/stores/authStorage";
+import { getLastQuizId, getStoredUserId } from "@/stores/authStorage";
 import { qk } from "@/apis/queryKeys";
 import type { UserMeResponse } from "@/apis/user";
+import { toPathId } from "@/apis/apiUtils";
 
-// const LS_LAST_QUIZ_ID = "bh.lastQuizId";
+function isValidQuizId(v: string | null): v is string {
+  if (!v) return false;
+  // 숫자만 허용 
+  return /^\d+$/.test(v);
+}
 
-/**
- * 공유용 링크 생성 훅 (B안 라우팅)
- * 항상 `/u/:userId/main?code=...&quizId=...&name=...` 형태의 링크를 생성합니다.
- * - code: 인자로 전달
- * - quizId: localStorage("bh.lastQuizId")에서 로드 (있을 때만)
- * - name: React Query 캐시(qk.auth.me)에서 호스트 이름 로드 (없으면 생략)
- */
+function isValidCode(v: string | undefined | null): v is string {
+  if (!v) return false;
+  const t = v.trim();
+  // 영문/숫자/하이픈 정도만 허용 (백엔드 규칙 확인하기) ☁️
+  return /^[A-Za-z0-9_-]{4,64}$/.test(t);
+}
+
 export function useShareLink(code: string | undefined | null) {
   const { userId: userIdParam } = useParams();
   const storedId = getStoredUserId();
@@ -27,24 +32,29 @@ export function useShareLink(code: string | undefined | null) {
   const shareName = rawName && rawName.length > 0 ? rawName : undefined;
 
   const url = useMemo(() => {
-    if (!code || !userId) return "";
+    if (!userId) return "";
+    if (!isValidCode(code)) return ""; // 코드가 유효하지 않으면 링크 제공X;
 
-    // quizId는 로컬스토리지에서 로드 (없으면 추가 안 함)
+    // quizId는 로컬스토리지에서 로드 (없으면 null)
     let quizId: string | null = null;
     try {
-      quizId = localStorage.getItem(LS_LAST_QUIZ);
+      const raw = getLastQuizId();
+      quizId = isValidQuizId(raw) ? raw : null;
     } catch {
       // private mode 등 예외는 무시
     }
 
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const origin =
+      typeof window !== "undefined" && window.location?.origin
+        ? window.location.origin
+        : "";
     const params = new URLSearchParams();
-    params.set("code", code);
+    params.set("code", code!.trim());
     if (quizId) params.set("quizId", quizId);
-    // ✅ 이름도 쿼리에 포함 (게스트가 열었을 때 바로 표시 가능)
     if (shareName) params.set("name", shareName);
 
-    return `${origin}/u/${userId}/main?${params.toString()}`;
+    const base = `/u/${toPathId(userId)}/main`;
+    return origin ? `${origin}${base}?${params.toString()}` : `${base}?${params.toString()}`;
   }, [code, userId, shareName]);
 
   const share = useCallback(async () => {
@@ -52,8 +62,8 @@ export function useShareLink(code: string | undefined | null) {
 
     const title = shareName ? `${shareName}의 생일한상` : "생일한상";
     const text = shareName
-      ? `${shareName}의 생일한상에 초대할게요 🎂`
-      : "내 생일한상에 초대할게요 🎂";
+      ? `🎂 생일한상에 초대합니다! From. ${shareName}`
+      : "🎂 생일한상에 초대합니다!";
 
     try {
       if (typeof navigator !== "undefined" && (navigator as any).share) {

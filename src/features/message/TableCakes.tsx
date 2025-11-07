@@ -23,8 +23,10 @@ const SLOTS: Slot[] = [
 
 export default function TableCakes({
   items,
+  hidePager = false,
 }: {
   items: CakeItem[];
+  hidePager?: boolean;
 }) {
   const navigate = useNavigate();
   const location = useLocation(); // 현재 쿼리 보존 용도            
@@ -157,7 +159,7 @@ export default function TableCakes({
           );
         })}
 
-        {pageCount > 1 && (
+        {!hidePager && pageCount > 1 && (
           <>
             <button
               type="button"

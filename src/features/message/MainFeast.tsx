@@ -15,12 +15,14 @@ export type MainFeastProps = {
   className?: string;
   cards: BirthdayCardLike[];
   hideQuizButton?: boolean;
+  hidePager?: boolean;
 };
 
 const MainFeast: FC<MainFeastProps> = ({
   // className,
   cards = [],
   hideQuizButton = false,
+  hidePager = false,
 }) => {
   // cards를 cakes로 변환 
   const cakes: CakeItem[] = useMemo(
@@ -103,7 +105,7 @@ const MainFeast: FC<MainFeastProps> = ({
           decoding="async"
           aria-hidden="true"
         />
-        <TableCakes items={cakes} />
+        <TableCakes items={cakes} hidePager={hidePager} />
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 export type RequestOpts = { signal?: AbortSignal };
 
 // 경로 파라미터 인코딩 유틸 ☁️
-export function toPathId(id: number): string {
+export function toPathId(id: number | string): string {
   const s = String(id);
   // 숫자만 허용!
   if (!/^\d+$/.test(s)) throw new Error("유효한 숫자 Id 값이 필요합니다.");
