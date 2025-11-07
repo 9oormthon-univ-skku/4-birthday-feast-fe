@@ -307,14 +307,16 @@ export default function CapturePreview({
           {todayString}
         </h2>
         <input
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          className="ms-2 w-[90%] text-[#BFBFBF] text-base font-semibold font-['Pretendard']
-        focus:outline-none focus:ring-1 focus:ring-[#BEBEBE] rounded-xs"
+          value={isIOS() ? "사진을 길게 눌러 저장하세요" : message}
+          onChange={isIOS() ? undefined : (e) => setMessage(e.target.value)}
+          readOnly={isIOS()}
+          aria-readonly={isIOS()}
+          className={`ms-2 w-[90%] text-base font-semibold font-['Pretendard']
+    focus:outline-none focus:ring-1 focus:ring-[#BEBEBE] rounded-xs ${isIOS() ? "text-black" : "text-[#BFBFBF]"
+            }`}
           placeholder="사진에 적힐 메시지를 적어주세요."
         />
-
-        <div
+        {!isIOS() && <div
           className="absolute left-1/2 -translate-x-1/2 -bottom-21 flex items-center gap-7
                     pb-[env(safe-area-inset-bottom)]"
         >
@@ -334,7 +336,7 @@ export default function CapturePreview({
           >
             {downloadIcon}
           </button>
-        </div>
+        </div>}
       </div>
     </div>
   );
