@@ -42,42 +42,66 @@ export default function CapturePreview({
   }, [open, onClose]);
 
   if (!open || !src) return null;
-
   const handleDownload = async () => {
     try {
+      // 1) 이미지 DataURL 만들기 (우선 카드→toPng, 실패 시 props.src 사용)
+      let dataUrl: string | undefined;
       if (cardRef.current) {
-        const dataUrl = await toPng(cardRef.current, {
-          cacheBust: true,
-          pixelRatio: 2,
-          backgroundColor: "#FFFFFF",
-        });
-
-        if (onDownload) onDownload(dataUrl);
-        else {
-          const a = document.createElement("a");
-          a.href = dataUrl;
-          a.download = `birthday-feast-${new Date().toISOString().replace(/[:.]/g, "-")}.png`;
-          a.click();
+        try {
+          dataUrl = await toPng(cardRef.current, {
+            cacheBust: true,
+            pixelRatio: 2,
+            backgroundColor: "#FFFFFF",
+          });
+        } catch {
+          // toPng 실패 시 dataUrl은 undefined로 두고 src로 진행
         }
+      }
+
+      const finalSrc = dataUrl ?? src!;
+      // 2) DataURL/URL → Blob
+      const res = await fetch(finalSrc, { mode: "cors", cache: "no-store" });
+      if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+      const blob = await res.blob();
+
+      // 3) Blob → Object URL
+      const blobUrl = URL.createObjectURL(blob);
+      const fileName = `birthday-feast-${new Date().toISOString().replace(/[:.]/g, "-")}.png`;
+
+      // 4) 브라우저가 a[download] 지원하면 다운로드 시도
+      const supportsDownload = "download" in HTMLAnchorElement.prototype;
+      if (supportsDownload) {
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = fileName;
+        // 사파리 대응: DOM에 붙였다가 클릭
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        // 리소스 정리 (약간 늦게 revoke)
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+
+        // 완료 후 모달 닫기
+        onClose?.();
         return;
       }
 
-      // 폴백
-      if (onDownload) onDownload(src!);
-      else {
-        const a = document.createElement("a");
-        a.href = src!;
-        a.download = `birthday-feast-${new Date().toISOString().replace(/[:.]/g, "-")}.png`;
-        a.click();
-      }
+      // 5) a[download] 미지원 브라우저: 새 탭/창으로 열기
+      // (사용자가 길게 누르기 → 저장, 혹은 브라우저가 저장 다이얼로그)
+      window.open(blobUrl, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10_000);
+
+      onClose?.();
     } catch (e) {
-      console.error("Card capture failed, fallback to src download.", e);
-      alert(`이미지 저장 실패\n${e}`)
-    } finally {
-      alert("이미지를 저장했어요.");
-      onClose(); // 완료 후 모달 닫기
+      console.error("Download failed", e);
+      // 마지막 폴백: 원본 URL이라도 열어주기
+      if (src) window.open(src, "_blank", "noopener,noreferrer");
+      // 실패 시엔 닫지 않거나, 원하면 아래 주석 해제
+      // onClose?.();
     }
   };
+
 
   const handleShare = async () => {
     try {
@@ -108,15 +132,15 @@ export default function CapturePreview({
     <div
       role="dialog"
       aria-modal="true"
-      className={`fixed inset-0 z-10000 flex items-center justify-center bg-black/50 p-4 ${className ?? ""}`}
+      className={`fixed inset-0 z-10000 flex items-center justify-center bg-black/50 px-2 pt-1 pb-14 ${className ?? ""}`}
       onClick={closeOnBackdrop ? onClose : undefined}
     >
       {/* 카드 + 플로팅 버튼 컨테이너 */}
       <div ref={cardRef}
-        className="relative max-w-[468px] w-[90%] rounded-[5px] bg-white p-5 pb-3"
+        className="relative max-w-[468px] w-[80%] rounded-[5px] bg-white p-5 pb-3"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="max-h-[62vh] overflow-hidden rounded-[5px] border-1 border-[#BEBEBE]
+        <div className="max-h-[45dvh] overflow-hidden rounded-[5px] border-1 border-[#BEBEBE]
         flex items-center justify-center"
         >
           <img src={src} alt="캡쳐 이미지" className="w-full h-auto block" />
