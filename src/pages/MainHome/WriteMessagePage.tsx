@@ -51,7 +51,7 @@ export default function WriteMessagePage() {
     []
   );
 
-  // 2) API에서 이미지 목록 받아오기 (TanStack Query)
+  // 2) API에서 이미지 목록 받아오기 (TanStack Query) ☁️나중에 수정하더라도 진입 시 api호출하는 흐름은 좋은 듯 (진입하자마자 토큰만료알림가능)
   const { data } = useQuery<GuestImage[]>({
     queryKey: ['guestImages'],
     queryFn: getGuestImages,

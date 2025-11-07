@@ -1,6 +1,6 @@
 // src/apis/index.ts
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
-import { SS_GUEST_AT } from "./apiUtils";
+import { SS_GUEST_AT, SS_GUEST_NN, SS_GUEST_RT } from "./apiUtils";
 import { getAccessToken, setAccessToken } from "@/stores/authToken";
 import { reissueAccessToken } from "./auth";
 // import { reissueAccessToken } from "./auth";
@@ -42,6 +42,14 @@ function isGuestContext(): boolean {
     return false;
   }
 }
+function clearGuestSession() {
+  try {
+    sessionStorage.removeItem(SS_GUEST_AT);
+    sessionStorage.removeItem(SS_GUEST_RT);
+    sessionStorage.removeItem(SS_GUEST_NN);
+  } catch { }
+}
+
 
 let redirecting = false;
 function safeRedirectToLogin(query: string) {
@@ -65,11 +73,23 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     const original = (error.config || {}) as AxiosRequestConfig;
     if (!error.response) throw error;
-    if (original?._guest) return Promise.reject(error);
+    // if (original?._guest) return Promise.reject(error);
 
     const status = error.response.status;
     const url = original.url || "";
     const isSessionExpired = status === 401 || status === 419 || status === 440;
+    const isGuestReq = Boolean(original?._guest) || isGuestContext();
+    // ✅ 게스트 요청: 401/419/440이면 게스트 세션만 정리하고 종료 (재발급/리다이렉트 X)
+    if (isGuestReq && isSessionExpired) {
+      // 혹시 진행 중이던 재발급 흐름이 있다면 정리
+      isRefreshing = false;
+      notifyAllWaiters();
+      clearGuestSession();
+      alert('세션이 만료되었습니다. 브라우저 탭을 닫고 다시 시도해주세요.');
+      return Promise.reject(error);
+    }
+
+    if (!error.response) throw error;
 
     // 재발급 자체가 만료
     if (isSessionExpired && url.includes("/api/auth-user/reissue")) {
