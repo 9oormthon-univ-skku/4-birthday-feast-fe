@@ -107,8 +107,7 @@ export default function HistoryPage() {
             {mapped.map((b) => {
               const cardCount = b._cards.length;
               // const firstMsg = b._cards[0]?.message ?? '';
-              // const dateText = `코드 ${b.code}`; // 추후 수정 필요(api 반환값 필요)
-              const dateText = "2025.08.28"; // 하드코딩 
+              const dateText = `${b.year}`; // 하드코딩 
 
               return (
                 <li
@@ -130,7 +129,6 @@ export default function HistoryPage() {
                         cards={b._cards}
                       />
                     </div>
-
                   </div>
 
                   {/* 메타/캡션 */}
