@@ -312,7 +312,7 @@ export default function CapturePreview({
           readOnly={isIOS()}
           aria-readonly={isIOS()}
           className={`ms-2 w-[90%] text-base font-semibold font-['Pretendard']
-    focus:outline-none focus:ring-1 focus:ring-[#BEBEBE] rounded-xs ${isIOS() ? "text-black" : "text-[#BFBFBF]"
+    focus:outline-none focus:ring-1 focus:ring-[#BEBEBE] rounded-xs ${isIOS() ? "text-[#5F333E]" : "text-[#BFBFBF]"
             }`}
           placeholder="사진에 적힐 메시지를 적어주세요."
         />
