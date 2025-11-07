@@ -82,7 +82,7 @@ export default function MessagePage({
                 draggable={false}
               />
             </div>
-            <div className="absolute left-0 top-4 w-full px-[10dvw] flex items-center justify-between gap-6">
+            <div className="absolute left-0 top-7 w-full px-[12dvw] flex items-center justify-between gap-6">
               <button
                 type="button"
                 aria-label="이전 메세지"
