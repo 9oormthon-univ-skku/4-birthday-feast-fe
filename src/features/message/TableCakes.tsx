@@ -13,9 +13,8 @@ type Slot = {
 };
 
 const SLOTS: Slot[] = [
-  { key: 'topLeft', left: '8%', bottom: '60%', width: '30%' },
   { key: 'center', left: '52%', bottom: '47%', width: '38%', anchorCenter: true },
-
+  { key: 'topLeft', left: '8%', bottom: '60%', width: '30%' },
   { key: 'topRight', left: '69%', bottom: '61%', width: '30%' },
   { key: 'middleLeft', left: '4%', bottom: '37%', width: '31%' },
   { key: 'bottomLeft', left: '24%', bottom: '17%', width: '37%' },

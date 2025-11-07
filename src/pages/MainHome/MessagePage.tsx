@@ -68,10 +68,10 @@ export default function MessagePage({
         <section className="relative w-full px-8 py-4">
           <div
             className="
-              relative mx-auto mt-20
+              relative mx-auto mt-[10dvh]
               rounded-[5px] bg-white
               shadow-[0px_0px_4px_0px_rgba(0,0,0,0.25)]
-              w-full aspect-[329/406]"
+              w-full px-6 pt-14 pb-6"
           >
             {/* 이미지: 카드 상단 중앙 고정 */}
             <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-[96px] h-[96px] rounded-[90%] bg-[#FFF4DF] grid place-items-center shadow-[0_2px_4px_rgba(0,0,0,0.08)]">
@@ -82,31 +82,30 @@ export default function MessagePage({
                 draggable={false}
               />
             </div>
+            <div className="absolute left-0 top-4 w-full px-[10dvw] flex items-center justify-between gap-6">
+              <button
+                type="button"
+                aria-label="이전 메세지"
+                onClick={goPrev}
+                disabled={!canPrev}
+              >
+                {goPrevIcon}
+              </button>
+              <button
+                type="button"
+                aria-label="다음 메세지"
+                onClick={goNext}
+                disabled={!canNext}
+              >
+                {goNextIcon}
+              </button>
+            </div>
 
-            <div className="absolute left-0 bottom-6 top-7 w-full flex flex-col items-center">
-              <div className="w-[80%] flex items-center justify-between gap-6">
-                <button
-                  type="button"
-                  aria-label="이전 메세지"
-                  onClick={goPrev}
-                  disabled={!canPrev}
-                >
-                  {goPrevIcon}
-                </button>
-                <button
-                  type="button"
-                  aria-label="다음 메세지"
-                  onClick={goNext}
-                  disabled={!canNext}
-                >
-                  {goNextIcon}
-                </button>
-              </div>
-
-              <h2 className="mt-4 text-center text-xl font-extrabold text-[#FF8B8B]">
+            <div className=" flex flex-col items-center">
+              <h2 className="mt-4 px-1 text-center text-xl font-extrabold text-[#FF8B8B]">
                 {card?.nickname ?? ''}
               </h2>
-              <div className="mt-3 w-[80%] overflow-y-auto overflow-x-hidden overscroll-contain">
+              <div className="mt-3 w-full max-h-[45dvh] overflow-y-auto overflow-x-hidden overscroll-contain">
                 <p className="text-[#60343F] text-base font-medium leading-normal text-left
                   whitespace-pre-line break-words">
                   {card?.message ?? ''}

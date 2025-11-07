@@ -118,7 +118,7 @@ export default function QuizPage() {
   // ----- 렌더 -----
   if (quizLoading) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="w-dvw h-dvh bg-white">
         <Header showBack showMenu={false} showBrush={false} title={<span className="text-[#FF8B8B]">생일 퀴즈</span>} />
         <main className="px-4 pb-6">
           <div className="mb-4 h-[1px] bg-[#EFD9C6]" />
@@ -130,7 +130,7 @@ export default function QuizPage() {
 
   if (quizError || !data) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="w-dvw h-dvh bg-white">
         <Header showBack showMenu={false} showBrush={false} title={<span className="text-[#FF8B8B]">생일 퀴즈</span>} />
         <section className="py-20 text-center">
           <h3 className="text-xl text-[#FF8B8B] font-['KoreanSWGIG3']">퀴즈를 불러오지 못했어요.</h3>
@@ -149,7 +149,7 @@ export default function QuizPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="w-dvw h-dvh bg-white">
       <Header
         showBack
         showMenu={false}

@@ -36,7 +36,7 @@ export default function WriteMessagePage() {
   const [doneOpen, setDoneOpen] = useState(false); // 메시지 전송 완료 모달
   const [errorOpen, setErrorOpen] = useState<string | null>(null);
 
-  const maxLen = 300;
+  const maxLen = 250;
 
   // 1) 로컬 폴백 아이콘 (추후 수정!, UI 표시용)
   const fallbackIcons: IconItem[] = useMemo(

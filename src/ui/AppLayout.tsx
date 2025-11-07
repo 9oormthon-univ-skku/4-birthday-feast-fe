@@ -55,8 +55,8 @@ export default function AppLayout({
 
       {/* 고정 푸터 */}
       {hasFooter && (
-        <footer className="z-10 fixed bottom-0 left-0 right-0 flex justify-center pointer-events-none">
-          <div className="w-full max-w-[520px] px-8 py-4 pt-16 pb-[env(safe-area-inset-bottom)]">
+        <footer className="z-10 fixed bottom-0 left-0 right-0 flex justify-center pointer-events-none bg-gradient-to-t from-white via-white/90 to-transparent backdrop-blur-[0.4px]">
+          <div className="w-full max-w-[520px] px-8 py-4 pt-10 pb-[env(safe-area-inset-bottom)]">
             {footer ? (
               footer
             ) : (
