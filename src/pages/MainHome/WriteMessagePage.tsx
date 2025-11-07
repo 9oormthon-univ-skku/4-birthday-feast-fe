@@ -147,10 +147,11 @@ export default function WriteMessagePage() {
 
   // ✋ 제출 가드: 메시지 + API 이미지가 있어야 함
   const isApiSelected = apiIcons.some((i) => i.id === selectedId);
-  const disabled = message.trim().length === 0; // 임시, 실제 운영 시 이미지 로컬폴백 삭제, 아래 조건으로 강화하기 
-  // const disabled = message.trim().length === 0 || !isApiSelected || isPending;
+  // const disabled = message.trim().length === 0; // 임시, 실제 운영 시 이미지 로컬폴백 삭제, 아래 조건으로 강화하기 
+  const disabled = message.trim().length === 0 || !isApiSelected || isPending || doneOpen;
 
   const handleSubmit = () => {
+    if (isPending) return;
     if (disabled) return;
 
     // 현재 상태를 GuestCardCreateReq 형태로 세션 드래프트에 보관

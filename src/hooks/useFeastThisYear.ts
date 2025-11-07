@@ -39,11 +39,10 @@ function writeLS(key: string, value?: string) {
 /** 에러 알림(콘솔 + alert). 환경/SSR 안전 처리 */
 function notifyError(message: string, err?: unknown) {
   try {
-    // 상세는 콘솔에 남기고, 사용자에겐 간단히 알림
     // eslint-disable-next-line no-console
     console.error(`[useFeastThisYear] ${message}`, err);
     if (typeof window !== "undefined" && typeof window.alert === "function") {
-      // window.alert(message);
+      window.alert(`${message}\n${err}`);
     }
   } catch {
     /* no-op */
