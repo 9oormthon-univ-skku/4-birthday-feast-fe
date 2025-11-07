@@ -78,8 +78,75 @@ export default function CapturePreview({
     (/Mac/.test(navigator.platform) && "ontouchend" in document); // iPadOS
   const isAndroid = () => /Android/i.test(navigator.userAgent);
   const isChrome = () => /Chrome\/\d+/.test(navigator.userAgent);
+  // (1) 추가: iOS 전용 폴백 렌더러
+  const iosFallbackFromImg = async (): Promise<string> => {
+    if (!imgRef.current) throw new Error("이미지가 준비되지 않았어요.");
 
-  /** 카드 → PNG 캡처 */
+    // 이미지 로딩 보장
+    if (!imgRef.current.complete || (imgRef.current as any).naturalWidth === 0) {
+      await new Promise<void>((resolve) => {
+        imgRef.current!.addEventListener("load", () => resolve(), { once: true });
+        imgRef.current!.addEventListener("error", () => resolve(), { once: true });
+      });
+    }
+
+    const img = imgRef.current!;
+    const dpr = Math.max(2, Math.round(window.devicePixelRatio || 2));
+    const padding = 24; // 좌우/상하 여백
+    const textBlockH = 120; // 날짜/메시지 출력 영역 높이
+
+    const naturalW = img.naturalWidth || img.width || 1080;
+    const naturalH = img.naturalHeight || img.height || 1350;
+
+    const canvasW = naturalW;
+    const canvasH = naturalH + textBlockH;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = canvasW * dpr;
+    canvas.height = canvasH * dpr;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("캔버스 컨텍스트 생성 실패");
+    ctx.scale(dpr, dpr);
+
+    // 배경 흰색
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, canvasW, canvasH);
+
+    // 이미지 그리기 (가로 꽉, 세로 비율 유지만 상단 정렬)
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, 0, 0, canvasW, naturalH);
+
+    // 텍스트 영역
+    const left = padding;
+    const top = naturalH + padding;
+
+    // 날짜
+    ctx.font = "700 28px Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial";
+    ctx.fillStyle = "#FF8B8B";
+    ctx.textBaseline = "top";
+    ctx.fillText(todayString || "", left, top);
+
+    // 메시지 (줄바꿈 없이 한줄)
+    if (message?.trim()) {
+      ctx.font = "600 18px Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial";
+      ctx.fillStyle = "#BFBFBF";
+      const msgY = top + 36;
+      const maxWidth = canvasW - padding * 2;
+      // 너무 길면 말줄임
+      let drawText = message.trim();
+      while (ctx.measureText(drawText + "…").width > maxWidth && drawText.length > 0) {
+        drawText = drawText.slice(0, -1);
+      }
+      if (drawText !== message.trim()) drawText += "…";
+      ctx.fillText(drawText, left, msgY);
+    }
+
+    return canvas.toDataURL("image/png");
+  };
+
+  // (2) 변경: captureCard 내 iOS 분기와 폴백 추가 (+ iOS에서 skipFonts: true)
   const captureCard = async (): Promise<string> => {
     if (!cardRef.current) throw new Error("카드가 준비되지 않았어요.");
     await waitForImages(cardRef.current);
@@ -94,19 +161,32 @@ export default function CapturePreview({
       );
     };
 
-    return await toPng(cardRef.current, {
-      cacheBust: true,
-      pixelRatio: 2,
-      backgroundColor: "#FFFFFF",
-      // iOS 폰트 깜빡임/블러 방지에 도움
-      style: {
-        transform: "translateZ(0)",
-      } as any,
-      filter,
-      // 외부 폰트/이미지의 교차출처 이슈 최소화
-      skipFonts: false,
-    });
+    try {
+      return await toPng(cardRef.current, {
+        cacheBust: true,
+        pixelRatio: 2,
+        backgroundColor: "#FFFFFF",
+        style: {
+          transform: "translateZ(0)",
+          WebkitTransform: "translateZ(0)", // iOS Safari 보정
+        } as any,
+        filter,
+        // iOS는 외부 폰트 대기/임베딩 이슈가 잦아 skipFonts 권장
+        skipFonts: isIOS(),
+      });
+    } catch (err) {
+      // iOS 전용 폴백: <img> + 텍스트를 캔버스에 직접 그려 PNG 생성
+      if (isIOS()) {
+        try {
+          return await iosFallbackFromImg();
+        } catch (e) {
+          console.error("iOS 폴백 렌더링도 실패", e);
+        }
+      }
+      throw err;
+    }
   };
+
 
   const doNativeDownload = (dataUrl: string, fileName: string) => {
     const a = document.createElement("a");
