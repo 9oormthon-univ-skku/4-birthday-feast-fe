@@ -106,8 +106,9 @@ export default function MessagePage({
               <h2 className="mt-4 text-center text-xl font-extrabold text-[#FF8B8B]">
                 {card?.nickname ?? ''}
               </h2>
-              <div className="mt-3 w-[80%] overflow-y-auto overscroll-contain">
-                <p className="text-[#60343F] text-base font-medium leading-normal text-left break-keep">
+              <div className="mt-3 w-[80%] overflow-y-auto overflow-x-hidden overscroll-contain">
+                <p className="text-[#60343F] text-base font-medium leading-normal text-left
+                  whitespace-pre-line break-words">
                   {card?.message ?? ''}
                 </p>
               </div>
