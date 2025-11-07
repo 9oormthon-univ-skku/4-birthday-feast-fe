@@ -154,6 +154,7 @@ export default function CapturePreview({
           window.open(url, "_blank");
           setTimeout(() => URL.revokeObjectURL(url), 60_000);
           alert("새 창에서 이미지를 길게 눌러 저장하세요.");
+        }
       } else if (isAndroid() && isChrome()) {
         // Android Chrome: download 속성 정상 동작
         doNativeDownload(dataUrl, fileName);
@@ -216,6 +217,7 @@ export default function CapturePreview({
         ref={cardRef}
         className="relative max-w-[468px] w-[80%] rounded-[5px] bg-white p-5 pb-3"
         onClick={(e) => e.stopPropagation()}  // 배경 클릭 전파 차단
+
       >
         <div
           className="max-h-[52dvh] overflow-hidden rounded-[5px] border-1 border-[#BEBEBE]
