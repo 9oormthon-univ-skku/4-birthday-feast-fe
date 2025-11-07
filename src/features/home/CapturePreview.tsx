@@ -219,22 +219,13 @@ export default function CapturePreview({
 
       // 2) 플랫폼별 저장 전략
       if (isIOS()) {
-        // iOS: download 속성이 동작 X → File 공유 or 새 탭 열기
+        // iOS: 항상 새 탭에서 이미지 표시 (길게 눌러 저장)
         const blob = dataURLtoBlob(dataUrl);
-        // @ts-ignore
-        if (navigator.canShare && navigator.canShare({ files: [new File([blob], fileName, { type: "image/png" })] })) {
-          // @ts-ignore
-          await navigator.share({
-            files: [new File([blob], fileName, { type: "image/png" })],
-            title: "생일한상 캡쳐",
-          });
-        } else {
-          // 새 탭으로 열어 길게 눌러 저장 유도
-          const url = URL.createObjectURL(blob);
-          window.open(url, "_blank");
-          setTimeout(() => URL.revokeObjectURL(url), 60_000);
-          alert("새 창에서 이미지를 길게 눌러 저장하세요.");
-        }
+        const url = URL.createObjectURL(blob);
+        // 새 탭 오픈
+        window.open(url, "_blank", "noopener,noreferrer");
+        // 메모리 누수 방지
+        setTimeout(() => URL.revokeObjectURL(url), 60_000);
       } else if (isAndroid() && isChrome()) {
         // Android Chrome: download 속성 정상 동작
         doNativeDownload(dataUrl, fileName);
@@ -245,7 +236,7 @@ export default function CapturePreview({
         } catch {
           const blob = dataURLtoBlob(dataUrl);
           const url = URL.createObjectURL(blob);
-          window.open(url, "_blank");
+          window.open(url, "_blank", "noopener,noreferrer");
           setTimeout(() => URL.revokeObjectURL(url), 60_000);
         }
       }
