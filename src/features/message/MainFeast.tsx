@@ -69,7 +69,7 @@ const MainFeast: FC<MainFeastProps> = ({
           sizes="(max-width: 520px) 46vw, 240px"
           className="block w-full"
         />
-        {!hideQuizButton && (<div className="absolute top-18/31 -translate-x-11/21 -translate-y-23/28 w-[28%]">
+        {!hideQuizButton && (<div className="absolute top-18/31 -translate-x-13/23 -translate-y-23/28 w-[28%]">
           <PlayQuizButton
             variant="inline"
             imgSizeClassName="w-20"

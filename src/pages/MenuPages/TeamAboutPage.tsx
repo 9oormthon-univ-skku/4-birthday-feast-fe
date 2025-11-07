@@ -57,7 +57,7 @@ export default function TeamAboutPage() {
         </p>
 
         <hr className="border-[#D9D9D9]" />
-        <div className='h-dvh'>
+        <div className='pb-20'>
           {sections.map((sec) => (
             <section key={sec.title} className="my-11">
               <h2 className="text-[#FF8B8B] font-extrabold text-xl mb-4">{sec.title}</h2>
