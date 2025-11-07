@@ -125,30 +125,32 @@ export default function ThemeSettingsPage({
       onFooterButtonClick={() => navigate(-1)}
     >
       <div className='px-8 py-4'>
-        <ul className="space-y-7 pt-2">
-          {categories.map(cat => (
-            <li key={cat.key}>
-              <p className="mb-2 text-base font-normal font-['KoreanSWGIG3'] text-[#FF8B8B]">
-                {cat.title}
-              </p>
-              <div className="grid grid-cols-3 gap-6">
-                {cat.options.map((opt, idx) => {
-                  const isUpcoming = !opt.imgSrc || opt.id.startsWith('upcoming');
-                  const selected = state[cat.key] === opt.id && !isUpcoming;
-                  return (
-                    <OptionCard
-                      key={opt.id + idx}
-                      option={opt}
-                      disabled={isUpcoming}
-                      selected={selected}
-                      onClick={() => !isUpcoming && handleSelect(cat.key, opt.id)}
-                    />
-                  );
-                })}
-              </div>
-            </li>
-          ))}
-        </ul>
+        <div className='mb-20 h-[90dvh]'>
+          <ul className="space-y-7 pt-2">
+            {categories.map(cat => (
+              <li key={cat.key}>
+                <p className="mb-2 text-base font-normal font-['KoreanSWGIG3'] text-[#FF8B8B]">
+                  {cat.title}
+                </p>
+                <div className="grid grid-cols-3 gap-6">
+                  {cat.options.map((opt, idx) => {
+                    const isUpcoming = !opt.imgSrc || opt.id.startsWith('upcoming');
+                    const selected = state[cat.key] === opt.id && !isUpcoming;
+                    return (
+                      <OptionCard
+                        key={opt.id + idx}
+                        option={opt}
+                        disabled={isUpcoming}
+                        selected={selected}
+                        onClick={() => !isUpcoming && handleSelect(cat.key, opt.id)}
+                      />
+                    );
+                  })}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
 
     </AppLayout>

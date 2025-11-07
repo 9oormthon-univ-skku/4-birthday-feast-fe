@@ -69,9 +69,15 @@ const MainList: FC<MainListProps> = ({ columns = 4, className, cards, isLoading,
     () => cardsToCakes(cards),
     [cards]
   );
+  const sortedItems = useMemo(() => {
+    return [...cakes].sort((a, b) => (b.messageId ?? 0) - (a.messageId ?? 0));
+  }, [cakes]);
 
-  return (
-    <ul
+
+
+
+  return (<div className=' relative w-full max-w-[520px]
+'> <ul
       className={clsx(
         'grid gap-x-6 gap-y-5 w-full max-w-[520px] mx-auto',
         colClass(columns),
@@ -79,7 +85,7 @@ const MainList: FC<MainListProps> = ({ columns = 4, className, cards, isLoading,
       )}
       role="list"
     >
-      {cakes.map((c, idx) => (
+      {sortedItems.map((c, idx) => (
         <li key={c.messageId}>
           <button
             type="button"
@@ -103,7 +109,8 @@ const MainList: FC<MainListProps> = ({ columns = 4, className, cards, isLoading,
           </button>
         </li>
       ))}
-    </ul>
+    </ul></div>
+
   );
 };
 
@@ -119,19 +126,21 @@ function SkeletonGrid({
 }) {
   const items = Array.from({ length: columns * 4 });
   return (
-    <ul
-      className={clsx(
-        'grid gap-x-6 gap-y-5 w-full max-w-[520px] mx-auto',
-        colClass(columns),
-        className
-      )}
-    >
-      {items.map((_, i) => (
-        <li key={i} className="flex flex-col items-center">
-          <div className="h-20 w-20 animate-pulse rounded-full bg-neutral-200/70 md:h-24 md:w-24" />
-          <div className="mt-2 h-3 w-20 animate-pulse rounded bg-neutral-200/70 md:w-24" />
-        </li>
-      ))}
-    </ul>
+    <div className=''>
+      <ul
+        className={clsx(
+          'grid gap-x-6 gap-y-5 w-full max-w-[520px] mx-auto',
+          colClass(columns),
+          className
+        )}
+      >
+        {items.map((_, i) => (
+          <li key={i} className="flex flex-col items-center">
+            <div className="h-20 w-20 animate-pulse rounded-full bg-neutral-200/70 md:h-24 md:w-24" />
+            <div className="mt-2 h-3 w-20 animate-pulse rounded bg-neutral-200/70 md:w-24" />
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

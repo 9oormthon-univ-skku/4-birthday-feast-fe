@@ -58,11 +58,11 @@ export default function Header({
 
   return (
     <header
-      className="sticky top-0 z-1000 w-full bg-white shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] backdrop-blur"
-      style={{ fontFamily: 'KoreanSWGIG3, Pretendard, sans-serif' }}
+      className="sticky top-0 z-1000 w-full font-[KOREANSWGIG3] text-[#A0A0A0] bg-white shadow-[0px_4px_4px_0px_rgba(0,0,0,0.05)] backdrop-blur"
+    // style={{ fontFamily: 'KoreanSWGIG3, Pretendard, sans-serif' }}
     >
       {/* 높이 고정 + 중앙 정렬 */}
-      <div className="flex h-15 items-center justify-between px-7">
+      <div className="flex h-12 items-center justify-between px-5">
         {/* Left: Back + Title */}
         <div className="flex items-center gap-3">
           {showBack && (
@@ -75,7 +75,7 @@ export default function Header({
               {backArrow}
             </button>
           )}
-          <h1 className="text-2xl font-normal leading-none">{title}</h1>
+          <h1 className="text-[22px] font-norma l leading-none">{title}</h1>
         </div>
 
         {/* Right */}

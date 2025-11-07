@@ -25,17 +25,17 @@ const Login = () => {
   if (showSplash) return <Loading />;
 
   return (
-    <div className="relative w-screen h-screen bg-[#FFFFFF] overflow-hidden text-[#FF8B8B] font-['KoreanSWGIG3']">
+    <div className="relative w-dvw h-dvh flex items-center justify-center bg-[#FFFFFF] overflow-hidden text-[#FF8B8B] font-['KoreanSWGIG3']">
       <h1
         className="absolute left-1/2 -translate-x-1/2
                     text-6xl leading-none text-center 
-                    whitespace-nowrap top-[25.17%]"
+                    whitespace-nowrap top-[25.17%] "
       >
         생일한상
       </h1>
       <p
         className="absolute left-1/2 -translate-x-1/2 top-[37.75%]
-                    text-xl leading-6 text-center text-[#FF8B8B]"
+                    text-xl leading-6 text-center text-[#FF8B8B] break-keep w-full"
       >
         멀리 있어도 함께하는
         <br />
@@ -47,7 +47,7 @@ const Login = () => {
         src={kakaoBtn}
         alt="카카오톡으로 계속하기"
         onClick={handleLogin}
-        className="absolute left-1/2 -translate-x-1/2 top-[86.49%] w-80 h-12 cursor-pointer select-none"
+        className="absolute left-1/2 -translate-x-1/2 top-[85%] w-80 h-12 cursor-pointer select-none"
       />
     </div>
   );

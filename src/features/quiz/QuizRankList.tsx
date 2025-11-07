@@ -17,7 +17,7 @@ type Props = {
 
 export default function QuizRankList({
   className,
-  heightClassName = 'max-h-[68vh]',
+  heightClassName,
   onShowAnswers,
   nickName,
   enabled = true,
@@ -34,13 +34,13 @@ export default function QuizRankList({
   const displayItems = useMemo(() => items, [items]);
 
   return (
-    <div className={clsx('w-full', className)}>
-      <div className={clsx('overflow-auto pr-1', heightClassName)}>
+    <div className={clsx('flex flex-col justify-center w-full', className)}>
+      <div className={clsx('overflow-auto pr-1 py-2', heightClassName)}>
         {/* 상태 표시 */}
         <div className="mb-2 flex items-center gap-2 text-xs">
           {isLoading && <span className="animate-pulse text-[#FF8B8B]">랭킹을 불러오는 중…</span>}
           {isError && <span className="text-[#FF8B8B]">랭킹을 불러오지 못했어요.🥲</span>}
-          {!isLoading && !isError && (items.length === 0) && <span className="text-[#FF8B8B]">아직 랭킹 데이터가 없습니다.</span>}
+          {enabled && !isLoading && !isError && (items.length === 0) && <span className="text-[#FF8B8B]">아직 랭킹 데이터가 없습니다.</span>}
         </div>
 
         {items.length > 0 &&

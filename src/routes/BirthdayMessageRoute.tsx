@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { getStoredUserId } from '@/stores/authStorage';
 import { useBirthdayCards } from '@/hooks/useBirthdayCards';
 import MessagePage from '@/pages/MainHome/MessagePage';
+import { BirthdayCardLike } from '@/types/birthday';
 
 export default function BirthdayMessageRoute() {
   const navigate = useNavigate();
@@ -17,6 +18,9 @@ export default function BirthdayMessageRoute() {
   // 서버/로컬에서 카드 로딩
   const { data: cards = [], isLoading, error } = useBirthdayCards();
 
+  const sortedCards: BirthdayCardLike[] = useMemo(() => {
+    return [...cards].sort((a, b) => b.birthdayCardId - a.birthdayCardId);
+  }, [cards]);
   // 인덱스 보정
   const safeInitialIndex = Math.max(
     0,
@@ -49,7 +53,7 @@ export default function BirthdayMessageRoute() {
 
   return (
     <MessagePage
-      cards={cards}
+      cards={sortedCards}
       initialIndex={safeInitialIndex}
       onBack={() => navigate(-1)}
     // onHome={handleHome}

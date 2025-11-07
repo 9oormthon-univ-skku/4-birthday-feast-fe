@@ -23,7 +23,7 @@ export default function FooterButton({
       onClick={onClick}
       className={clsx(
         'w-full h-12 mb-6 rounded-[5px] bg-[#FF8B8B] text-white font-semibold',
-        'shadow-sm transition disabled:opacity-50',
+        'shadow-sm transition disabled:opacity-50 pointer-events-auto',
         className
       )}
     >

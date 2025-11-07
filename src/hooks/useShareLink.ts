@@ -60,10 +60,8 @@ export function useShareLink(code: string | undefined | null) {
   const share = useCallback(async () => {
     if (!url) return alert("공유 가능한 링크가 없습니다.");
 
-    const title = shareName ? `${shareName}의 생일한상` : "생일한상";
-    const text = shareName
-      ? `🎂 생일한상에 초대합니다! From. ${shareName}`
-      : "🎂 생일한상에 초대합니다!";
+    const title = shareName ? `${shareName}님의 생일한상` : "생일한상";
+    const text = "친구의 생일을 축하해주세요.🎉"
 
     try {
       if (typeof navigator !== "undefined" && (navigator as any).share) {

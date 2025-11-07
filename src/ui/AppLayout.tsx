@@ -32,7 +32,7 @@ export default function AppLayout({
   const hasFooter = Boolean(footer || footerButtonLabel);
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="h-dvh w-dvw bg-white flex flex-col">
       <Header
         title={title}
         showBack={showBack}
@@ -46,16 +46,16 @@ export default function AppLayout({
       />
 
       {/* 본문 */}
-      <main className="flex-1 w-full flex justify-center overflow-x-hidden">
+      <main className="flex-1 w-full flex justify-center overflow-auto">
         <div className="w-full max-w-[520px]">
           {children}
-          {hasFooter && <div className="h-24" aria-hidden />}
+          {/* {hasFooter && <div className="h-24" aria-hidden />} */}
         </div>
       </main>
 
       {/* 고정 푸터 */}
       {hasFooter && (
-        <footer className="z-10 fixed bottom-0 left-0 right-0 flex justify-center bg-gradient-to-t from-white via-white/90 to-transparent backdrop-blur-[0.4px]">
+        <footer className="z-10 fixed bottom-0 left-0 right-0 flex justify-center pointer-events-none">
           <div className="w-full max-w-[520px] px-8 py-4 pt-16 pb-[env(safe-area-inset-bottom)]">
             {footer ? (
               footer

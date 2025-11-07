@@ -116,7 +116,7 @@ export default function CapturePreview({
         className="relative max-w-[468px] w-[90%] rounded-[5px] bg-white p-5 pb-3"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="max-h-[48vh] overflow-hidden rounded-[5px] border-1 border-[#BEBEBE]
+        <div className="max-h-[62vh] overflow-hidden rounded-[5px] border-1 border-[#BEBEBE]
         flex items-center justify-center"
         >
           <img src={src} alt="캡쳐 이미지" className="w-full h-auto block" />

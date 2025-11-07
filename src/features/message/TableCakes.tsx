@@ -13,12 +13,13 @@ type Slot = {
 };
 
 const SLOTS: Slot[] = [
-  { key: 'center', left: '54%', bottom: '44%', width: '33%', anchorCenter: true },
-  { key: 'topLeft', left: '8%', bottom: '58%', width: '32%' },
-  { key: 'topRight', left: '69%', bottom: '59%', width: '32%' },
+  { key: 'topLeft', left: '8%', bottom: '60%', width: '30%' },
+  { key: 'center', left: '52%', bottom: '47%', width: '38%', anchorCenter: true },
+
+  { key: 'topRight', left: '69%', bottom: '61%', width: '30%' },
   { key: 'middleLeft', left: '4%', bottom: '37%', width: '31%' },
-  { key: 'bottomLeft', left: '23%', bottom: '14%', width: '35%' },
-  { key: 'bottomRight', left: '62%', bottom: '20%', width: '34%' },
+  { key: 'bottomLeft', left: '24%', bottom: '17%', width: '37%' },
+  { key: 'bottomRight', left: '63%', bottom: '28%', width: '35%' },
 ];
 
 export default function TableCakes({
@@ -32,6 +33,9 @@ export default function TableCakes({
   const location = useLocation(); // 현재 쿼리 보존 용도            
   const { userId } = useParams();
 
+  const sortedItems = useMemo(() => {
+    return [...items].sort((a, b) => (b.messageId ?? 0) - (a.messageId ?? 0));
+  }, [items]);
   // ===== 캐러셀 상태 =====
   const PAGE_SIZE = 6;
   const pageCount = Math.max(Math.ceil(items.length / PAGE_SIZE), 1);
@@ -44,10 +48,10 @@ export default function TableCakes({
 
   // 현재 페이지 아이템 6개
   const pageItems = useMemo(() => {
-    if (items.length === 0) return [];
+    if (sortedItems.length === 0) return [];
     const start = page * PAGE_SIZE;
-    return items.slice(start, start + PAGE_SIZE);
-  }, [items, page]);
+    return sortedItems.slice(start, start + PAGE_SIZE);
+  }, [sortedItems, page]);
 
   const loop = true;
   const canPrev = loop || page > 0;

@@ -19,12 +19,12 @@ export default function QuizPlay({
   return (
     <div className={className}>
       {/* 문제 */}
-      <div className="my-20 text-center text-2xl font-normal leading-snug break-keep text-[#FF8B8B] font-['KoreanSWGIG3']">
+      <div className="text-center text-2xl font-normal leading-snug break-keep text-[#FF8B8B] font-['KoreanSWGIG3']">
         {content ?? ''}
       </div>
 
       {/* O / X */}
-      <div className="mt-10 flex items-center justify-center gap-8">
+      <div className="mt-[13dvh] flex items-center justify-center gap-8">
         <button
           type="button"
           aria-label="O"

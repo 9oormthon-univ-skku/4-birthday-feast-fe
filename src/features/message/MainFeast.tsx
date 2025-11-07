@@ -40,7 +40,7 @@ const MainFeast: FC<MainFeastProps> = ({
         alt=""
         width={162}
         height={503}
-        className="absolute left-0 z-30 -translate-y-[73%] w-[31%]"
+        className="absolute left-0 z-30 -translate-y-9/13 w-[30%]"
         loading="lazy"
         fetchPriority="low"
         decoding="async"
@@ -51,16 +51,14 @@ const MainFeast: FC<MainFeastProps> = ({
         alt=""
         width={162}
         height={503}
-        className="absolute right-0 z-30 -translate-y-[75%] w-[34%]"
+        className="absolute right-0 z-30 -translate-y-8/11 w-[32%]"
         loading="lazy"
         fetchPriority="low"
         decoding="async"
         aria-hidden="true"
       />
-
-
       {/* 👤 host = LCP 우선 */}
-      <picture className="absolute left-1/2 z-40 -translate-x-1/2 -translate-y-[83%] w-[46%]">
+      <picture className="absolute left-1/2 z-40 -translate-x-1/2 -translate-y-13/16 w-[45%]">
         <img
           src={HOST_SRC}
           alt="host"
@@ -71,10 +69,10 @@ const MainFeast: FC<MainFeastProps> = ({
           sizes="(max-width: 520px) 46vw, 240px"
           className="block w-full"
         />
-        {!hideQuizButton && (<div className="absolute left-0 top-1/2 -translate-x-[55%] -translate-y-1/2">
+        {!hideQuizButton && (<div className="absolute top-18/31 -translate-x-11/21 -translate-y-23/28 w-[28%]">
           <PlayQuizButton
             variant="inline"
-            imgSizeClassName="h-17 w-21"
+            imgSizeClassName="w-20"
             ariaLabel="퀴즈 플레이 버튼"
           />
         </div>)}
@@ -86,7 +84,7 @@ const MainFeast: FC<MainFeastProps> = ({
         alt="cake"
         width={196}
         height={214}
-        className="absolute left-1/2 z-50 -translate-x-1/2 -translate-y-[60%] w-[50%]"
+        className="absolute left-1/2 z-50 -translate-x-1/2 -translate-y-29/50 w-[48%]"
         loading="eager"
         fetchPriority="auto"                    // 'high' 제거(또는 "low")
         aria-hidden="false"

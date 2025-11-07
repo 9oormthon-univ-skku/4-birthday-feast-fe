@@ -191,14 +191,6 @@ export default function Modal({
           {isConfirm ? (
             <>
               <button
-                ref={okBtnRef}
-                className="flex-1 py-4 text-base font-semibold text-[#FF8B8B] focus:outline-none active:opacity-80"
-                onClick={() => onConfirm?.()}
-              >
-                {_confirmText}
-              </button>
-              <div className="h-10 w-px self-center bg-gray-200" />
-              <button
                 className="flex-1 py-3 text-base font-semibold text-gray-400 focus:outline-none active:opacity-80"
                 onClick={() => {
                   onCancel?.();
@@ -206,6 +198,14 @@ export default function Modal({
                 }}
               >
                 {_cancelText}
+              </button>
+              <div className="h-10 w-px self-center bg-gray-200" />
+              <button
+                ref={okBtnRef}
+                className="flex-1 py-4 text-base font-semibold text-[#FF8B8B] focus:outline-none active:opacity-80"
+                onClick={() => onConfirm?.()}
+              >
+                {_confirmText}
               </button>
             </>
           ) : (

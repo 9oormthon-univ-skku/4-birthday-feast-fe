@@ -2,7 +2,6 @@
 import React from "react";
 import { toPng } from "html-to-image";
 import { useShareLink } from "@/hooks/useShareLink";
-// import { useAuth } from "@/hooks/useAuth";
 import { useFeastThisYear } from "@/hooks/useFeastThisYear";
 
 type TargetRef =

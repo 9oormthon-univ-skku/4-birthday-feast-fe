@@ -208,8 +208,8 @@ export default function PlayQuizPage() {
           )}
         </section>
       ) : !finished ? (
-        <section className="pt-2">
-          <div className="mt-28 mx-auto mb-8 w-64">
+        <section className='flex flex-col align-center justify-center my-auto max-h-[70dhv]'>
+          <div className="mt-[12dvh] mx-auto mb-[10dvh] w-64">
             <div className="mb-1 text-sm font-normal font-['KoreanSWGIG3']">
               <span className="text-[#FF8B8B] ">{index + 1}</span>
               <span className="text-[#D9D9D9]">/{total}</span>
@@ -226,7 +226,7 @@ export default function PlayQuizPage() {
           />
         </section>
       ) : (
-        <>
+        <div className=" w-full bottom-24">
           {!showAnswers && (
             <div className="w-full px-8 pt-9 pb-4">
               <h2 className="text-4xl font-normal font-['KoreanSWGIG3'] text-[#FF8B8B]">결과는?</h2>
@@ -246,19 +246,19 @@ export default function PlayQuizPage() {
             <QuizAnswerList
               questions={questions}
               userAnswers={userAnswers}
-              heightClassName="max-h-[70vh]"
+              heightClassName="max-h-[70dvh]"
             />
           ) : (
             <QuizRankList
-              className=" px-8 py-4"
-              heightClassName="max-h-[70vh]"
+              className=" px-8"
+              heightClassName="max-h-[60dvh]"
               onShowAnswers={goAnswers}
               nickName={nickName}
               enabled={rankEnabled}
               refreshToken={rankRefreshToken}
             />
           )}
-        </>
+        </div>
       )}
     </AppLayout>
   );

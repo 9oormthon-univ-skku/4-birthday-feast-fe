@@ -99,19 +99,19 @@ export default function MyFeastQRPage() {
       footerButtonLabel="확인"
       onFooterButtonClick={() => navigate(-1)}
     >
-      <div className='px-8 py-4'>
-        <section className="mt-15 mx-auto rounded-[5px] bg-white shadow-[0px_0px_4px_0px_rgba(0,0,0,0.25)] p-4">
+      <div className='p-10'>
+        <section className="m-auto p-6 rounded-[5px] bg-white shadow-[0px_0px_4px_0px_rgba(0,0,0,0.25)]">
           {/* QR 박스 */}
-          <div className="w-fit p-7 mx-auto rounded-md bg-white border border-[#A0A0A0]">
+          <div className="flex justify-center items-center w-60 h-60 m-auto rounded-md bg-white border border-[#A0A0A0]">
             {/* code 준비 전이면 이미지 렌더 안 함 */}
             {qrPng ? (
               <img
                 src={qrPng}
                 alt="내 생일상 QR"
-                className="block w-[240px] h-[240px]"
+                className="block w-50 h-50"
               />
             ) : (
-              <div className="w-[240px] h-[240px] flex items-center justify-center text-xs text-gray-400">
+              <div className="w-50 h-50 flex items-center justify-center text-xs text-gray-400">
                 링크 준비 중…
               </div>
             )}

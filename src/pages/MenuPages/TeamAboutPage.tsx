@@ -57,26 +57,27 @@ export default function TeamAboutPage() {
         </p>
 
         <hr className="border-[#D9D9D9]" />
-
-        {sections.map((sec) => (
-          <section key={sec.title} className="my-11">
-            <h2 className="text-[#FF8B8B] font-extrabold text-xl mb-4">{sec.title}</h2>
-            <ul className="space-y-3">
-              {sec.members.map((m) => (
-                <li key={m.email} className="text-base leading-5">
-                  <div className="text-[#555] font-medium">
-                    {m.name} <span className="text-[#A0A0A0]">| {m.school}</span>
-                  </div>
-                  <div className="text-[#A0A0A0]">
-                    <a href={`mailto:${m.email}`} className="hover:underline">
-                      {m.email}
-                    </a>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
+        <div className='h-dvh'>
+          {sections.map((sec) => (
+            <section key={sec.title} className="my-11">
+              <h2 className="text-[#FF8B8B] font-extrabold text-xl mb-4">{sec.title}</h2>
+              <ul className="space-y-3">
+                {sec.members.map((m) => (
+                  <li key={m.email} className="text-base leading-5">
+                    <div className="text-[#555] font-medium">
+                      {m.name} <span className="text-[#A0A0A0]">| {m.school}</span>
+                    </div>
+                    <div className="text-[#A0A0A0]">
+                      <a href={`mailto:${m.email}`} className="hover:underline">
+                        {m.email}
+                      </a>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
       </div>
     </AppLayout>
   );

@@ -20,7 +20,6 @@ import { qk } from '@/apis/queryKeys';
 import { getUserMe, type UserMeResponse } from '@/apis/user';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useBirthdayCards } from '@/hooks/useBirthdayCards';
-import { useFeastThisYear } from '@/hooks/useFeastThisYear';
 
 const MainHome: React.FC = () => {
   const navigate = useNavigate();
@@ -48,61 +47,63 @@ const MainHome: React.FC = () => {
 
   const nameFromQS = (isGuest ? (qs.get('name')?.trim() || '') : '').trim();
   const displayName = (isGuest ? nameFromQS : me?.name?.trim()) || '사용자';
-
+  const overflowView = isIconView ? ' overflow-auto' : '';
   return (
-    <div className="relative flex h-screen w-screen flex-col bg-[#FFF4DF]">
+    <div className={`h-dvh w-dvw relative flex flex-col bg-[#FFF4DF] ${overflowView}`}>
       {/* Header는 UserLayout에서 모드/유저 컨텍스트가 제공되므로 그대로 사용 */}
       <Header onDrawerOpenChange={setDrawerOpen} showBrush={isHost}
         title={<>
           <span className="text-[#FF8B8B]">{displayName}</span>
           <span className="text-[#A0A0A0]">님의 생일한상</span>
         </>} />
-
-      {/* 상단 컨트롤 바 */}
-      <div className="z-100 mx-auto my-4 flex w-[90%] max-w-[468px] items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <ViewToggle isIconView={isIconView} onToggle={setIsIconView} />
-          {isHost && (
-            <FeatureButtons
-              targetRef={captureRef}
-              fileName="birthday-feast"
-              backgroundColor="#FFF4DF"
-              onCaptured={(url) => setShotUrl(url)}
-            />
-          )}
+      <div className={isIconView ? 'overflow-auto' : ''}>
+        {/* 상단 컨트롤 바 */}
+        <div className="sticky w-full top-0 z-[100] py-1 pl-3 pr-2">
+          <div className="mx-auto max-w-[468px] flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-2">
+              <ViewToggle isIconView={isIconView} onToggle={setIsIconView} />
+              {isHost && (
+                <FeatureButtons
+                  targetRef={captureRef}
+                  fileName="birthday-feast"
+                  backgroundColor="#FFF4DF"
+                  onCaptured={(url) => setShotUrl(url)}
+                />
+              )}
+            </div>
+            <div className="shrink-0">
+              <EventBanner />
+            </div>
+          </div>
         </div>
 
-        {isHost && (
-          <div className="shrink-0">
-            <EventBanner />
-          </div>
-        )}
-      </div>
-
-      <div ref={captureRef} className={isIconView ? 'mt-auto pt-[95%]' : ''}>
-        {isIconView ? (
-          <div className="w-full flex justify-center">
-            <MainFeast cards={cards} />
-          </div>
-        ) : (
-          <div className="mx-auto w-full max-w-[520px] px-4 pb-3">
-            <MainList columns={4}
-              cards={cards}
-              isLoading={cardsLoading}
-              error={cardsError}
-            />
-          </div>
-        )}
+        <div ref={captureRef} className={isIconView ? 'mt-auto pt-[90%]' : ''}>
+          {isIconView ? (
+            <div className="w-full flex justify-center">
+              <MainFeast cards={cards} />
+            </div>
+          ) : (
+            <div className="h-[68dvh] flex-1 w-full flex justify-center overflow-auto p-4">
+              <MainList columns={4}
+                cards={cards}
+                isLoading={cardsLoading}
+                error={cardsError}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       <BottomSheet>
         <h2 className="mb-2 text-[#FF8B8B] text-xl font-bold">방문자 퀴즈 랭킹</h2>
-        <QuizRankList />
+        <QuizRankList
+          heightClassName="max-h-[67dvh]"
+        />
       </BottomSheet>
 
       {
         isGuest && !drawerOpen && (
-          <footer className="fixed bottom-8 left-0 right-0 z-100 flex justify-center bg-transparent">
+          <footer className="fixed bottom-8 left-0 right-0 z-100 flex justify-center bg-transparent pointer-events-none">
             <div className="w-full max-w-[520px] px-8 py-4 pt-15 pb-[env(safe-area-inset-bottom)]">
               <FooterButton
                 label={`${displayName}님에게 생일 메시지 남기기`}
