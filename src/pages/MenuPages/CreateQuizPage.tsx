@@ -251,7 +251,7 @@ export default function CreateQuizPage() {
       onFooterButtonClick={handleSave}
       footerButtonDisabled={!allValid || submitting}
     >
-      <div className="w-full px-8 py-4">
+      <div className="w-full px-8 py-4 overflow-auto min-h-screen pb-80">
         <p className="text-sm text-[#A0A0A0] mb-4">
           각 문항은 <span className="text-[#FF8B8B] font-bold">O / X</span> 중 하나의 정답을 선택해 주세요.
           <br />
